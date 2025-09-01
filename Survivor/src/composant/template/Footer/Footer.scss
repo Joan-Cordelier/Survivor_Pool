@@ -1,0 +1,129 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  height: 25vh;
+  color: #ffffff;
+  font-family: 'Roboto', sans-serif;
+  background-color: #284E7B;
+
+  &-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    flex: 1;
+
+    & img {
+      height: 10vh;
+      border-radius: 50%;
+    }
+
+    & p {
+      margin-top: 20px;
+    }
+
+  }
+
+  &-address-container {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  &-follow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+  }
+
+
+  &-contact,
+  &-address {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+    justify-content: center;
+
+    & h2 {
+      margin-bottom: 30px;
+      font-size: 1.5em;
+    }
+
+    & a {
+      display: flex;
+      align-items: center;
+      margin-top: 20px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &-icon {
+    height: 15px;
+    margin-right: 10px;
+  }
+}
+
+.logo-title {
+  font-size: 1.6em;
+}
+
+.footer-follow img {
+  width: 30px;
+  height: auto;
+}
+
+.footer-follow a {
+  margin: auto 20px;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    flex-direction: column;
+    height: auto;
+    padding: 20px 0;
+
+    &-logo {
+      margin: 40px 0;
+    }
+
+    &-follow {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      margin-top: 30px;
+      margin-bottom: 10px;
+
+      & a {
+        margin: auto 20px;
+      }
+      
+      & img {
+        height: 15px;
+      }
+    }
+    &-contact,
+    &-address {
+      margin: 10px 0;
+
+      & h2 {
+        margin-bottom: 5px;
+        font-size: 1em;
+      }
+
+      & img {
+        height: 15px;
+        margin-right: 5px;
+      }
+    }
+  }
+}

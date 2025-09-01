@@ -1,0 +1,281 @@
+$primary-bg-color: #002855;
+$secondary-bg-color: #003f88;
+
+// Styles pour la barre de navigation
+.nav {
+  display: flex;
+  background-color: #284E7B;
+  padding: 10px 30px; // Espace interne de la barre de navigation
+  width: 100%;
+  height: 120px; // Hauteur de la barre de navigation
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.nav-links {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 0;
+  align-items: center;
+}
+// Section pour les éléments de navigation à gauche
+.nav-left {
+  display: flex;
+  flex-direction: row;
+  ul {
+    list-style-type: none; // Supprime les puces des éléments de liste
+    display: flex; // Aligne les éléments horizontalement
+    gap: 15px; // Espace entre chaque élément
+  }
+
+  // Élément individuel de la liste de navigation
+  .nav-left-list-item {
+    .nav-link {
+      color: rgba(255, 255, 255, 0.486); // Couleur du texte des liens
+      text-decoration: none; // Supprime le soulignement des liens
+      font-size: 20px; // Taille de la police des liens
+      padding: 10px; // Espace interne des liens
+      transition: color 0.3s; // Transition douce pour le changement de couleur au survol
+
+      // Couleur du lien lorsqu'on passe la souris dessus
+      &:hover {
+        color: #ffffff;
+      }
+
+      // Style appliqué au lien actif (lien actuellement sélectionné)
+      &.active {
+        color: #f9bc60; // Couleur or pour le lien actif
+      }
+    }
+  }
+}
+
+// Optionnel : styles pour le logo si tu souhaites les ajouter plus tard
+.nav-logo {
+  .nav-logo-link {
+    display: flex;
+    align-items: center;
+
+    .nav-img {
+      height: 50px;
+      z-index: 1000;
+    }
+  }
+}
+
+.container-navr {
+  display: flex;
+}
+
+// Section pour les icônes de réseaux sociaux à droite
+.nav-right {
+  text-align: right;
+  display: flex;
+
+  .social-media-item {
+    display: inline-block;
+
+    .social-icon {
+      margin: 10px;
+      display: flex;
+      width: 20px; // Largeur des icônes
+      height: auto;
+      transition: transform 0.3s ease; // Animation pour effet au survol
+
+      &:hover {
+        transform: scale(1.1); // Agrandissement de l'icône au survol
+      }
+    }
+  }
+}
+
+.img {
+  display: flex;
+  transform-origin: center; // Centre l'agrandissement pour ne pas la déplacer
+  height: 10vh;
+  border-radius: 50%;
+  z-index: 1000;
+}
+
+.burger-bar,
+.burger-bar::before,
+.burger-bar::after {
+  display: block;
+  z-index: 1000;
+  width: 40px;
+  height: 3px;
+  position: relative;
+  border-radius: 3px;
+  background: white;
+  transition: all 0.3s ease-in-out;
+}
+
+.burger-bar::before,
+.burger-bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.burger-bar::before {
+  transform: translateY(-12px);
+}
+
+.burger-bar::after {
+  transform: translateY(12px);
+}
+
+.show-nav .burger-bar {
+  background: transparent;
+  width: 0;
+}
+
+.show-nav .burger-bar::before {
+  transform: rotate(45deg);
+}
+
+.show-nav .burger-bar::after {
+  transform: rotate(-45deg);
+}
+
+.navbar-burger {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  display: none;
+}
+
+@media (max-width: 1250px) {
+  .navbar-burger {
+    display: block !important;
+  }
+
+  .nav-links {
+    display: flex;
+    z-index: 1000;
+    flex-direction: column;
+    justify-content: center;
+    position: fixed;
+    padding: 0;
+    margin: 0;
+    right: -100vw;
+    bottom: 0;
+    height: 100vh;
+    width: 100vw;
+    padding: 2rem;
+    background-color: #284E7B;
+    align-items: center;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .nav-links.show-nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: fixed;
+    padding: 0;
+    margin: 0;
+    right: 0vw;
+    bottom: 0;
+    height: 100vh;
+    width: 100vw;
+    padding: 2rem;
+    background-color: #284E7B;
+    align-items: center;
+    visibility: visible;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .nav-left-list,
+  .nav-right-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vh;
+    margin: 0;
+    padding: 0;
+
+    &-item {
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .nav-left,
+  .nav-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-left-list::after {
+    content: "";
+    display: block;
+    width: 40%;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.438);
+    margin: 3rem 0;
+  }
+
+
+  .nav-link {
+    display: block;
+    padding: 1.5rem;
+    font-size: 5vw;
+  }
+
+  .nav-link:hover {
+    background-color: #173853;
+  }
+
+
+  .burger-bar,
+  .burger-bar::before,
+  .burger-bar::after {
+    display: block;
+    width: 40px;
+    height: 3px;
+    position: relative;
+    border-radius: 3px;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .burger-bar::before,
+  .burger-bar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+  }
+
+  .burger-bar::before {
+    transform: translateY(-12px);
+  }
+
+  .burger-bar::after {
+    transform: translateY(12px);
+  }
+
+  .show-nav .burger-bar {
+    background: transparent;
+    width: 0;
+  }
+
+  .show-nav .burger-bar::before {
+    transform: rotate(45deg);
+  }
+
+  .show-nav .burger-bar::after {
+    transform: rotate(-45deg);
+  }
+
+}

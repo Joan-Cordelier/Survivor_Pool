@@ -1,0 +1,135 @@
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.popup-content {
+  background: #284E7B;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  width: 400px;
+  max-width: 90%;
+  animation: slideIn 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.8rem; /* Augmenté légèrement */
+  cursor: pointer;
+  color: white;
+}
+
+.title-style {
+  color: white;
+  //font-family: "Lobster", cursive;
+  text-align: center;
+  margin-bottom: 2rem; /* Espace plus grand entre le titre et le formulaire */
+  margin-top: 1rem;
+  font-size: 1.4rem;
+  line-height: 1.5rem; /* Augmenté légèrement */
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 1.4rem; /* Augmenté légèrement */
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+input {
+  padding: 12px; /* Légèrement augmenté */
+  margin-bottom: 1rem;
+  border: 2px solid #0056b3;
+  border-radius: 5px;
+  font-size: 1.2rem; /* Augmenté légèrement */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button[type="submit"] {
+  background-color: #f9bc60;
+  color: #001e1d;
+  border: none;
+  padding: 15px; /* Légèrement augmenté */
+  font-size: 1.4rem; /* Augmenté légèrement */
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button[type="submit"]:hover {
+  background-color: rgb(230, 165, 67);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .popup-content {
+    width: 90%;
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  input, button[type="submit"] {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .popup-content {
+    width: 95%;
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  input, button[type="submit"] {
+    font-size: 1rem;
+  }
+}

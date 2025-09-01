@@ -1,0 +1,39 @@
+// Global style to prevent content overflow
+* {
+    box-sizing: border-box;
+}
+
+body {
+    overflow-x: hidden;
+    /* Prevents horizontal scroll */
+}
+
+// Mixin pour Flexbox Centering
+@mixin flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.rendezvous-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f7f7f7;
+    max-width: 100%; // Largeur maximale à 100% pour remplir le parent
+    width: 100%; // Prend toute la largeur du conteneur parent
+}
+
+.rendezvous-title {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #002855; // Couleur principale de ton thème
+}
+
+.iframe-wrapper {
+    width: 100%;
+    max-width: 1200px; // Limite la largeur de l'iframe
+}

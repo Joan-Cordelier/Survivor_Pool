@@ -1,0 +1,65 @@
+// Variables de base
+$widget-bg-color: #ffffff;
+$widget-border-radius: 10px;
+$widget-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+$widget-padding: 20px;
+$widget-max-width: 90%;
+$widget-height-small: 400px;
+$widget-height-large: 600px;
+
+// Wrapper pour centrer et styliser le widget
+.widget-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  //background-color: $widget-bg-color;
+  //border-radius: $widget-border-radius;
+  //box-shadow: $widget-box-shadow;
+  padding: $widget-padding;
+  max-width: $widget-max-width;
+  margin: 0 auto;
+  width: 100%; // Prend la largeur du parent
+
+  // Style pour l'iframe SnapWidget
+  iframe {
+    border: none;
+    overflow: hidden;
+    width: 100%;
+    height: $widget-height-large; // Hauteur par défaut pour grands écrans
+    border-radius: $widget-border-radius;
+  }
+
+  // Media queries pour les petits écrans
+  @media screen and (max-width: 768px) {
+    iframe {
+      height: $widget-height-small; // Hauteur réduite pour tablettes
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    iframe {
+      height: 300px; // Hauteur encore plus petite pour les téléphones
+    }
+  }
+}
+
+// Styles supplémentaires pour ajuster les marges et l'espacement
+.widget-margin {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+// Flexbox pour centrer et gérer plusieurs widgets
+.multiple-widgets {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 20px; // Espace entre les widgets
+
+  // Media queries pour ajuster les widgets en colonne sur petits écrans
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; // Espace réduit pour petits écrans
+  }
+}

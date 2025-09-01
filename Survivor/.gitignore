@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Ignorer les vidéos lourdes
+src/assets/*.mp4
+src/assets/*.mov
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
