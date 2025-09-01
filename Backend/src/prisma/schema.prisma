@@ -1,0 +1,20 @@
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+model Event {
+  id              Int     @id @default(autoincrement())
+  name            String  @db.VarChar(255)
+  dates           String? @db.VarChar(255)   // keep as string per spec
+  location        String? @db.VarChar(255)
+  description     String? @db.Text
+  event_type      String? @db.VarChar(255)
+  target_audience String? @db.VarChar(255)
+}
