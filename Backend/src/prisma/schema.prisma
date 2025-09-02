@@ -9,7 +9,7 @@ generator client {
 
 model User {
   id          Int     @id @default(autoincrement())
-  email       String  @db.VarChar(255)
+  email       String  @unique @db.VarChar(255)
   name        String  @db.VarChar(255)
   role        String  @db.VarChar(255)
   founder_id  Int?
@@ -58,15 +58,6 @@ model Partner {
   partnership_type String? @db.VarChar(255)
 }
 
-model News {
-  id          Int     @id @default(autoincrement())
-  title       String  @db.VarChar(255)
-  news_date   String? @db.VarChar(255)
-  location    String? @db.VarChar(255)
-  category    String? @db.VarChar(255)
-  startup_id  Int?
-}
-
 model NewsDetail {
   id          Int     @id @default(autoincrement())
   title       String  @db.VarChar(255)
@@ -93,15 +84,4 @@ model StartupDetail {
   sector           String? @db.VarChar(255)
   maturity         String? @db.VarChar(255)
   founders        Founder[]
-}
-
-model StartupList {
-  id           Int     @id @default(autoincrement())
-  name         String  @db.VarChar(255)
-  legal_status String? @db.VarChar(255)
-  address      String? @db.VarChar(255)
-  email        String  @db.VarChar(255)
-  phone        String? @db.VarChar(255)
-  sector       String? @db.VarChar(255)
-  maturity     String? @db.VarChar(255)
 }
