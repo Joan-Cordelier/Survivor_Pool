@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import Fb from "../../../assets/facebook.svg";
 import Insta from "../../../assets/instagram.svg";
 import TikTok from "../../../assets/tiktok.svg";
-import Logo from "../../../assets/Demain.png";
+import Logo from "../../../assets/logo.png";
 
 const Header = () => {
   const [showLinks, setshowLinks] = useState(false);
@@ -17,7 +17,7 @@ const Header = () => {
     setshowLinks(!showLinks);
   };
   return (
-    <nav className="nav">
+    <nav className="nav"> 
       <NavLink to="/">
         <img src={Logo} alt="description de l'image" className="img" />
       </NavLink>

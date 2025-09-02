@@ -2,7 +2,7 @@ import "./Footer.scss";
 import instagram from "../../../assets/instagram.svg";
 import mail from "../../../assets/mail.svg";
 import address from "../../../assets/address.svg";
-import Logo from "../../../assets/Demain.png";
+import Logo from "../../../assets/logo.png";
 import Tiktok from "../../../assets/tiktok.svg";
 import Fb from "../../../assets/facebook.svg";
 

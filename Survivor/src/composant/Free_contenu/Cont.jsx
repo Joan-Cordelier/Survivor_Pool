@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Cont.scss';
 import PopupForm from '../PopUp/PopupForm.jsx'; // Assure-toi que le chemin est correct
-import Video from '../../assets/Video-cont_gratuite .mov'; // Assure-toi que le chemin vers la vidéo est correct
+//import Video from '../../assets/Video-cont_gratuite .mov'; // Assure-toi que le chemin vers la vidéo est correct
 
 function Contenu() {
   const [showPopup, setShowPopup] = useState(false);
@@ -19,9 +19,9 @@ function Contenu() {
     <div className="content-container">
       <PopupForm showPopup={showPopup} onClose={handleClosePopup} />
       <div className="content-video">
-        <video width="600" controls className='video'>
+        {/* <video width="600" controls className='video'>
           <source src={Video} type="video/mp4" />
-        </video>
+        </video> */}
       </div>
     </div>
   );

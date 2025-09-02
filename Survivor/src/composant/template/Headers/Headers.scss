@@ -1,78 +1,85 @@
-$primary-bg-color: #002855;
-$secondary-bg-color: #003f88;
+$brand-from: #F18585;
+$brand-to:   #C174F2;
+$nav-fallback: #284E7B;
+$header-height: 120px;
 
-// Styles pour la barre de navigation
+/* Accessibilité / UX */
+:root { --focus-ring: 0 0 0 3px rgba(255,255,255,.5); }
+.no-scroll { overflow: hidden; }
+
+/* Barre de navigation */
 .nav {
   display: flex;
-  background-color: #284E7B;
-  padding: 10px 30px; // Espace interne de la barre de navigation
-  width: 100%;
-  height: 120px; // Hauteur de la barre de navigation
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  height: $header-height;
+  width: 100%;
+  padding: 10px 30px;
+
+  /* Fond dégradé */
+  background-color: $nav-fallback; /* fallback */
+  background-image: linear-gradient(135deg, $brand-from, $brand-to);
+  color: #fff;
+
+  /* Collée en haut */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  /* Légère ombre */
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
 }
 
+.img {
+  display: flex;
+  height: 10vh;
+  border-radius: 50%;
+  transform-origin: center;
+  z-index: 1000;
+}
 
+/* Liens nav (desktop) */
 .nav-links {
   display: flex;
+  align-items: center;
   justify-content: space-around;
   width: 100%;
   padding: 0;
-  align-items: center;
 }
-// Section pour les éléments de navigation à gauche
+
 .nav-left {
   display: flex;
   flex-direction: row;
+
   ul {
-    list-style-type: none; // Supprime les puces des éléments de liste
-    display: flex; // Aligne les éléments horizontalement
-    gap: 15px; // Espace entre chaque élément
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
   }
 
-  // Élément individuel de la liste de navigation
   .nav-left-list-item {
     .nav-link {
-      color: rgba(255, 255, 255, 0.486); // Couleur du texte des liens
-      text-decoration: none; // Supprime le soulignement des liens
-      font-size: 20px; // Taille de la police des liens
-      padding: 10px; // Espace interne des liens
-      transition: color 0.3s; // Transition douce pour le changement de couleur au survol
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      font-size: 20px;
+      font-family: 'Montserrat';
+      padding: 10px 12px;
+      border-radius: 6px;
+      transition: color .2s ease, background .2s ease, box-shadow .2s ease;
 
-      // Couleur du lien lorsqu'on passe la souris dessus
-      &:hover {
-        color: #ffffff;
-      }
-
-      // Style appliqué au lien actif (lien actuellement sélectionné)
-      &.active {
-        color: #f9bc60; // Couleur or pour le lien actif
-      }
+      &:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+      &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+      &.active { color: #ffffff; font-weight: 600; }
     }
   }
 }
 
-// Optionnel : styles pour le logo si tu souhaites les ajouter plus tard
-.nav-logo {
-  .nav-logo-link {
-    display: flex;
-    align-items: center;
-
-    .nav-img {
-      height: 50px;
-      z-index: 1000;
-    }
-  }
-}
-
-.container-navr {
-  display: flex;
-}
-
-// Section pour les icônes de réseaux sociaux à droite
+/* Réseaux sociaux */
 .nav-right {
-  text-align: right;
   display: flex;
+  text-align: right;
 
   .social-media-item {
     display: inline-block;
@@ -80,36 +87,40 @@ $secondary-bg-color: #003f88;
     .social-icon {
       margin: 10px;
       display: flex;
-      width: 20px; // Largeur des icônes
+      width: 20px;
       height: auto;
-      transition: transform 0.3s ease; // Animation pour effet au survol
+      filter: brightness(0) invert(1);
+      transition: transform .2s ease;
 
-      &:hover {
-        transform: scale(1.1); // Agrandissement de l'icône au survol
-      }
+      &:hover { transform: scale(1.1); }
+      &:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 4px; }
     }
   }
 }
 
-.img {
-  display: flex;
-  transform-origin: center; // Centre l'agrandissement pour ne pas la déplacer
-  height: 10vh;
-  border-radius: 50%;
-  z-index: 1000;
+/* Burger */
+.navbar-burger {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  display: none; 
+  cursor: pointer;
+
+  &:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 6px; }
 }
 
 .burger-bar,
 .burger-bar::before,
 .burger-bar::after {
   display: block;
-  z-index: 1000;
   width: 40px;
   height: 3px;
   position: relative;
   border-radius: 3px;
   background: white;
-  transition: all 0.3s ease-in-out;
+  transition: all .3s ease-in-out;
 }
 
 .burger-bar::before,
@@ -117,94 +128,63 @@ $secondary-bg-color: #003f88;
   content: "";
   position: absolute;
   left: 0;
+  transform-origin: center;
 }
 
-.burger-bar::before {
-  transform: translateY(-12px);
-}
-
-.burger-bar::after {
-  transform: translateY(12px);
-}
+.burger-bar::before { transform: translateY(-12px); }
+.burger-bar::after  { transform: translateY(12px); }
 
 .show-nav .burger-bar {
   background: transparent;
   width: 0;
 }
-
 .show-nav .burger-bar::before {
-  transform: rotate(45deg);
+  transform: translateY(0) rotate(45deg);
 }
-
 .show-nav .burger-bar::after {
-  transform: rotate(-45deg);
+  transform: translateY(0) rotate(-45deg);
 }
 
-.navbar-burger {
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: none;
-  color: inherit;
+
+.nav-overlay {
   display: none;
 }
+.nav-overlay.show {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+}
 
+/* Mobile / Tablette */
 @media (max-width: 1250px) {
-  .navbar-burger {
-    display: block !important;
-  }
+  .navbar-burger { display: block !important; }
 
   .nav-links {
+    position: fixed;
+    inset: 0;
+    right: -100vw;
+    z-index: 1200;
     display: flex;
-    z-index: 1000;
     flex-direction: column;
     justify-content: center;
-    position: fixed;
-    padding: 0;
-    margin: 0;
-    right: -100vw;
-    bottom: 0;
+    align-items: center;
+
     height: 100vh;
     width: 100vw;
     padding: 2rem;
-    background-color: #284E7B;
-    align-items: center;
+    margin: 0;
+
+    background-image: linear-gradient(135deg, $brand-from, $brand-to);
     visibility: hidden;
-    transition: all 0.3s ease-in-out;
+    transition: right .3s ease-in-out, visibility .3s ease-in-out;
   }
 
   .nav-links.show-nav {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: fixed;
-    padding: 0;
-    margin: 0;
-    right: 0vw;
-    bottom: 0;
-    height: 100vh;
-    width: 100vw;
-    padding: 2rem;
-    background-color: #284E7B;
-    align-items: center;
+    right: 0;
     visibility: visible;
-    transition: all 0.3s ease-in-out;
-  }
-
-  .nav-left-list,
-  .nav-right-list {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100vh;
-    margin: 0;
-    padding: 0;
-
-    &-item {
-      margin: 0;
-      padding: 0;
-    }
   }
 
   .nav-left,
@@ -213,9 +193,21 @@ $secondary-bg-color: #003f88;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100vh;
+    width: 100vw;
     margin: 0;
     padding: 0;
+  }
+
+  .nav-left-list,
+  .nav-right-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+
+    &-item { margin: 0; padding: 0; }
   }
 
   .nav-left-list::after {
@@ -223,59 +215,26 @@ $secondary-bg-color: #003f88;
     display: block;
     width: 40%;
     height: 1px;
-    background-color: rgba(255, 255, 255, 0.438);
+    background-color: rgba(255,255,255,.45);
     margin: 3rem 0;
   }
 
-
   .nav-link {
     display: block;
-    padding: 1.5rem;
-    font-size: 5vw;
+    padding: 1.25rem 1.5rem;
+    font-size: clamp(18px, 5vw, 28px);
   }
 
-  .nav-link:hover {
-    background-color: #173853;
-  }
-
-
-  .burger-bar,
-  .burger-bar::before,
-  .burger-bar::after {
-    display: block;
-    width: 40px;
-    height: 3px;
-    position: relative;
-    border-radius: 3px;
-    transition: all 0.3s ease-in-out;
-  }
-
-  .burger-bar::before,
-  .burger-bar::after {
-    content: "";
-    position: absolute;
-    left: 0;
-  }
-
-  .burger-bar::before {
-    transform: translateY(-12px);
-  }
-
-  .burger-bar::after {
-    transform: translateY(12px);
-  }
-
-  .show-nav .burger-bar {
-    background: transparent;
-    width: 0;
-  }
-
-  .show-nav .burger-bar::before {
-    transform: rotate(45deg);
-  }
-
-  .show-nav .burger-bar::after {
-    transform: rotate(-45deg);
-  }
-
+  .nav-link:hover { background-color: rgba(0,0,0,.18); }
 }
+
+.nav, .nav-links {
+  background-size: 200% 200%;
+  animation: gradientShift 7s ease-in-out infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
