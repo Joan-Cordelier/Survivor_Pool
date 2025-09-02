@@ -1,77 +1,45 @@
-import prisma from "../config/db.config";
+import prisma from '../config/db.config';
+import { User as PrismaUser } from '@prisma/client';
 
-async function createUser(
-    email: string,
-    name: string,
-    role: string,
-    founder_id?: number,
-    investor_id?: number
-) {
-    try {
-        const UserExist = await prisma.user.findUnique({
-            where: {
-                email
-            }
-        });
+export class User {
+    private data: PrismaUser;
 
-        if (UserExist) {
-            throw new Error("User already exists");
+    constructor(data: PrismaUser) {
+        this.data = data;
+    }
+
+    // Accesseurs
+    get id() { return this.data.id; }
+    get email() { return this.data.email; }
+    get name() { return this.data.name; }
+    get founder_id() { return this.data.founder_id; }
+    get investor_id() { return this.data.investor_id; }
+
+    static async create(data: Omit<PrismaUser, 'id'>): Promise<User> {
+        const user = await prisma.user.create({ data });
+        return new User(user);
+    }
+
+    static async findById(id: number): Promise<User | null> {
+        const user = await prisma.user.findUnique({ where: { id } });
+        return user ? new User(user) : null;
+    }
+
+    static async update(id: number, data: Partial<PrismaUser>): Promise<User | null> {
+        const user = await prisma.user.update({ where: { id }, data });
+        return user ? new User(user) : null;
+    }
+
+    static async delete(id: number): Promise<void> {
+        await prisma.user.delete({ where: {id} });
+    }
+
+    static async findAll() {
+        try {
+            const users = await prisma.user.findMany();
+            return users;
+        } catch (error) {
+            throw error;
         }
-
-        const user = await prisma.user.create({
-            data: {
-                email,
-                name,
-                role,
-                founder_id,
-                investor_id
-            },
-        });
-
-        return user;
-    } catch (error) {
-        throw error;
     }
 }
-
-async function getUserById(id: number) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: {
-                id
-            }
-        });
-        return user;
-    } catch (error) {
-        throw error;
-    }
-}
-
-async function getAllUsers() {
-    try {
-        const users = await prisma.user.findMany();
-        return users;
-    } catch (error) {
-        throw error;
-    }
-}
-
-async function deleteUser(id: number) {
-    try {
-        const user = await prisma.user.delete({
-            where: {
-                id
-            },
-        });
-        return user;
-    } catch (error) {
-        throw error;
-    }
-}
-
-export {
-    createUser,
-    getUserById,
-    getAllUsers,
-    deleteUser
-};
