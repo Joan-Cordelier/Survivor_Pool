@@ -1,58 +1,117 @@
 import prisma from '../config/db.config';
-import { StartupDetail as PrismaStartup } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
-export class Startup {
-    private data: PrismaStartup;
-
-    constructor(data: PrismaStartup) {
-        this.data = data;
-    }
-
-    // Accesseurs
-    get id() { return this.data.id; }
-    get name() { return this.data.name; }
-    get legal_status() { return this.data.legal_status; }
-    get address() { return this.data.address; }
-    get email() { return this.data.email; }
-    get phone() { return this.data.phone; }
-    get created_at() { return this.data.created_at; }
-    get description() { return this.data.description; }
-    get website_url() { return this.data.website_url; }
-    get social_media_url() { return this.data.social_media_url; }
-    get project_status() { return this.data.project_status; }
-    get needs() { return this.data.needs; }
-    get sector() { return this.data.sector; }
-    get maturity() { return this.data.maturity; }
-    //get founder() { return this.data.founders; }
-
-    static async create(data: Omit<PrismaStartup, 'id'>): Promise<Startup | null> {
-        const existingStartup = await prisma.startupDetail.findFirst({ where: { email: data.email } });
-        if (existingStartup)
-            return null;
-        const startup = await prisma.startupDetail.create({ data });
-        return new Startup(startup);
-    }
-
-    static async findById(id: number): Promise<Startup | null> {
-        const startup = await prisma.startupDetail.findUnique({ where: { id } });
-        return startup ? new Startup(startup) : null;
-    }
-
-    static async update(id: number, data: Partial<PrismaStartup>): Promise<Startup | null> {
-        const startup = await prisma.startupDetail.update({ where: { id }, data });
-        return startup ? new Startup(startup) : null;
-    }
-
-    static async delete(id: number): Promise<void> {
-        await prisma.startupDetail.delete({ where: {id} });
-    }
-
-    static async findAll() {
-        try {
-            const startups = await prisma.startupDetail.findMany();
-            return startups;
-        } catch (error) {
-            throw error;
+export async function createStartup(
+    name: string,
+    email: string,
+    legal_status?: string,
+    address?: string,
+    phone?: string,
+    created_at?: string,
+    description?: string,
+    website_url?: string,
+    social_media_url?: string,
+    project_status?: string,
+    needs?: string,
+    sector?: string,
+    maturity?: string,
+    founders?: { id: number; name: string; startup_id: number; }[]
+) {
+    let foundersData: any[] = [];
+    
+    if (founders) {
+        foundersData = await prisma.founder.findMany({
+            where: {
+                id: {
+                    in: founders.map((founder) => founder.id)
+                }
+            }
+        });
+        
+        if (foundersData.length === 0) {
+            throw new Error('Founders not found');
         }
+    }
+
+    try {
+        const startup = await prisma.$transaction(async (prisma) => {
+            const data: Prisma.StartupDetailCreateInput = {
+                name,
+                email,
+                legal_status,
+                address,
+                phone,
+                created_at,
+                description,
+                website_url,
+                social_media_url,
+                project_status,
+                needs,
+                sector,
+                maturity,
+            };
+
+            if (foundersData.length > 0) {
+                data.founders = {
+                    connect: foundersData.map((founder) => ({ id: founder.id }))
+                };
+            }
+
+            const startupDetail = await prisma.startupDetail.create({ data });
+
+            return startupDetail;
+        });
+
+        return startup;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function getStartupById(id: number) {
+    try {
+        const startup = await prisma.startupDetail.findUnique({
+            where: { id },
+            include: { founders: true }
+        });
+
+        if (!startup) {
+            throw new Error('Startup not found');
+        }
+
+        return startup;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function getAllStartups() {
+    try {
+        const startups = await prisma.startupDetail.findMany({
+            include: { founders: true }
+        });
+        return startups;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function deleteStartup(id: number) {
+    try {
+        const startup = await prisma.startupDetail.findUnique({
+            where: { id }
+        });
+
+        if (!startup) {
+            throw new Error('Startup not found');
+        }
+
+        await prisma.startupDetail.delete({
+            where: { id }
+        });
+
+        return { message: 'Startup deleted successfully' };
+    } catch (error) {
+        throw error;
     }
 }
