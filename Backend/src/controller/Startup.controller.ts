@@ -44,7 +44,7 @@ export const getAllStartupsController = async (req: Request, res: Response): Pro
 };
 
 export const getStartupByIdController = async (req: Request, res: Response): Promise<void> => {
-    const id = Number(req.params.id);
+    const id = parseInt(req.params.id);
 
     if (!id) {
         res.status(400).json({ message: "Missing user ID", code: 400 });
