@@ -17,10 +17,10 @@ function Home() {
       <div className='content-wrapper1'>
 
         <div className='text-column'>
-          <h1 className='title-text'>Demain Thaïlande</h1>
+          <h1 className='title-text'>JEB Incubator</h1>
           <p className='paragraph-text'>
-            Découvrez la Thaïlande sans stress : nous transformons votre rêve d&apos;expatriation en réalité. <br />
-            Vivez l&apos;aventure sereinement !
+            Uniting breakthrough ideas with global capital.<br />
+            We fast-track early-stage startups by providing funding, expertise, and an unparalleled international network.
           </p>
           <div className='cta-button-container'>
             <button className="cta-button" onClick={() => navigate('/contactez-nous')}>
@@ -47,7 +47,7 @@ function Home() {
 
         <div className='text-column2'>
           <div className='paragraph-text'>
-            <h2 className='h2-text'>Vous rêvez de poser vos valises en Thaïlande ?</h2>
+            <h2 className='h2-text'>Our Mission</h2>
             <span className='color-text'>
               Nos experts conseillers vous guideront avec passion à chaque étapes de votre aventure
             </span>

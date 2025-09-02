@@ -28,12 +28,12 @@ const Header = () => {
           <ul className="nav-left-list">
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/" onClick={closeMenu}>
-                Page d&apos;accueil
+                Home
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/notre-offre" onClick={closeMenu}>
-                Notre offre
+                About
               </NavLink>
             </li>
             <li className="nav-left-list-item">

@@ -30,13 +30,30 @@ $header-height: 120px;
   box-shadow: 0 4px 14px rgba(0,0,0,.12);
 }
 
-.img {
-  display: flex;
-  height: 10vh;
-  border-radius: 50%;
-  transform-origin: center;
-  z-index: 1000;
+/* === Logo comme la v1 (taille fixe) === */
+.nav-logo {
+  .nav-logo-link {
+    display: flex;
+    align-items: center;
+
+    .nav-img {
+      height: 10hv;   /* <- comme la v1 */
+      z-index: 1000;
+    }
+  }
 }
+
+/* Si ton logo utilise .img au lieu de .nav-img */
+/* Logo responsive, basé sur la largeur de l’écran et borné par la hauteur du header */
+.img {
+  display: block;                 /* évite les espaces inline */
+  height: clamp(28px, 10vw, 90px); /* rétrécit sur petits écrans, grandit sans dépasser */
+  max-height: calc(#{$header-height} - 24px);
+  border-radius: 50%; /* ne dépasse jamais la barre (120px - padding) */
+  width: auto;                    /* conserve le ratio */
+  object-fit: contain;            /* ne déborde jamais de son cadre */
+}/* <- force la même hauteur qu’en v1 */
+
 
 /* Liens nav (desktop) */
 .nav-links {
@@ -158,28 +175,41 @@ $header-height: 120px;
   z-index: 999;
 }
 
-/* Mobile / Tablette */
+/* =========================
+   Mobile / Tablette (fusion)
+   ========================= */
 @media (max-width: 1250px) {
-  .navbar-burger { display: block !important; }
+  /* Bouton burger visible + au-dessus de l'overlay */
+  .navbar-burger {
+    display: block !important;
+    position: relative;
+    z-index: 1300; /* > .nav-links */
+  }
 
+  /* Overlay menu : sizing & position (ancien), couleur & anim (nouveau) */
   .nav-links {
-    position: fixed;
-    inset: 0;
-    right: -100vw;
-    z-index: 1200;
     display: flex;
+    z-index: 1000;                    /* comme ancien (évite de couvrir le burger) */
     flex-direction: column;
     justify-content: center;
     align-items: center;
 
+    position: fixed;
+    right: -100vw;                    /* slide depuis la droite (ancien) */
+    bottom: 0;
     height: 100vh;
     width: 100vw;
     padding: 2rem;
     margin: 0;
 
+    /* visuel nouveau */
     background-image: linear-gradient(135deg, $brand-from, $brand-to);
     visibility: hidden;
     transition: right .3s ease-in-out, visibility .3s ease-in-out;
+
+    /* animation de dégradé (nouveau) */
+    background-size: 200% 200%;
+    animation: gradientShift 7s ease-in-out infinite;
   }
 
   .nav-links.show-nav {
@@ -187,13 +217,14 @@ $header-height: 120px;
     visibility: visible;
   }
 
+  /* Colonnes & listes (ancien sizing) */
   .nav-left,
   .nav-right {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100vw;
+    width: 100vh;   /* fidèle à l’ancienne version */
     margin: 0;
     padding: 0;
   }
@@ -202,8 +233,9 @@ $header-height: 120px;
   .nav-right-list {
     display: flex;
     flex-direction: column;
+    justify-content: center;  /* présent dans l'ancienne */
     align-items: center;
-    width: 100vw;
+    width: 100vh;             /* fidèle à l’ancienne version */
     margin: 0;
     padding: 0;
 
@@ -215,26 +247,54 @@ $header-height: 120px;
     display: block;
     width: 40%;
     height: 1px;
-    background-color: rgba(255,255,255,.45);
+    background-color: rgba(255, 255, 255, 0.438); /* ancien */
     margin: 3rem 0;
   }
 
   .nav-link {
     display: block;
-    padding: 1.25rem 1.5rem;
-    font-size: clamp(18px, 5vw, 28px);
+    padding: 1.5rem;          /* ancien */
+    font-size: 5vw;           /* ancien */
   }
 
+  /* Hover plus doux (nouveau) */
   .nav-link:hover { background-color: rgba(0,0,0,.18); }
+
+  /* Burger: logique de croix (ancienne, restée fiable) */
+  .burger-bar,
+  .burger-bar::before,
+  .burger-bar::after {
+    display: block;
+    width: 40px;
+    height: 3px;
+    position: relative;
+    border-radius: 3px;
+    background: white;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .burger-bar::before,
+  .burger-bar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+  }
+
+  .burger-bar::before { transform: translateY(-12px); }
+  .burger-bar::after  { transform: translateY(12px); }
+
+  .show-nav .burger-bar {
+    background: transparent;
+    width: 0;
+  }
+
+  .show-nav .burger-bar::before { transform: rotate(45deg); }
+  .show-nav .burger-bar::after  { transform: rotate(-45deg); }
 }
 
-.nav, .nav-links {
-  background-size: 200% 200%;
-  animation: gradientShift 7s ease-in-out infinite;
-}
+/* Animation de dégradé (nouveau) – utile aussi pour .nav si tu l’utilises en fond */
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-
