@@ -3,9 +3,9 @@ const router = express.Router();
 
 import * as UserController from '../controller/User.controller';
 
-router.post('/user', UserController.createUserController);
-router.get('/user/:id', UserController.getUserByIdController);
-router.get('/users', UserController.getAllUsersController);
-router.delete('/user/:id', UserController.deleteUserController);
+router.post('/create', UserController.createUserController);
+router.get('/get/:id', UserController.getUserByIdController);
+router.get('/get', UserController.getAllUsersController);
+router.delete('/delete/:id', UserController.deleteUserController);
 
 export default router;

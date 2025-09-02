@@ -3,9 +3,9 @@ const router = express.Router();
 
 import * as NewsController from '../controller/News.controller';
 
-router.post('/news', NewsController.createNewsController);
-router.get('/news/:id', NewsController.getNewsByIdController);
-router.get('/news', NewsController.getAllNewsController);
-router.delete('/news/:id', NewsController.deleteNewsController);
+router.post('/create', NewsController.createNewsController);
+router.get('/get/:id', NewsController.getNewsByIdController);
+router.get('/get', NewsController.getAllNewsController);
+router.delete('/delete/:id', NewsController.deleteNewsController);
 
 export default router;
