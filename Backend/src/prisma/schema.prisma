@@ -1,4 +1,3 @@
-
 datasource db {
   provider          = "mysql"
   url               = env("DATABASE_URL")
@@ -8,6 +7,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model User {
+  id          Int     @id @default(autoincrement())
+  email       String  @db.VarChar(255)
+  name        String  @db.VarChar(255)
+  role        String  @db.VarChar(255)
+  founder_id  Int?
+  investor_id Int?
+}
 
 model Event {
   id              Int     @id @default(autoincrement())
@@ -17,4 +24,84 @@ model Event {
   description     String? @db.Text
   event_type      String? @db.VarChar(255)
   target_audience String? @db.VarChar(255)
+}
+
+model Founder {
+  id         Int    @id @default(autoincrement())
+  name       String @db.VarChar(255)
+  startup_id Int
+  startupDetail StartupDetail @relation(fields: [startup_id], references: [id])
+}
+
+model Investor {
+  id               Int     @id @default(autoincrement())
+  name             String  @db.VarChar(255)
+  legal_status     String? @db.VarChar(255)
+  address          String? @db.VarChar(255)
+  email            String  @db.VarChar(255)
+  phone            String? @db.VarChar(255)
+  created_at       String? @db.VarChar(255)  // keep as string per spec
+  description      String? @db.Text
+  investor_type    String? @db.VarChar(255)
+  investment_focus String? @db.VarChar(255)
+}
+
+model Partner {
+  id               Int     @id @default(autoincrement())
+  name             String  @db.VarChar(255)
+  legal_status     String? @db.VarChar(255)
+  address          String? @db.VarChar(255)
+  email            String  @db.VarChar(255)
+  phone            String? @db.VarChar(255)
+  created_at       String? @db.VarChar(255)
+  description      String? @db.Text
+  partnership_type String? @db.VarChar(255)
+}
+
+model News {
+  id          Int     @id @default(autoincrement())
+  title       String  @db.VarChar(255)
+  news_date   String? @db.VarChar(255)
+  location    String? @db.VarChar(255)
+  category    String? @db.VarChar(255)
+  startup_id  Int?
+}
+
+model NewsDetail {
+  id          Int     @id @default(autoincrement())
+  title       String  @db.VarChar(255)
+  description String  @db.Text
+  news_date   String? @db.VarChar(255)
+  location    String? @db.VarChar(255)
+  category    String? @db.VarChar(255)
+  startup_id  Int?
+}
+
+model StartupDetail {
+  id               Int     @id @default(autoincrement())
+  name             String  @db.VarChar(255)
+  legal_status     String? @db.VarChar(255)
+  address          String? @db.VarChar(255)
+  email            String  @db.VarChar(255)
+  phone            String? @db.VarChar(255)
+  created_at       String? @db.VarChar(255)
+  description      String? @db.Text
+  website_url      String? @db.VarChar(255)
+  social_media_url String? @db.VarChar(255)
+  project_status   String? @db.VarChar(255)
+  needs            String? @db.VarChar(255)
+  sector           String? @db.VarChar(255)
+  maturity         String? @db.VarChar(255)
+  founders        Founder[]
+}
+
+model StartupList {
+  id           Int     @id @default(autoincrement())
+  name         String  @db.VarChar(255)
+  legal_status String? @db.VarChar(255)
+  address      String? @db.VarChar(255)
+  email        String  @db.VarChar(255)
+  phone        String? @db.VarChar(255)
+  sector       String? @db.VarChar(255)
+  maturity     String? @db.VarChar(255)
 }
