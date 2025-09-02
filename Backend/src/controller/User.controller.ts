@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { User } from "../objects/User"
+import { User } from "../objects/User.object"
 
 export const createUserController = async (req: Request, res: Response): Promise<void> => {
     const { email, name, founder_id, investor_id } = req.body;

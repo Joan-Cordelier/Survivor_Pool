@@ -15,7 +15,10 @@ export class User {
     get founder_id() { return this.data.founder_id; }
     get investor_id() { return this.data.investor_id; }
 
-    static async create(data: Omit<PrismaUser, 'id'>): Promise<User> {
+    static async create(data: Omit<PrismaUser, 'id'>): Promise<User | null> {
+        const existingUser = await prisma.user.findFirst({ where: { email: data.email } });
+        if (existingUser)
+            return null;
         const user = await prisma.user.create({ data });
         return new User(user);
     }
