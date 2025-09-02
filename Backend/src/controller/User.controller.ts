@@ -1,25 +1,21 @@
 import { Request, Response } from 'express';
-import { User } from "../objects/User.object"
+import { createUser, getUserById, getAllUsers, deleteUser } from "../objects/User.object"
 
 export const createUserController = async (req: Request, res: Response): Promise<void> => {
-    const { email, name, founder_id, investor_id } = req.body;
+    const { email, name, role, founder_id, investor_id } = req.body;
 
     if (!email || !name) {
         res.status(400).json({ message: "Missing required fields", code: 400 });
         return;
     }
     try {
-        const user = await User.create({
+        const user = await createUser(
             email,
             name,
-            role: 'default',
-            founder_id: founder_id ?? null,
-            investor_id: investor_id ?? null
-        });
-        if (!user) {
-            res.status(409).json({ message: "Email already exists", code: 409 });
-            return;
-        }
+            role ?? 'default',
+            founder_id ?? null,
+            investor_id ?? null
+        );
         res.status(201).json(user);
     } catch (err: any) {
         res.status(400).json({ message: err.message, code: 400 });
@@ -38,7 +34,7 @@ export const getUserByIdController = async (req: Request, res: Response): Promis
         return;
     }
     try {
-        const user = await User.findById(id);
+        const user = await getUserById(id);
         if (!user) {
             res.status(404).json({ message: "User not found", code: 404 });
             return;
@@ -51,7 +47,7 @@ export const getUserByIdController = async (req: Request, res: Response): Promis
 
 export const getAllUsersController = async (req: Request, res: Response): Promise<void> => {
     try {
-        const users = await User.findAll();
+        const users = await getAllUsers();
         res.status(200).json(users);
     } catch (err: any) {
         res.status(400).json({ message: err.message, code: 400 });
@@ -70,12 +66,12 @@ export const deleteUserController = async (req: Request, res: Response): Promise
         return;
     }
     try {
-        const user = await User.findById(id);
+        const user = await getUserById(id);
         if (!user) {
             res.status(404).json({ message: "User not found", code: 404 });
             return;
         }
-        await User.delete(id);
+        await deleteUser(id);
         res.status(200).json({ message: "User deleted successfully", code: 200 });
     } catch (err: any) {
         res.status(400).json({ message: err.message, code: 400 });
