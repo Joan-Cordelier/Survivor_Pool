@@ -1,6 +1,6 @@
 import prisma from "../config/db.config";
 
-async function createUser(
+export async function createUser(
     email: string,
     name: string,
     role: string,
@@ -34,7 +34,7 @@ async function createUser(
     }
 }
 
-async function getUserById(id: number) {
+export async function getUserById(id: number) {
     try {
         const user = await prisma.user.findUnique({
             where: { id }
@@ -45,7 +45,7 @@ async function getUserById(id: number) {
     }
 }
 
-async function getAllUsers() {
+export async function getAllUsers() {
     try {
         const users = await prisma.user.findMany();
         return users;
@@ -54,7 +54,7 @@ async function getAllUsers() {
     }
 }
 
-async function deleteUser(id: number) {
+export async function deleteUser(id: number) {
     try {
         const user = await prisma.user.delete({
             where: { id },
@@ -64,10 +64,3 @@ async function deleteUser(id: number) {
         throw error;
     }
 }
-
-export {
-    createUser,
-    getUserById,
-    getAllUsers,
-    deleteUser
-};
