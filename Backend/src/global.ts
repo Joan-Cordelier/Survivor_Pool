@@ -1,0 +1,1 @@
+export const JEB_URL = "https://api.jeb-incubator.com";
