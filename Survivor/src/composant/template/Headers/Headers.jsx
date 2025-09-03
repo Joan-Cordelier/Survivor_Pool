@@ -33,27 +33,27 @@ const Header = () => {
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/notre-offre" onClick={closeMenu}>
-                Projects
+                Project Catalog
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/contenu-gratuit" onClick={closeMenu}>
-                News
+                Project Pages
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/rendez-vous" onClick={closeMenu}>
-                Events
+                Rendez-vous
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/contactez-nous" onClick={closeMenu}>
-                About
+                Contactez-nous
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <a className="nav-link" href="https://members.demainthailande.fr" target="_blank" rel="noopener noreferrer">
-                Log In
+                Déjà client ?
               </a>
             </li>
 

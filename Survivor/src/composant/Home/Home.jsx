@@ -1,9 +1,7 @@
 import { useNavigate } from 'react-router-dom'; // Import du hook useNavigate
 import './Home.scss';
-import HomePhoto2 from '../../assets/HomePhoto2.jpg';
+import HomePhoto2 from '../../assets/Home_3.avif';
 import HomePhoto3 from '../../assets/HomePhoto3.jpg';
-import Status from '../../assets/status.jpg';
-import Plage from '../../assets/plage.jpg';
 import User from '../../assets/user.png';
 import Pouce from '../../assets/pouce_icon.png';
 import Comm from '../../assets/com_icon.png';
@@ -32,30 +30,24 @@ function Home() {
 
       <div className='content-wrapper2'>
         <div className="slider">
-          <div className="slide-track">
             <div className="slide">
               <img src={HomePhoto2} alt="Image 1" className="home-image" />
             </div>
-            <div className="slide">
-              <img src={Status} alt="Image 2" className="home-image" />
-            </div>
-            <div className="slide">
-              <img src={Plage} alt="Image 3" className="home-image" />
-            </div>
-          </div>
         </div>
 
         <div className='text-column2'>
           <div className='paragraph-text'>
             <h2 className='h2-text'>Our Mission</h2>
             <span className='color-text'>
-              Nos experts conseillers vous guideront avec passion à chaque étapes de votre aventure
+              To cultivate a vibrant ecosystem where entrepreneurs thrive.<br />
+              Through hands-on mentorship, strategic partnerships and seed investment up to £200k,
+              we turn bold visions into scalable businesses.
             </span>
           </div>
           <div className='cta-button-container'>
-            <button className="cta-button2" onClick={() => navigate('/rendez-vous')}>
+            {/* <button className="cta-button2" onClick={() => navigate('/rendez-vous')}>
               Echangez gratuitement avec notre expert
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
