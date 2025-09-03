@@ -1,0 +1,8 @@
+node_modules
+package-lock.json
+.env
+dist
+*.log
+
+/src/generated/prisma
+/src/prisma/migrations
