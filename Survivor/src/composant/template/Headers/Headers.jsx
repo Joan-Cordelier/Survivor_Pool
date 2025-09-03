@@ -33,30 +33,30 @@ const Header = () => {
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/notre-offre" onClick={closeMenu}>
-                About
+                Projects
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/contenu-gratuit" onClick={closeMenu}>
-                Contenu gratuit
+                News
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/rendez-vous" onClick={closeMenu}>
-                Rendez-vous
+                Events
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <NavLink className="nav-link" to="/contactez-nous" onClick={closeMenu}>
-                Contactez-nous
+                About
               </NavLink>
             </li>
-            <li className="nav-left-list-item">
+            {/* <li className="nav-left-list-item">
               <a className="nav-link" href="https://members.demainthailande.fr" target="_blank" rel="noopener noreferrer">
                 Déjà client ?
               </a>
-            </li>
-
+            </li> */}
+            
           </ul>
         </div>
 
