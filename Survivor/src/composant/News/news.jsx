@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import './Cont.scss';
-import PopupForm from '../PopUp/PopupForm.jsx'; // Assure-toi que le chemin est correct
+import './news.scss';
 //import Video from '../../assets/Video-cont_gratuite .mov'; // Assure-toi que le chemin vers la vidéo est correct
 
 function News() {
@@ -17,7 +16,6 @@ function News() {
 
   return (
     <div className="content-container">
-      <PopupForm showPopup={showPopup} onClose={handleClosePopup} />
       <div className="content-video">
         {/* <video width="600" controls className='video'>
           <source src={Video} type="video/mp4" />

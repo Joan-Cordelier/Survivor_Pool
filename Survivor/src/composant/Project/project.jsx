@@ -1,4 +1,4 @@
-import './Offre.scss';
+import './project.scss';
 import expertImage from '../../assets/benoit.jpg'; // laissé tel quel, même si non utilisé ici
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from "react";

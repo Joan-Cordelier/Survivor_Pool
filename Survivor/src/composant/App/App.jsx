@@ -2,12 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import GoogleAnalytics from '../BaliseGoogle/GloogleAnalytics.jsx';
 // Importation de tes composants
 import Home from '../Home/Home.jsx';
-import Rendezvous from '../Rdv/Rdv.jsx';
+import Rendezvous from '../Event/event.jsx';
 import Contact from '../Contact/Contact.jsx';
 import DejaClient from '../Client/Client.jsx';
 import Header from '../template/Headers/Headers.jsx';  // Ton header
-import Offre from '../Offre/Offre.jsx';  // Ton offre
-import News from '../News/Cont.jsx';
+import Offre from '../Project/project.jsx';  // Ton offre
+import News from '../News/news.jsx';
 
 // Si tu veux ajouter un Footer plus tard
 import Footer from '../template/Footer/Footer.jsx'; 

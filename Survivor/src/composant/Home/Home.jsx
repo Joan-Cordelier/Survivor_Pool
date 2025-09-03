@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'; // Import du hook useNavigate
 import './Home.scss';
 import HomePhoto2 from '../../assets/Home_3.avif';
 import HomePhoto3 from '../../assets/home_4.avif';
-import Instagram from '../Instagram/Instagram';
 import Engrenage from '../../assets/engrenage.svg';
 import Diamond from '../../assets/diamond.svg';
 import Photo_device from '../../assets/camera.svg';
@@ -22,7 +21,7 @@ function Home() {
           </p>
           <div className='cta-button-container'>
             <button className="cta-button" onClick={() => navigate('/About')}>
-              DÉCOUVREZ-NOUS
+              About Us
             </button>
           </div>
         </div>
@@ -92,7 +91,8 @@ function Home() {
       </div>
 
       <div className='home-container'>
-      <Instagram />      </div>
+         
+      </div>
     </div>
   );
 }
