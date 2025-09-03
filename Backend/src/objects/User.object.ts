@@ -3,25 +3,24 @@ import prisma from "../config/db.config";
 export async function createUser(
     email: string,
     name: string,
+    password: string,
     role: string,
     founder_id?: number,
     investor_id?: number
 ) {
     try {
         const UserExist = await prisma.user.findUnique({
-            where: {
-                email
-            }
+            where: { email }
         });
 
-        if (UserExist) {
+        if (UserExist)
             throw new Error("User already exists");
-        }
 
         const user = await prisma.user.create({
             data: {
                 email,
                 name,
+                password,
                 role,
                 founder_id,
                 investor_id

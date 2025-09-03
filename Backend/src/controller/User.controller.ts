@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import { createUser, getUserById, getAllUsers, deleteUser } from "../objects/User.object"
 
 export const createUserController = async (req: Request, res: Response): Promise<void> => {
-    const { email, name, role, founder_id, investor_id } = req.body;
+    const { email, name, role, password, founder_id, investor_id } = req.body;
 
-    if (!email || !name) {
+    if (!email || !name || !password) {
         res.status(400).json({ message: "Missing required fields", code: 400 });
         return;
     }
@@ -12,6 +12,7 @@ export const createUserController = async (req: Request, res: Response): Promise
         const user = await createUser(
             email,
             name,
+            password,
             role ?? 'default',
             founder_id ?? null,
             investor_id ?? null

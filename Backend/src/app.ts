@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config({quiet: true});
+
 import express, { Request, Response } from "express";
 import path from "path";
 import EventRouter from './routes/Event.route';
@@ -7,7 +10,6 @@ import NewsRouter from './routes/News.route';
 import PartnerRouter from './routes/Partner.route';
 import StartupRouter from './routes/Startup.route';
 import UserRouter from './routes/User.route';
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
