@@ -1,4 +1,5 @@
 import BaseJebApi from "./BaseJeb.api";
+import zlib from "zlib";
 
 
 class EventsApi extends BaseJebApi {
@@ -15,10 +16,15 @@ class EventsApi extends BaseJebApi {
         return await this.request<any>(url, { method: 'GET' });
     }
 
-    //Get event image
+    //Get event image (compressed)
     static async getEventImage(id: number): Promise<any> {
         const url = `${this.baseUrl}/events/${id}/image`;
-        return await this.request<any>(url, { method: 'GET' });
+        const imageData = await this.request<any>(url, { method: 'GET' });
+        if (typeof imageData === 'string') {
+            const compressed = zlib.gzipSync(Buffer.from(imageData, 'utf-8'));
+            return compressed.toString('base64');
+        }
+        return imageData;
     }
 }
 

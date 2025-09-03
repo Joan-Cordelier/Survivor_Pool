@@ -29,6 +29,12 @@ async function syncEvents() {
                 if (!existingIds.includes(event.id)) {
                     try {
                         const detailedEvent = await EventsApi.getEventById(event.id);
+                        let image: string | undefined = "";
+                        try {
+                            image = await EventsApi.getEventImage(event.id);
+                        } catch (error) {
+                            console.error("Error fetching event image:", error);
+                        }
                         const newEvent = await createEvent(
                             detailedEvent.name,
                             detailedEvent.id,
@@ -36,7 +42,8 @@ async function syncEvents() {
                             detailedEvent.location,
                             detailedEvent.description,
                             detailedEvent.event_type,
-                            detailedEvent.target_audience
+                            detailedEvent.target_audience,
+                            image
                         );
                         console.log("Created event: %d", newEvent.id);
                     } catch (error) {
@@ -50,19 +57,25 @@ async function syncEvents() {
     }
 }
 
-async function syncFounders(founders: any[]) {
+async function syncFounders(founders: any[], existingFounders: any[]) {
     try {
-        const existingFounders = await getAllFounders();
         const existingIds = existingFounders.map(founder => founder.id);
 
         if (founders.length > 0) {
             founders.forEach(async (founder) => {
                 if (!existingIds.includes(founder.id)) {
                     try {
+                        let image: string | undefined = "";
+                        try {
+                            image = await StartupsApi.getFounderImage(founder.startup_id, founder.id);
+                        } catch (error) {
+                            console.error("Error fetching founder image:", error);
+                        }
                         const newFounder = await createFounder(
                             founder.name,
                             founder.startup_id,
-                            founder.id
+                            founder.id,
+                            image
                         );
                         console.log("Created founder: %d", newFounder.id);
                     } catch (error) {
@@ -196,10 +209,16 @@ async function syncPartners() {
 async function syncStartups() {
     try {
         let startups: any[] = [];
+        let existingFounders: any[] = [];
         try {
             startups = await StartupsApi.getStartups();
         } catch (error) {
             console.error("Error fetching startups:", error);
+        }
+        try {
+            existingFounders = await getAllFounders();
+        } catch (error) {
+            console.error("Error fetching founders:", error);
         }
 
         const existingStartups = await getAllStartups();
@@ -227,7 +246,7 @@ async function syncStartups() {
                             detailedStartup.maturity
                         );
                         if (detailedStartup.founders && detailedStartup.founders.length > 0) {
-                            await syncFounders(detailedStartup.founders);
+                            await syncFounders(detailedStartup.founders, existingFounders);
                         }
                         console.log("Created startup: %d", newStartup.id);
                     } catch (error) {

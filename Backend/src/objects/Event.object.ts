@@ -8,7 +8,8 @@ export async function createEvent(
     location?: string,
     description?: string,
     event_type?: string,
-    target_audience?: string
+    target_audience?: string,
+    image?: string
 ){
     if (id) {
         const eventExist = await prisma.event.findUnique({
@@ -29,7 +30,8 @@ export async function createEvent(
                 location,
                 description,
                 event_type,
-                target_audience
+                target_audience,
+                image
             }
         });
         return event;

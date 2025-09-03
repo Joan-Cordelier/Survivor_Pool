@@ -25,6 +25,7 @@ model Event {
   description     String? @db.Text
   event_type      String? @db.VarChar(255)
   target_audience String? @db.VarChar(255)
+  image           String? @db.MediumText
 }
 
 model Founder {
@@ -32,6 +33,7 @@ model Founder {
   name       String @db.VarChar(255)
   startup_id Int
   startupDetail StartupDetail @relation(fields: [startup_id], references: [id])
+  image      String? @db.MediumText
 }
 
 model Investor {

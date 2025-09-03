@@ -3,7 +3,8 @@ import prisma from "../config/db.config";
 export async function createFounder(
     name: string,
     startup_id: number,
-    id?: number
+    id?: number,
+    image?: string
 ) {
     if (id) {
         const founderExist = await prisma.founder.findUnique({
@@ -20,7 +21,8 @@ export async function createFounder(
             data: {
                 id,
                 name,
-                startup_id
+                startup_id,
+                image
             },
         });
         return founder;
