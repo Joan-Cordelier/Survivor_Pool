@@ -6,7 +6,7 @@
   height: 25vh;
   color: #ffffff;
   font-family: 'Roboto', sans-serif;
-  background-color: #284E7B;
+  background-image: linear-gradient(135deg, #F18585, #C174F2);
 
   &-logo {
     display: flex;
@@ -17,7 +17,7 @@
 
     & img {
       height: 10vh;
-      border-radius: 50%;
+      border-radius: 10%;
     }
 
     & p {

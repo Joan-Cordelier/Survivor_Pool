@@ -22,13 +22,13 @@ const Footer = () => {
       </div>
       <div className="footer-logo">
         <img src={Logo} alt="Logo" />
-        <p className="logo-title">Demain Thaïlande</p>
+        <p className="logo-title">JEB Incubator</p>
         <p className="logo-p">&quot;Laissez-nous réaliser vos rêves&quot;</p>
       </div>
       <div className="footer-contact">
         <a href="mailto:contact@demainthailande.fr">
           <img className="footer-icon" src={mail} alt="Mail" />{" "}
-          contact@demainthailande.fr
+          contact@jebincubator.fr
         </a>
         <div className="footer-address-container">
           <img className="footer-icon" src={address} alt="Adresse" /> 6 Place

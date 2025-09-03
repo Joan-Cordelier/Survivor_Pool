@@ -1,0 +1,15 @@
+<svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Bar chart" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad-chart" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F18585"/>
+      <stop offset="100%" stop-color="#C174F2"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="28" fill="url(#grad-chart)"/>
+  <g fill="#fff">
+    <rect x="18" y="34" width="6" height="10" rx="1"/>
+    <rect x="28" y="28" width="6" height="16" rx="1"/>
+    <rect x="38" y="22" width="6" height="22" rx="1"/>
+  </g>
+  <path d="M16 46h32" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+</svg>

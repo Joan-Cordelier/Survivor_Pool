@@ -1,12 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 // Variables
-$primary-bg-color: #284E7B;
-$secondary-bg-color: #003f88;
+
 $text-color: white;
-$accent-color: #007bff;
-$accent-hover-color: #0056b3;
 $border-color: #ffffff;
+$brand-from: #F18585;
+$brand-to:   #C174F2;
 $border-radius: 10px;
 $box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 $padding-large: 40px;
@@ -36,7 +35,7 @@ body {
   min-height: calc(
     100vh - 80px
   ); // Laisse de la place pour la barre de navigation
-  background-color: #659ABD;
+  background-color: #f3f3f3;
   max-width: 100%; // Largeur maximale à 100% pour remplir le parent
   width: 100%; // Prend toute la largeur du conteneur parent
 }
@@ -44,7 +43,7 @@ body {
 .back-style {
   display: flex;
   flex-direction: column;
-  background-color: #284E7B;
+  background-color: #ffffff;
   box-shadow: inset 0px 0px 15px 0px rgba(0, 0, 0, 0.5);
 
   .paragraph-text {
@@ -54,22 +53,9 @@ body {
     font-weight: 300;
     word-spacing: 0.01em;
     font-size: 1.5rem;
-    color: #abd1c6;
+    color: #000000;
   }
 
-}
-
-.back-style2 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  align-items: center;
-  background-color: #75b9e9;
-  max-width: 100%;
-  width: 100%;
-  padding: 20px;
-  position: relative; /* Nécessaire pour le positionnement du bouton */
 }
 
 .cta-button-join-container {
@@ -135,7 +121,7 @@ body {
   max-width: 100%; // Largeur maximale à 100% pour remplir le parent
   width: 100%; // Prend toute la largeur du conteneur parent
   padding: $padding-large;
-  background-color: #284E7B;
+  background-color: #ffffff;
   box-shadow: inset 0px 0px 15px 0px rgba(0, 0, 0, 0.5);
 }
 
@@ -148,7 +134,7 @@ body {
   width: 100%; // Prend toute la largeur du conteneur parent
   margin: 100px 10px;
   gap: 20px; // Ajoute de l'espace entre l'image et le texte
-  background-color: #284E7B;
+  background-color: #ffffff;
   box-shadow: 0 0 18px 6px rgba(0, 0, 0, 0.3);
   padding-bottom: 40px;
   padding-top: 20px;
@@ -188,18 +174,22 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  color: $text-color;
+  color: $text-color; // fallback si le gradient ne s'applique pas
   padding: 10px;
   height: 50vh;
 
-  // Styles spécifiques pour le titre (h1)
   .title-text {
-    /* Taille du titre */
     font-weight: bold;
     margin-bottom: $padding-small;
+
+    /* Dégradé sur le texte */
+    background: linear-gradient(135deg, #F18585, #C174F2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text; /* pour Firefox */
+    text-fill-color: transparent;
   }
 
-  // Styles spécifiques pour le paragraphe (p)
   .paragraph-text {
     font-size: 3.5em;
     word-spacing: 0.01em;
@@ -208,15 +198,21 @@ body {
     .h2-text {
       font-size: 3.5rem;
       font-family: "montserrat", sans-serif;
-      color: #fffffe;
+
+      /* Dégradé sur ce sous-élément aussi */
+      background: linear-gradient(135deg, #F49C9C, #C174F2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
     }
   }
 
   .color-text {
     font-family: 'Roboto', sans-serif;
     font-weight: 400;
-    color: #abd1c6;
     font-size: 1.5rem;
+    color: #474747;
   }
 }
 
@@ -238,7 +234,13 @@ body {
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
     margin-bottom: $padding-small;
-    color: #fffffe;
+  
+    /* Dégradé sur ce sous-élément aussi */
+      background: linear-gradient(135deg, #F49C9C, #C174F2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
   }
 
   // Styles spécifiques pour le paragraphe (p)
@@ -247,7 +249,7 @@ body {
     text-align: justify;
     font-family: 'Roboto', sans-serif;
     font-weight: 300;
-    color: #abd1c6;
+    color: #474747;
   }
 }
 
@@ -357,8 +359,8 @@ body {
 
 // Bouton Call-to-Action
 .cta-button3 {
-  background-color: #f9bc60;
-  color: black;
+  background-image: linear-gradient(135deg, #F18585, #C174F2);
+  color: rgb(255, 255, 255);
   border: none;
   padding: 15px 30px;
   font-size: 1.5em;
@@ -369,38 +371,44 @@ body {
   margin-top: $padding-small;
 
   &:hover {
-    background-color: rgb(230, 165, 67);
+    background-image: linear-gradient(135deg, #df7c7c, #ae68da);
   }
 }
 
 .box-container {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   gap: 20px;
   margin-top: 30px;
 
   .box {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    background-color: white;
-    text-align: center;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 250px;
-    width: 100%;
+    gap: 16px;                 /* espace image/texte */
+    background: #fff;
+    text-align: left;
+    padding: 50px;
+    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+    width: min(100%, 800px);   /* la box grandit mais reste contenue */
 
+    /* Image responsive */
     img {
-      width: 70px;
-      height: 70px;
-      // margin-bottom: 10px;
+      flex: 0 0 auto;                  /* ne pas s’écraser */
+      width: clamp(100px, 22%, 350px);  /* suit la box: min 56px, typ ~22%, max 120px */
+      height: auto;                    /* garde le ratio naturel */
+      object-fit: contain;             /* jamais déformée */
+      /* Si tes icônes sont carrées, tu peux forcer un cadre carré :
+         aspect-ratio: 1 / 1;
+      */
+      /* Pour éviter que l'image déborde si très grande */
+      max-width: 40%;
     }
 
-    p {
-      color: $primary-bg-color;
-      font-weight: bold;
-      font-size: 1.2em;
+    /* Le contenu texte prend le reste */
+    .box-content {
+      flex: 1 1 auto;
+      min-width: 0;                   /* autorise le texte à wrap */
     }
   }
 }
@@ -559,20 +567,20 @@ body {
     width: 100vw;
     max-width: 100%;
     margin: 0;
-    background-color: #659ABD;
+    background-color: #f3f3f3;
     
     .text-column3 {
       .title-text {
         font-size: 2rem;
       }
       .paragraph-text {
-        color: #284E7B;
+        color: #000000;
         font-size: 1.2rem;
       }
     }
 
     .box {
-      background-color: #EFF3F5;
+      background-color: #ffffff;
     }
   }
 

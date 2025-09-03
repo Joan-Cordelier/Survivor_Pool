@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom'; // Import du hook useNavigate
 import './Home.scss';
 import HomePhoto2 from '../../assets/Home_3.avif';
-import HomePhoto3 from '../../assets/HomePhoto3.jpg';
-import User from '../../assets/user.png';
-import Pouce from '../../assets/pouce_icon.png';
-import Comm from '../../assets/com_icon.png';
+import HomePhoto3 from '../../assets/home_4.avif';
 import Instagram from '../Instagram/Instagram';
+import Engrenage from '../../assets/engrenage.svg';
+import Diamond from '../../assets/diamond.svg';
+import Photo_device from '../../assets/camera.svg';
 
 function Home() {
   const navigate = useNavigate(); // Initialisation du hook useNavigate
@@ -54,25 +54,23 @@ function Home() {
 
       <div className='content-wrapper3'>
         <div className='text-column3'>
-          <h2 className='title-text'>Notre Approche</h2>
+          <h2 className='title-text'>What We Offer</h2>
           <p className='paragraph-text'>
-            Vivez votre rêve en Thaïlande sans stress. Notre accompagnement personnalisé transforme votre expatriation en une aventure excitante,
-            en vous aidant à surmonter les obstacles pour créer une nouvelle vie sur mesure dans ce paradis. Commencez un futur radieux, serein et bien entouré.
+            From product validation to market expansion, JEB provides the critical resources founders need at every stage of the journey.
           </p>
         </div>
 
         <div className='box-container'>
           <div className='box'>
-            <img src={User} alt="description de l'image" className='img1' />
-            <p>Un Accompagnement 100% Personnalisé</p>
+            <img src={Engrenage} alt="description de l'image" className='img1' />
+            <img src={Diamond} alt="description de l'image" className='img1' />
+            <img src={Photo_device} alt="description de l'image" className='img1' />
+
           </div>
           <div className='box'>
-            <img src={Pouce} alt="description de l'image" className='img1' />
-            <p>Des Ressources et Outils Pratiques</p>
-          </div>
-          <div className='box'>
-            <img src={Comm} alt="description de l'image" className='img1' />
-            <p>Une Communauté de Futurs Expatriés.</p>
+            <img src={Engrenage} alt="description de l'image" className='img1' />
+            <img src={Diamond} alt="description de l'image" className='img1' />
+            <img src={Photo_device} alt="description de l'image" className='img1' />
           </div>
         </div>
       </div>
@@ -82,14 +80,11 @@ function Home() {
           <img src={HomePhoto3} alt="Description de l'image" className="home-image-2" />
           <div className='text-column4'>
             <p className='paragraph-text'>
-              Notre équipe se dévoue à faire de vos souhaits une réalité. Nos experts et notre équipe expérimentée sont toujours disponibles pour vous aider et répondre à toutes vos questions.
-            </p>
-            <p className='paragraph-text'>
-              Nous consacrons notre temps à satisfaire les souhaits de nos clients et faisons tout notre possible pour que tout se déroule parfaitement. Vos besoins sont nos besoins !
+              Headquartered in London with hubs in New York, Singapore and Berlin, our alumni have raised over £500 M and created 3 000+ jobs worldwide.
             </p>
             <div className='cta-button-container'>
               <button className="cta-button3" onClick={() => navigate('/notre-offre')}>
-                Découvrez notre offre ⏵
+                See our Projets Catalog ⏵
               </button>
             </div>
           </div>
