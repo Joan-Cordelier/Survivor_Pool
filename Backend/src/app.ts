@@ -10,6 +10,7 @@ import NewsRouter from './routes/News.route';
 import PartnerRouter from './routes/Partner.route';
 import StartupRouter from './routes/Startup.route';
 import UserRouter from './routes/User.route';
+import AuthRouter from './routes/Auth.route';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -23,6 +24,7 @@ app.use('/news', NewsRouter);
 app.use('/partner', PartnerRouter);
 app.use('/startup', StartupRouter);
 app.use('/user', UserRouter);
+app.use('/auth', AuthRouter);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../../Survivor/dist/index.html"));
