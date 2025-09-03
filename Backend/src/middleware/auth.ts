@@ -25,12 +25,12 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
         const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
     
         if (!token)
-            return res.status(401).json({message: 'Authentication required'});
+            return res.status(401).json({message: 'Authentication required.', code: 401});
         const decoded = verifyToken(token) as any;
         req.user = decoded;
         return next();
     } catch (err: any) {
-        return res.status(401).json({ message: 'Invalid or expired token', details: err?.message });
+        return res.status(401).json({ message: err?.message, code: 401 });
     }
 }
 
@@ -52,12 +52,12 @@ export function optionalAuth(req: Request, res: Response, next: NextFunction) {
 export function authorizeRoles(...allowedRoles: string[]) {
     return (req: Request, res: Response, next: NextFunction) => {
         if (!req.user)
-            return res.status(401).json({ message: 'Authentication required' });
+            return res.status(401).json({ message: 'Authentication required', code: 401 });
 
         const role = (req.user as any).role;
 
         if (!role || !allowedRoles.includes(role))
-            return res.status(403).json({ message: 'Forbidden' });
+            return res.status(403).json({ message: 'Forbidden', code: 403 });
         return next();
     };
 }
