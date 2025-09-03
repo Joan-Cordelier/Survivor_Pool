@@ -6,7 +6,6 @@ class BaseJebApi {
     protected static apiKey?: string = JEB_API_KEY;
 
     protected static async request<T>(url: string, options: RequestInit = {}): Promise<T> {
-
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'accept': 'application/json',
@@ -18,20 +17,21 @@ class BaseJebApi {
 
         try {
             const response = await fetch(url, { ...options, headers });
-
-            if (!response.ok) {
-                let errorResponse;
-                try {
-                    errorResponse = await response.json();
-                } catch (e) {
-                    errorResponse = await response.text();
-                }
-                console.log(errorResponse);
-                console.error(`Error in request to ${url}: ${JSON.stringify(errorResponse)}`);
-                throw { message: errorResponse, status: response.status };
+            const text = await response.text();
+            let data: any;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (e) {
+                data = text;
             }
 
-            return response.json() as T;
+            if (!response.ok) {
+                console.log(data);
+                console.error(`Error in request to ${url}: ${JSON.stringify(data)}`);
+                throw { message: data, status: response.status };
+            }
+
+            return data as T;
         } catch (error) {
             console.error(`Error occurred in request to ${url}:`, error);
             throw error;

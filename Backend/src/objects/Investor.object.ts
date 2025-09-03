@@ -4,6 +4,7 @@ import prisma from "../config/db.config";
 export async function createInvestor(
     name: string,
     email: string,
+    id?: number,
     legal_status?: string,
     address?: string,
     phone?: string,
@@ -12,9 +13,20 @@ export async function createInvestor(
     investor_type?: string,
     investment_focus?: string
 ) {
+    if (id) {
+        const investorExist = await prisma.investor.findUnique({
+            where: { id }
+        });
+
+        if (investorExist) {
+            throw new Error("Investor with this ID already exists");
+        }
+    }
+
     try {
         const investor = await prisma.investor.create({
             data: {
+                id,
                 name,
                 email,
                 legal_status,

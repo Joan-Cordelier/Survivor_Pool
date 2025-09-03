@@ -4,6 +4,7 @@ import prisma from "../config/db.config"
 export async function createPartner(
     name: string,
     email: string,
+    id?: number,
     legal_status?: string,
     address?: string,
     phone?: string,
@@ -11,9 +12,20 @@ export async function createPartner(
     description?: string,
     partnership_type?: string
 ) {
+    if (id) {
+        const partnerExist = await prisma.partner.findUnique({
+            where: { id }
+        });
+
+        if (partnerExist) {
+            throw new Error("Partner with this ID already exists");
+        }
+    }
+
     try {
         const partner = await prisma.partner.create({
             data: {
+                id,
                 name,
                 email,
                 legal_status,

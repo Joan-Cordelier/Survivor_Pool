@@ -3,18 +3,22 @@ import prisma from "../config/db.config";
 export async function createFounder(
     name: string,
     startup_id: number,
+    id?: number
 ) {
+    if (id) {
+        const founderExist = await prisma.founder.findUnique({
+            where: { id }
+        });
+
+        if (founderExist) {
+            throw new Error("Founder with this ID already exists");
+        }
+    }
+
     try {
-        // const UserExist = await prisma.user.findUnique({
-        //     where: {
-        //         email
-        //     }
-        // });
-        // if (UserExist) {
-        //     throw new Error("User already exists");
-        // }
         const founder = await prisma.founder.create({
             data: {
+                id,
                 name,
                 startup_id
             },

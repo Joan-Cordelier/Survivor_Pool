@@ -5,6 +5,7 @@ export async function createUser(
     name: string,
     password: string,
     role: string,
+    id?: number,
     founder_id?: number,
     investor_id?: number
 ) {
@@ -16,8 +17,18 @@ export async function createUser(
         if (UserExist)
             throw new Error("User already exists");
 
+        if (id) {
+            const UserExistById = await prisma.user.findUnique({
+                where: { id }
+            });
+
+            if (UserExistById)
+                throw new Error("User with this ID already exists");
+        }
+
         const user = await prisma.user.create({
             data: {
+                id,
                 email,
                 name,
                 password,

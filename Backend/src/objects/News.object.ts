@@ -3,22 +3,26 @@ import prisma from "../config/db.config";
 export async function createNews(
     title: string,
     description: string,
+    id?: number,
     news_date?: string,
     location?: string,
     category?: string,
     startup_id?: number,
 ) {
     try {
-        // const UserExist = await prisma.user.findUnique({
-        //     where: {
-        //         email
-        //     }
-        // });
-        // if (UserExist) {
-        //     throw new Error("User already exists");
-        // }
+        if (id) {
+            const newsExist = await prisma.newsDetail.findUnique({
+                where: { id }
+            });
+
+            if (newsExist) {
+                throw new Error("News with this ID already exists");
+            }
+        }
+
         const news = await prisma.newsDetail.create({
             data: {
+                id,
                 news_date,
                 location,
                 title,

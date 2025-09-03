@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 export async function createStartup(
     name: string,
     email: string,
+    id?: number,
     legal_status?: string,
     address?: string,
     phone?: string,
@@ -33,6 +34,16 @@ export async function createStartup(
         }
     }
 
+    if (id) {
+        const startupExist = await prisma.startupDetail.findUnique({
+            where: { id }
+        });
+
+        if (startupExist) {
+            throw new Error("Startup with this ID already exists");
+        }
+    }
+
     try {
         const startup = await prisma.$transaction(async (prisma) => {
             const data: Prisma.StartupDetailCreateInput = {
@@ -57,7 +68,9 @@ export async function createStartup(
                 };
             }
 
-            const startupDetail = await prisma.startupDetail.create({ data });
+            const startupDetail = await prisma.startupDetail.create({ 
+                data: id ? { ...data, id } : data 
+            });
 
             return startupDetail;
         });

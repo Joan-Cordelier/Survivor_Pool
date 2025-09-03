@@ -3,15 +3,27 @@ import prisma from "../config/db.config";
 
 export async function createEvent(
     name: string,
+    id?: number,
     dates?: string,
     location?: string,
     description?: string,
     event_type?: string,
     target_audience?: string
 ){
+    if (id) {
+        const eventExist = await prisma.event.findUnique({
+            where: { id }
+        });
+
+        if (eventExist) {
+            throw new Error("Event with this ID already exists");
+        }
+    }
+
     try {
         const event = await prisma.event.create({
             data: {
+                id,
                 name,
                 dates,
                 location,

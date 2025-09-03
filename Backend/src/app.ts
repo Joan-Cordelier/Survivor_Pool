@@ -3,6 +3,8 @@ dotenv.config({quiet: true});
 
 import express, { Request, Response } from "express";
 import path from "path";
+
+//Routes
 import EventRouter from './routes/Event.route';
 import FounderRouter from './routes/Founder.route';
 import InvestorRouter from './routes/Investor.route';
@@ -11,6 +13,10 @@ import PartnerRouter from './routes/Partner.route';
 import StartupRouter from './routes/Startup.route';
 import UserRouter from './routes/User.route';
 import AuthRouter from './routes/Auth.route';
+
+//utils
+import { syncDB } from './utils/SyncDb.utils';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -33,3 +39,5 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+syncDB();
