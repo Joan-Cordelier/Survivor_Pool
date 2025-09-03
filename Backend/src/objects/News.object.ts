@@ -55,7 +55,7 @@ export async function getAllNews() {
 
 export async function deleteNews(id: number) {
     try {
-        const news = await prisma.founder.delete({
+        const news = await prisma.newsDetail.delete({
             where: { id },
         });
         return news;
