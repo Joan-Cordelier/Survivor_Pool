@@ -8,12 +8,10 @@ declare module 'express-serve-static-core' {
     }
 }
 
-console.log(JWT_SECRET);
-
 if (!JWT_SECRET)
     console.warn('Warning: JWT_SECRET is not set. Using fallback secret (not safe for production).');
 
-export function signToken(payload: object): string { // quand on login
+export function signToken(payload: object): string {
     return jwt.sign(payload, JWT_SECRET, {expiresIn: '1h'});
 }
 

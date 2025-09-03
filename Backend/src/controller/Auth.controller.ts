@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
 import prisma from '../config/db.config';
 import { signToken } from '../middleware/auth';
 import crypto from 'crypto';
@@ -34,13 +34,22 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         return;
     }
     try {
+        const storedPassword = hashPassword(password);
         const existing = await prisma.user.findUnique({ where: { email } });
-        if (existing) {
-            res.status(409).json({ message: 'User already exists' });
+
+        if (existing && existing.password == "") {
+            const token = signToken({ id: existing.id, role: existing.role });
+            await prisma.user.update({
+                where: { email },
+                data: { password: storedPassword },
+            });
+            res.status(201).json({user: { id: existing.id, email: existing.email, name: existing.name, role: existing.role }, token });
+            return;
+        } else if (existing) {
+            res.status(409).json({ message: 'User already exists.', code: 409 });
             return;
         }
 
-        const storedPassword = hashPassword(password);
         const user = await prisma.user.create({
             data: {
                 email,
@@ -53,7 +62,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const token = signToken({ id: user.id, role: user.role });
         res.status(201).json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, token });
     } catch (err: any) {
-        console.error(err);
         res.status(500).json({ message: err.message, code: 500 });
     }
 };
