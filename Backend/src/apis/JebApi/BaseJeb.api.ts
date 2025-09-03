@@ -2,26 +2,30 @@ import { JEB_URL, JEB_API_KEY } from "../../global";
 
 
 class BaseJebApi {
-    protected baseUrl: string;
-    protected apiKey?: string;
+    protected static baseUrl: string = JEB_URL;
+    protected static apiKey?: string = JEB_API_KEY;
 
-    constructor() {
-        this.baseUrl = JEB_URL;
-        this.apiKey = JEB_API_KEY;
-    }
+    protected static async request<T>(url: string, options: RequestInit = {}): Promise<T> {
 
-    protected async request<T>(url: string, options: RequestInit = {}): Promise<T> {
-        const headers = {
-            'Authorization': `Bearer ${this.apiKey}`,
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
-            ...options.headers,
+            'accept': 'application/json',
+            ...options.headers as Record<string, string>,
         };
+        if (this.apiKey) {
+            headers['X-Group-Authorization'] = this.apiKey;
+        }
 
         try {
             const response = await fetch(url, { ...options, headers });
 
             if (!response.ok) {
-                const errorResponse = await response.json();
+                let errorResponse;
+                try {
+                    errorResponse = await response.json();
+                } catch (e) {
+                    errorResponse = await response.text();
+                }
                 console.log(errorResponse);
                 console.error(`Error in request to ${url}: ${JSON.stringify(errorResponse)}`);
                 throw { message: errorResponse, status: response.status };
@@ -34,3 +38,5 @@ class BaseJebApi {
         }
     }
 }
+
+export default BaseJebApi;
