@@ -6,7 +6,7 @@ function Baniere() {
   const navigate = useNavigate(); // Hook pour rediriger
 
   const handleClick = () => {
-    navigate('/contenu-gratuit'); // Rediriger vers la page de contenu gratuit
+    navigate('/News'); // Rediriger vers la page de News gratuit
   };
 
   return (
@@ -15,7 +15,7 @@ function Baniere() {
         <h1>Demain Thaïlande</h1>
       </div>
       <div className="banner-section section-two">
-        <h2>Découvrez nos contenus gratuits</h2>
+        <h2>Découvrez nos Newss gratuits</h2>
       </div>
       <div className="banner-section section-three">
         <img src={Benoit} alt="description de l'image" className="banner-image" />

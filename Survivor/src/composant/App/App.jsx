@@ -7,8 +7,7 @@ import Contact from '../Contact/Contact.jsx';
 import DejaClient from '../Client/Client.jsx';
 import Header from '../template/Headers/Headers.jsx';  // Ton header
 import Offre from '../Offre/Offre.jsx';  // Ton offre
-import Contenu from '../Free_contenu/Cont.jsx';
-import Baniere from '../template/Baniere/Baniere.jsx';
+import News from '../News/Cont.jsx';
 
 // Si tu veux ajouter un Footer plus tard
 import Footer from '../template/Footer/Footer.jsx'; 
@@ -21,11 +20,11 @@ function App() {
       <Header />  {/* Le Header sera affiché sur toutes les pages */}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/notre-offre" element={<Offre />} />
-        <Route path="/rendez-vous" element={<Rendezvous />} />
-        <Route path="/contactez-nous" element={<Contact />} />
+        <Route path="/Projects" element={<Offre />} />
+        <Route path="/Events" element={<Rendezvous />} />
+        <Route path="/About" element={<Contact />} />
         <Route path="/deja-client" element={<DejaClient />} />
-        <Route path="/contenu-gratuit" element={<Contenu />} />
+        <Route path="/News" element={<News />} />
       </Routes>
       <Footer />  {/* Le Footer sera aussi affiché sur toutes les pages */}
     </Router>

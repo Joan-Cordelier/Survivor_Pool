@@ -32,28 +32,28 @@ const Header = () => {
               </NavLink>
             </li>
             <li className="nav-left-list-item">
-              <NavLink className="nav-link" to="/notre-offre" onClick={closeMenu}>
-                Project Catalog
+              <NavLink className="nav-link" to="/Projects" onClick={closeMenu}>
+                Projects
               </NavLink>
             </li>
             <li className="nav-left-list-item">
-              <NavLink className="nav-link" to="/contenu-gratuit" onClick={closeMenu}>
-                Project Pages
+              <NavLink className="nav-link" to="/News" onClick={closeMenu}>
+                News
               </NavLink>
             </li>
             <li className="nav-left-list-item">
-              <NavLink className="nav-link" to="/rendez-vous" onClick={closeMenu}>
-                Rendez-vous
+              <NavLink className="nav-link" to="/Events" onClick={closeMenu}>
+                Events
               </NavLink>
             </li>
             <li className="nav-left-list-item">
-              <NavLink className="nav-link" to="/contactez-nous" onClick={closeMenu}>
-                Contactez-nous
+              <NavLink className="nav-link" to="/About" onClick={closeMenu}>
+                About
               </NavLink>
             </li>
             <li className="nav-left-list-item">
               <a className="nav-link" href="https://members.demainthailande.fr" target="_blank" rel="noopener noreferrer">
-                Déjà client ?
+                Log In
               </a>
             </li>
 

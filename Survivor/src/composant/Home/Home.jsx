@@ -21,7 +21,7 @@ function Home() {
             We fast-track early-stage startups by providing funding, expertise, and an unparalleled international network.
           </p>
           <div className='cta-button-container'>
-            <button className="cta-button" onClick={() => navigate('/contactez-nous')}>
+            <button className="cta-button" onClick={() => navigate('/About')}>
               DÉCOUVREZ-NOUS
             </button>
           </div>
@@ -45,7 +45,7 @@ function Home() {
             </span>
           </div>
           <div className='cta-button-container'>
-            {/* <button className="cta-button2" onClick={() => navigate('/rendez-vous')}>
+            {/* <button className="cta-button2" onClick={() => navigate('/Events')}>
               Echangez gratuitement avec notre expert
             </button> */}
           </div>
@@ -83,7 +83,7 @@ function Home() {
               Headquartered in London with hubs in New York, Singapore and Berlin, our alumni have raised over £500 M and created 3 000+ jobs worldwide.
             </p>
             <div className='cta-button-container'>
-              <button className="cta-button3" onClick={() => navigate('/notre-offre')}>
+              <button className="cta-button3" onClick={() => navigate('/Projects')}>
                 See our Projets Catalog ⏵
               </button>
             </div>

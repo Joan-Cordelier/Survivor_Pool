@@ -3,7 +3,7 @@ import './Rdv.scss'; // Si tu utilises un fichier SCSS pour styliser cette page
 function Rendezvous() {
   return (
     <div className="rendezvous-container">
-      <h1 className="rendezvous-title">Prenez Rendez-vous</h1>
+      <h1 className="rendezvous-title">Prenez Events</h1>
       
       <div className="iframe-wrapper">
         <iframe
@@ -11,7 +11,7 @@ function Rendezvous() {
           width="100%"  // Prend toute la largeur disponible
           height="800px"  // Ajuste la hauteur selon tes besoins
           style={{ border: 'none' }}  // Supprime la bordure
-          title="Rendez-vous"
+          title="Events"
         ></iframe>
       </div>
     </div>

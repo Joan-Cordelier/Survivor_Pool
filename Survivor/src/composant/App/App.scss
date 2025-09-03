@@ -39,7 +39,7 @@ html, body {
   color: $text-color;
   min-height: 100vh; /* Assure que la hauteur couvre tout l'écran */
   @include flex-center;
-  justify-content: center; /* Place le contenu en haut */
+  justify-content: center; /* Place le News en haut */
   width: 100vw;
   align-items: center;
 

@@ -74,7 +74,7 @@ function ContactForm() {
       </div>
 
       <div className="contact-right">
-        <h2>Contactez-nous</h2>
+        <h2>About</h2>
         <form className="contact-form" onSubmit={handleSubmit}>
           <div>
             <label>Nom et Prénom</label>

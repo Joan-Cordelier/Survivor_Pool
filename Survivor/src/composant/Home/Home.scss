@@ -387,7 +387,7 @@ body {
     text-align: left;
     padding: 50px;
     box-shadow: 0 4px 8px rgba(0,0,0,.1);
-    width: min(100%, 800px);   /* la box grandit mais reste contenue */
+    width: min(100%, 800px);   /* la box grandit mais reste Newse */
 
     /* Image responsive */
     img {
@@ -402,7 +402,7 @@ body {
       max-width: 40%;
     }
 
-    /* Le contenu texte prend le reste */
+    /* Le News texte prend le reste */
     .box-content {
       flex: 1 1 auto;
       min-width: 0;                   /* autorise le texte à wrap */

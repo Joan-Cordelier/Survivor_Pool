@@ -3,7 +3,7 @@ import './Cont.scss';
 import PopupForm from '../PopUp/PopupForm.jsx'; // Assure-toi que le chemin est correct
 //import Video from '../../assets/Video-cont_gratuite .mov'; // Assure-toi que le chemin vers la vidéo est correct
 
-function Contenu() {
+function News() {
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
@@ -27,4 +27,4 @@ function Contenu() {
   );
 }
 
-export default Contenu;
+export default News;
