@@ -94,13 +94,12 @@ export default function Dashboard() {
             return;
         setLoadingSection(true);
         try {
-        // Support rétro-compatible si l'ancien nom de clé a été utilisé
-        const legacy = localStorage.getItem('jwtToken');
-        if (legacy && !localStorage.getItem('token')) {
-          localStorage.setItem('token', legacy);
-          localStorage.removeItem('jwtToken');
-        }
-        const token = localStorage.getItem('token');
+            const legacy = localStorage.getItem('jwtToken');
+            if (legacy && !localStorage.getItem('token')) {
+            localStorage.setItem('token', legacy);
+            localStorage.removeItem('jwtToken');
+            }
+            const token = localStorage.getItem('token');
             const res = await fetch(section.endpoint, { headers: token ? { Authorization: 'Bearer ' + token } : {} });
             if (!res.ok)
                 throw new Error('HTTP ' + res.status);
@@ -113,7 +112,6 @@ export default function Dashboard() {
         }
     }, [dataCache]);
 
-    // Précharger quelques compteurs une fois authentifié
     useEffect(() => {
         if (!checking && user) {
             ['events', 'startups', 'news'].forEach(k => loadSection(k));
@@ -121,9 +119,9 @@ export default function Dashboard() {
         }
     }, [checking, user, loadSection]);
 
-    // Sur changement d'onglet
     useEffect(() => {
-        if (!checking) loadSection(active);
+        if (!checking)
+            loadSection(active);
     }, [active, checking, loadSection]);
 
     const handleLogout = () => {
@@ -131,14 +129,14 @@ export default function Dashboard() {
         navigate('/', { replace: true });
     };
 
-    // if (checking) {
-    //     return (
-    //         <div className="dashboard-loading">
-    //             Vérification du token...
-    //             {error && <div style={{ marginTop: 12, fontSize: '.85rem', opacity: .8 }}>{error}</div>}
-    //         </div>
-    //     );
-    // }
+    if (checking) {
+        return (
+            <div className="dashboard-loading">
+                Vérification du token...
+                {error && <div style={{ marginTop: 12, fontSize: '.85rem', opacity: .8 }}>{error}</div>}
+            </div>
+        );
+    }
 
   const safeUser = user || { id: 'loading', email: '...', name: '', role: 'user', raw: {} };
   const accessibleSections = (safeUser ? SECTIONS.filter(s => s.roles.includes(safeUser.role)) : []);

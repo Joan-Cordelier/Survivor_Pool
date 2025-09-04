@@ -3,8 +3,6 @@ import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 let ReactMarkdown, remarkGfm;
-if (USE_MARKDOWN) {
-}
 
 const DEMO = [
   {
