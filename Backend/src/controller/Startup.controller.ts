@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { createStartup, getAllStartups, getStartupById, deleteStartup } from "../objects/Startup.object"
+import { Console } from 'console';
 
 
 export const createStartupController = async (req: Request, res: Response): Promise<void> => {
@@ -35,6 +36,7 @@ export const createStartupController = async (req: Request, res: Response): Prom
 };
 
 export const getAllStartupsController = async (req: Request, res: Response): Promise<void> => {
+    console.log("Fetching all startups...");
     try {
         const startups = await getAllStartups();
         res.status(200).json(startups);

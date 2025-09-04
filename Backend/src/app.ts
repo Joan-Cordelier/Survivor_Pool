@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config({quiet: true});
 
 import express, { Request, Response } from "express";
+import cors from 'cors';
 import path from "path";
 
 //Routes
@@ -20,6 +21,7 @@ import { syncDB } from './utils/SyncDb.utils';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.static(path.join(__dirname, "../../Survivor/dist")));
 app.use(express.json());
 
@@ -33,7 +35,7 @@ app.use('/user', UserRouter);
 app.use('/auth', AuthRouter);
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../Survivor/dist/index.html"));
+  res.send('Hello World!');
 });
 
 app.listen(PORT, () => {
