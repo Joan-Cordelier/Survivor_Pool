@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client"
 
 export async function createFounder(
     name: string,
@@ -46,6 +47,18 @@ export async function getAllFounders() {
     try {
         const founders = await prisma.founder.findMany();
         return founders;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateFounder(id: number, updateFields: Prisma.FounderUpdateInput) {
+    try {
+        const founder = await prisma.founder.update({
+            where: { id },
+            data: { ...updateFields },
+        });
+        return founder;
     } catch (error) {
         throw error;
     }

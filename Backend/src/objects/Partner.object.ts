@@ -1,5 +1,5 @@
 import prisma from "../config/db.config"
-
+import { Prisma } from "@prisma/client"
 
 export async function createPartner(
     name: string,
@@ -57,6 +57,18 @@ export async function getAllPartners() {
     try {
         const partners = await prisma.partner.findMany();
         return partners;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updatePartner(id: number, updateFields: Prisma.PartnerUpdateInput) {
+    try {
+        const partner = await prisma.partner.update({
+            where: { id },
+            data: { ...updateFields },
+        });
+        return partner;
     } catch (error) {
         throw error;
     }

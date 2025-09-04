@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client";
 
 
 export async function createEvent(
@@ -55,6 +56,18 @@ export async function getAllEvents() {
     try {
         const events = await prisma.event.findMany();
         return events;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateEvent(id: number, updateFields: Prisma.EventUpdateInput) {
+    try {
+        const event = await prisma.event.update({
+            where: { id },
+            data: { ...updateFields },
+        });
+        return event;
     } catch (error) {
         throw error;
     }

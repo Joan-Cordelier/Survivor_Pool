@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client";
 
 export async function createNews(
     title: string,
@@ -52,6 +53,18 @@ export async function getAllNews() {
     try {
         const all_news = await prisma.newsDetail.findMany();
         return all_news;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateNews(id: number, updateFields: Prisma.NewsDetailUpdateInput) {
+    try {
+        const news = await prisma.newsDetail.update({
+            where: { id },
+            data: { ...updateFields },
+        });
+        return news;
     } catch (error) {
         throw error;
     }

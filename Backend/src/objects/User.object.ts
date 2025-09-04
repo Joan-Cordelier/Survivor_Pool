@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from "../config/db.config";
 
 export async function createUser(
@@ -59,6 +60,23 @@ export async function getAllUsers() {
     try {
         const users = await prisma.user.findMany();
         return users;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateUser(id: number, updateFields: Prisma.UserUpdateInput) {
+    try {
+        const user = await prisma.user.update({
+            where: {
+                id
+            },
+            data: {
+                ...updateFields
+            },
+        });
+
+        return user;
     } catch (error) {
         throw error;
     }
