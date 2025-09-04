@@ -279,14 +279,14 @@ async function syncUsers() {
             users.forEach(async (user) => {
                 if (!existingIds.includes(user.id)) {
                     try {
+                        const generatedPwd = user.password && user.password.length > 0 ? user.password : `imported_${Math.random().toString(36).slice(2,10)}`;
                         const newUser = await createUser(
                             user.email,
                             user.name,
-                            "",
-                            user.role,
-                            user.id,
-                            user.founder_id,
-                            user.investor_id
+                            generatedPwd,
+                            user.role ?? 'default',
+                            user.founder_id ?? null,
+                            user.investor_id ?? null
                         );
                         console.log("Created user: %d, %s", newUser.id, newUser.email);
                     } catch (error: any) {

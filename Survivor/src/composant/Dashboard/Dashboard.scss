@@ -495,3 +495,168 @@ table.data-table .badge { background:#e6eef9; color:#284b75; padding:2px 8px 3px
     justify-content: center;
   }
 }
+
+// ==========================
+// Modal (CRUD users)
+// ==========================
+// --- Modal layout amélioré (évite chevauchement header + meilleure responsivité) ---
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  /* Espace sous le header global + respiration */
+  padding: calc(var(--global-header-height, 70px) + 28px) 22px 42px;
+  z-index: 120;
+  overflow: auto;
+  box-sizing: border-box;
+}
+.modal {
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px -12px rgba(0,0,0,.35);
+  display: flex;
+  flex-direction: column;
+  /* Hauteur max visible sans passer sous le header ni sortir de l'écran */
+  max-height: calc(100vh - (var(--global-header-height, 70px) + 80px));
+  overflow: hidden; /* on gère le scroll interne */
+  position: relative;
+}
+
+/* Header sticky pour garder actions visibles lors du scroll */
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 12px;
+  border-bottom: 1px solid #edf2f7;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 5;
+}
+
+.modal-head h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: .5px;
+}
+
+.modal-head .close-x {
+    background: #fff;
+    border: 1px solid #cfd8e2;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s, transform .18s;
+}
+
+.modal-head .close-x:hover {
+    background: #f2f6fa;
+    transform: translateY(-2px);
+}
+
+/* Zone scrollable */
+.modal-form {
+  padding: 18px 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: .75rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Apaiser les scrollbars */
+.modal-form::-webkit-scrollbar { width: 10px; }
+.modal-form::-webkit-scrollbar-track { background: transparent; }
+.modal-form::-webkit-scrollbar-thumb { background: #d1dae2; border-radius: 5px; }
+.modal-form::-webkit-scrollbar-thumb:hover { background: #c2ccd6; }
+
+.modal-form .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-form label {
+    font-weight: 600;
+    font-size: .63rem;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: #2a3c50;
+}
+
+.modal-form input,
+.modal-form select {
+    border: 1px solid #cfd8e2;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: .75rem;
+    font-family: 'Open Sans', sans-serif;
+    background: #fff;
+    transition: border .2s, box-shadow .2s;
+}
+
+.modal-form input:focus,
+.modal-form select:focus {
+    outline: none;
+    border-color: #709bff;
+    box-shadow: 0 0 0 2px rgba(80, 130, 255, .25);
+}
+
+.form-row-inline {
+    display: flex;
+    gap: 14px;
+}
+
+.form-row-inline>div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-actions {
+    margin-top: 4px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.form-error {
+    background: #ffe6e2;
+    border: 1px solid #ffc1b8;
+    color: #b52618;
+    padding: 10px 12px;
+    font-size: .63rem;
+    border-radius: 10px;
+}
+
+@media (max-width: 680px) {
+  .modal-overlay { padding: calc(var(--global-header-height, 64px) + 14px) 14px 32px; }
+  .modal { max-width: 100%; border-radius: 16px; max-height: calc(100vh - (var(--global-header-height, 64px) + 48px)); }
+  .modal-form { padding: 16px 18px 22px; }
+  .modal-head { padding: 16px 18px 10px; }
+  .modal-head h3 { font-size: .95rem; }
+}
+@media (max-width:560px) {
+  .form-row-inline { flex-direction: column; }
+}
+@media (max-width:430px) {
+  .modal-head h3 { font-size: .9rem; }
+  .modal-form label { font-size: .6rem; }
+  .modal-form input, .modal-form select, .modal-form textarea { font-size: .7rem; padding: 9px 11px; }
+}
