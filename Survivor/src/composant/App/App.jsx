@@ -16,7 +16,6 @@ function App() {
   return (
     <Router>
       <GoogleAnalytics />
-      {/* <Baniere /> */}
       <Header />  {/* Le Header sera affiché sur toutes les pages */}
       <Routes>
         <Route path="/" element={<Home />} />
