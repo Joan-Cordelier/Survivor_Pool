@@ -1,39 +1,216 @@
-// Global style to prevent content overflow
-* {
-    box-sizing: border-box;
-}
+$filters-sticky-top: 72px !default;
+$brand-from: #F18585 !default;  // même vibe que ton bouton .more
+$brand-to:   #C174F2 !default;
+$radius-sm:  10px !default;
+$shadow-2:   0 8px 20px rgba(0,0,0,.15) !default;
+$focus-ring: 0 0 0 3px rgba(255,255,255,.35) !default;
 
-body {
-    overflow-x: hidden;
-    /* Prevents horizontal scroll */
-}
+.events-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  color: #fff; /* même rendu sombre que projects */
 
-// Mixin pour Flexbox Centering
-@mixin flex-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+/* ========= Filters ========= */
+    .filters {
+        position: sticky;
+        top: $filters-sticky-top;
+        z-index: 5;
+        background: linear-gradient(135deg, $brand-from, $brand-to);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: $shadow-2;
+        margin-bottom: 18px;
+        color: #fff;
 
-.rendezvous-container {
+        .filters-row {
+            display: grid;
+            grid-template-columns: 1.2fr .8fr .8fr .8fr .8fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        input[type="search"],
+        input[type="date"],
+        select {
+            height: 40px;
+            border-radius: $radius-sm;
+            border: none;
+            padding: 0 12px;
+            outline: none;
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25);
+            transition: box-shadow .18s ease, background .18s ease;
+
+            &::placeholder {
+                color: rgba(255, 255, 255, .85);
+            }
+
+            &:focus {
+                box-shadow: inset 0 0 0 2px #fff, $focus-ring;
+            }
+        }
+
+        select option {
+            color: #000;
+        }
+
+        .clear {
+            height: 40px;
+            border-radius: $radius-sm;
+            border: none;
+            padding: 0 14px;
+            background: #fff;
+            color: #1a1a1a;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .12s ease, box-shadow .18s ease;
+
+            &:hover {
+                transform: translateY(-1px);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+
+            &:focus {
+                outline: none;
+                box-shadow: $focus-ring;
+            }
+        }
+
+        .results {
+            grid-column: 1 / -1;
+            margin-top: 8px;
+            font-size: 14px;
+            opacity: .9;
+        }
+
+        @media (max-width: 1100px) {
+            .filters-row {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .filters-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .filters-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: #252525;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background-color: #f7f7f7;
-    max-width: 100%; // Largeur maximale à 100% pour remplir le parent
-    width: 100%; // Prend toute la largeur du conteneur parent
+    transition: transform 0.15s, box-shadow 0.15s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    &.expanded {
+      grid-column: span 2;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+
+      .logo {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        background: #f3f4f6;
+      }
+
+      .title-wrap {
+        flex: 1;
+        .title {
+          font-size: 1.2rem;
+          font-weight: 600;
+          margin: 0;
+        }
+        .kicker {
+          font-size: 0.9rem;
+          color: #6b7280;
+          margin: 0.2rem 0 0;
+        }
+      }
+
+      .more {
+        border: none;
+        background-image: linear-gradient(135deg, #F18585, #C174F2);
+        border-radius: 0.5rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        color: #ffffff;
+        cursor: pointer;
+        transition: background 0.2s;
+        &:hover {
+          background-image: linear-gradient(135deg, #df7c7c, #ae68da);
+        }
+      }
+    }
+
+    .card-details {
+      padding: 1rem;
+      border-top: 1px solid #e5e7eb;
+      color: #374151;
+
+      .meta {
+        margin-top: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        .badge {
+          background: #e0f2fe;
+          color: #0369a1;
+          font-size: 0.75rem;
+          font-weight: 500;
+          padding: 0.3rem 0.6rem;
+          border-radius: 9999px;
+
+          &.alt {
+            background: #fef3c7;
+            color: #92400e;
+          }
+        }
+      }
+    }
+  }
 }
 
-.rendezvous-title {
-    font-size: 2.5em;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #002855; // Couleur principale de ton thème
-}
+/* Responsive */
+@media (max-width: 768px) {
+  .events-page {
+    padding: 1rem;
 
-.iframe-wrapper {
-    width: 100%;
-    max-width: 1200px; // Limite la largeur de l'iframe
+    .card.expanded {
+      grid-column: span 1;
+    }
+  }
 }
