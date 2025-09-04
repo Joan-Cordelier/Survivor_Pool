@@ -13,8 +13,36 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      // Add other API prefixes if needed (optional)
-      // '/auth': 'http://localhost:4000',
+      '/user': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/event': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/fouder': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/investor': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/news': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/partner': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })
