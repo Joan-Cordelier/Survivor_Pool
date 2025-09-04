@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { createEvent, getEventById, getAllEvents, deleteEvent } from "../objects/Event.object"
+import { createEvent, getEventById, getAllEvents, deleteEvent, updateEvent } from "../objects/Event.object"
+import { Prisma } from "@prisma/client"
 
 
 export const createEventController = async (req: Request, res: Response): Promise<void> => {
@@ -71,3 +72,43 @@ export const deleteEventController = async (req: Request, res: Response): Promis
         res.status(500).json({ error: "Failed to delete event" });
     }
 }
+
+export const updateEventController = async (req: Request, res: Response): Promise<void> => {
+    const id = Number(req.params.id);
+    const { updateFields } = req.body;
+
+    if (!id) {
+        res.status(400).json({ error: "ID is required" });
+        return;
+    }
+    if (isNaN(id)) {
+        res.status(422).json({ error: "Invalid ID" });
+        return;
+    }
+    if (!updateFields) {
+        res.status(400).json({ error: "Missing update fields" });
+        return;
+    }
+
+    const authorizedFields = [ "name", "date", "location", "description", "event_type", "target_audience", "image" ];
+    const filteredFields: Prisma.EventUpdateInput = {};
+
+    for (const field of authorizedFields) {
+        if (updateFields[field]) {
+            (filteredFields as any)[field] = updateFields[field];
+        }
+    }
+
+    if (Object.keys(filteredFields).length === 0) {
+        console.error('No valid fields to update');
+        res.status(422).json({ error: 'No valid fields to update' });
+        return;
+    }
+
+    try {
+        const updatedEvent = await updateEvent(id, filteredFields);
+        res.status(200).json({ message: "Event updated successfully", event: updatedEvent });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+};

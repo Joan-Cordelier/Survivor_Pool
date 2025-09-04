@@ -8,5 +8,6 @@ router.post('/create', requireAuth, authorizeRoles('admin'), InvestorController.
 router.get('/get/:id', InvestorController.getInvestorByIdController);
 router.get('/get', InvestorController.getAllInvestorsController);
 router.delete('/delete/:id', requireAuth, authorizeRoles('admin'), InvestorController.deleteInvestorController);
+router.put('/update/:id', requireAuth, authorizeRoles('admin'), InvestorController.updateInvestorController);
 
 export default router;

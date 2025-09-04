@@ -8,5 +8,6 @@ router.post('/create', requireAuth, authorizeRoles('admin'), NewsController.crea
 router.get('/get/:id', NewsController.getNewsByIdController);
 router.get('/get', NewsController.getAllNewsController);
 router.delete('/delete/:id', requireAuth, authorizeRoles('admin'), NewsController.deleteNewsController);
+router.put('/update/:id', requireAuth, authorizeRoles('admin'), NewsController.updateNewsController);
 
 export default router;

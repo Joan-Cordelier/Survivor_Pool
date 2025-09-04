@@ -8,5 +8,6 @@ router.post('/create', requireAuth, authorizeRoles('admin'), PartnerController.c
 router.get('/get', PartnerController.getAllPartnersController);
 router.get('/get/:id', PartnerController.getPartnerByIdController);
 router.delete('/delete/:id', requireAuth, authorizeRoles('admin'), PartnerController.deletePartnerController);
+router.put('/update/:id', requireAuth, authorizeRoles('admin'), PartnerController.updatePartnerController);
 
 export default router;
