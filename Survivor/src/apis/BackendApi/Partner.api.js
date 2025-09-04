@@ -24,11 +24,20 @@ class PartnerApi extends BaseBackApi {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
     }
+
+    async updatePartner(id, payload, token) {
+        return this.request(`/partner/update/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+    }
 }
 
 export const getAllPartners = () => new PartnerApi().getAllPartners();
 export const getPartnerById = (id) => new PartnerApi().getPartnerById(id);
 export const createPartner = (payload, token) => new PartnerApi().createPartner(payload, token);
 export const deletePartner = (id, token) => new PartnerApi().deletePartner(id, token);
+export const updatePartner = (id, payload, token) => new PartnerApi().updatePartner(id, payload, token);
 
-export default { getAllPartners, getPartnerById, createPartner, deletePartner };
+export default { getAllPartners, getPartnerById, createPartner, deletePartner, updatePartner };

@@ -24,11 +24,20 @@ class NewsApi extends BaseBackApi {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
     }
+
+    async updateNews(id, payload, token) {
+        return this.request(`/news/update/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+    }
 }
 
 export const getAllNews = () => new NewsApi().getAllNews();
 export const getNewsById = (id) => new NewsApi().getNewsById(id);
 export const createNews = (payload, token) => new NewsApi().createNews(payload, token);
 export const deleteNews = (id, token) => new NewsApi().deleteNews(id, token);
+export const updateNews = (id, payload, token) => new NewsApi().updateNews(id, payload, token);
 
-export default { getAllNews, getNewsById, createNews, deleteNews };
+export default { getAllNews, getNewsById, createNews, deleteNews, updateNews };

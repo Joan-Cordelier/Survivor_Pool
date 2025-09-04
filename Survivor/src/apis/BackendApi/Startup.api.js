@@ -24,6 +24,14 @@ class StartupApi extends BaseBackApi {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
     }
+
+    async updateStartup(id, payload, token) {
+        return this.request(`/startup/update/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+    }
 }
 
 
@@ -31,5 +39,6 @@ export const getAllStartups = () => new StartupApi().getAllStartups();
 export const getStartupById = (id) => new StartupApi().getStartupById(id);
 export const createStartup = (payload, token) => new StartupApi().createStartup(payload, token);
 export const deleteStartup = (id, token) => new StartupApi().deleteStartup(id, token);
+export const updateStartup = (id, payload, token) => new StartupApi().updateStartup(id, payload, token);
 
-export default { getAllStartups, getStartupById, createStartup, deleteStartup };
+export default { getAllStartups, getStartupById, createStartup, deleteStartup, updateStartup };

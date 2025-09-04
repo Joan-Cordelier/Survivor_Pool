@@ -24,11 +24,20 @@ class UserApi extends BaseBackApi {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
     }
+
+    async updateUser(id, payload, token) {
+        return this.request(`/user/update/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+    }
 }
 
 export const getAllUsers = () => new UserApi().getAllUsers();
 export const getUserById = (id) => new UserApi().getUserById(id);
 export const createUser = (payload, token) => new UserApi().createUser(payload, token);
 export const deleteUser = (id, token) => new UserApi().deleteUser(id, token);
+export const updateUser = (id, payload, token) => new UserApi().updateUser(id, payload, token);
 
-export default { getAllUsers, getUserById, createUser, deleteUser };
+export default { getAllUsers, getUserById, createUser, deleteUser, updateUser };

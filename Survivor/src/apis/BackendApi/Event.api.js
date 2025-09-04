@@ -24,11 +24,20 @@ class EventApi extends BaseBackApi {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
     }
+
+    async updateEvent(id, payload, token) {
+        return this.request(`/event/update/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+    }
 }
 
 export const getAllEvents = () => new EventApi().getAllEvents();
 export const getEventById = (id) => new EventApi().getEventById(id);
 export const createEvent = (payload, token) => new EventApi().createEvent(payload, token);
 export const deleteEvent = (id, token) => new EventApi().deleteEvent(id, token);
+export const updateEvent = (id, payload, token) => new EventApi().updateEvent(id, payload, token);
 
-export default { getAllEvents, getEventById, createEvent, deleteEvent };
+export default { getAllEvents, getEventById, createEvent, deleteEvent, updateEvent };

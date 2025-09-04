@@ -24,11 +24,20 @@ class InvestorApi extends BaseBackApi {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
     }
+
+    async updateInvestor(id, payload, token) {
+        return this.request(`/investor/update/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+    }
 }
 
 export const getAllInvestors = () => new InvestorApi().getAllInvestors();
 export const getInvestorById = (id) => new InvestorApi().getInvestorById(id);
 export const createInvestor = (payload, token) => new InvestorApi().createInvestor(payload, token);
 export const deleteInvestor = (id, token) => new InvestorApi().deleteInvestor(id, token);
+export const updateInvestor = (id, payload, token) => new InvestorApi().updateInvestor(id, payload, token);
 
-export default { getAllInvestors, getInvestorById, createInvestor, deleteInvestor };
+export default { getAllInvestors, getInvestorById, createInvestor, deleteInvestor, updateInvestor };

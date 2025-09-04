@@ -24,11 +24,20 @@ class FounderApi extends BaseBackApi {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
     }
+
+    async updateFounder(id, payload, token) {
+        return this.request(`/founder/update/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+    }
 }
 
 export const getAllFounders = () => new FounderApi().getAllFounders();
 export const getFounderById = (id) => new FounderApi().getFounderById(id);
 export const createFounder = (payload, token) => new FounderApi().createFounder(payload, token);
 export const deleteFounder = (id, token) => new FounderApi().deleteFounder(id, token);
+export const updateFounder = (id, payload, token) => new FounderApi().updateFounder(id, payload, token);
 
-export default { getAllFounders, getFounderById, createFounder, deleteFounder };
+export default { getAllFounders, getFounderById, createFounder, deleteFounder, updateFounder };
