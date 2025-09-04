@@ -100,7 +100,7 @@ export const updateStartupController = async (req: Request, res: Response): Prom
         return;
     }
 
-    const authorizedFields = [ "name", "legal_status", "address", "email", "phone", "description", "website_url", "social_media_url", "project_status", "needs", "sector", "maturity", "founders" ];
+    const authorizedFields = [ "name", "legal_status", "address", "email", "phone", "description", "website_url", "social_media_url", "project_status", "needs", "sector", "maturity" ];
     const filteredFields: Prisma.StartupDetailUpdateInput = {};
 
     for (const field of authorizedFields) {
