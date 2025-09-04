@@ -19,8 +19,8 @@ const SECTIONS = [
     { key: 'overview', label: 'Overview', icon: '📊', roles: ['admin'] },
     { key: 'events', label: 'Events', icon: '🗓️', roles: ['admin'], endpoint: '/event/get' },
     { key: 'startups', label: 'Startups', icon: '🚀', roles: ['admin'], endpoint: '/startup/get' },
-    { key: 'investors', label: 'Investors', icon: '💼', roles: ['user', 'admin'], endpoint: '/investor/get' },
-    { key: 'partners', label: 'Partners', icon: '🤝', roles: ['user', 'admin'], endpoint: '/partner/get' },
+    { key: 'investors', label: 'Investors', icon: '💼', roles: ['default', 'admin'], endpoint: '/investor/get' },
+    { key: 'partners', label: 'Partners', icon: '🤝', roles: ['default', 'admin'], endpoint: '/partner/get' },
     { key: 'news', label: 'News', icon: '📰', roles: ['admin'], endpoint: '/news/get' },
     { key: 'users', label: 'Users', icon: '👥', roles: ['admin'], endpoint: '/user/get' },
 ];
@@ -316,6 +316,13 @@ export default function Dashboard() {
                 if (f.textarea) v = form[f.name].value; // déjà fait mais clair
         if (v !== null) payload[f.name] = v;
             });
+            // Normalisation date spécifique avant envoi
+            if (sectionKey === 'events' && payload.dates) {
+                payload.dates = normalizeDateStr(payload.dates);
+            }
+            if (sectionKey === 'news' && payload.news_date) {
+                payload.news_date = normalizeDateStr(payload.news_date);
+            }
             // Validation minimale required
             for (const f of fields) {
                 if (f.required && (payload[f.name] == null || payload[f.name] === '')) {
@@ -361,6 +368,12 @@ export default function Dashboard() {
                     updateFields[f.name] = v;
                 }
             });
+            if (sectionKey === 'events' && Object.prototype.hasOwnProperty.call(updateFields, 'dates')) {
+                updateFields.dates = updateFields.dates ? normalizeDateStr(updateFields.dates) : updateFields.dates;
+            }
+            if (sectionKey === 'news' && Object.prototype.hasOwnProperty.call(updateFields, 'news_date')) {
+                updateFields.news_date = updateFields.news_date ? normalizeDateStr(updateFields.news_date) : updateFields.news_date;
+            }
             if (Object.keys(updateFields).length === 0) { closeModal(); return; }
             try {
                 setModal(m=>({...m,loading:true,error:null}));

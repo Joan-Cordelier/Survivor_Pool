@@ -1,6 +1,6 @@
 import "./Headers.scss";
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import Fb from "../../../assets/facebook.svg";
 import Insta from "../../../assets/instagram.svg";
 import TikTok from "../../../assets/tiktok.svg";
@@ -8,6 +8,29 @@ import Logo from "../../../assets/logo.png";
 
 const Header = () => {
   const [showLinks, setshowLinks] = useState(false);
+  const [authUser, setAuthUser] = useState(null);
+  const navigate = useNavigate();
+  // Hydrate user auth state on mount
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem('token');
+      const stored = localStorage.getItem('user');
+      if (token && stored) {
+        setAuthUser(JSON.parse(stored));
+      } else if (token) {
+        // fallback minimal; tentera d'être remplacé après qu'un user soit stocké
+        setAuthUser({ tokenOnly: true, role: 'default' });
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  const handleLogoutUser = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setAuthUser(null);
+    closeMenu();
+    navigate('/');
+  };
 
   const closeMenu = () => {
     setshowLinks(false);
@@ -52,51 +75,30 @@ const Header = () => {
               </NavLink>
             </li>
             <li className="nav-left-list-item">
-              <NavLink className="nav-link" to="/Login" onClick={closeMenu}>
-                Log In
-              </NavLink>
             </li>
-            <li className="nav-left-list-item">
+          </ul>
+        </div>
+          <div className="nav-dashboard">
+            {authUser?.role === 'admin' && (
               <NavLink className="nav-link" to="/Dashboard" onClick={closeMenu}>
                 Dashboard
               </NavLink>
-            </li>
-          </ul>
-        </div>
-
-        {/* Social Media Icons */}
-        <div className="nav-right">
-          <ul className="social-media-list">
-            <li className="social-media-item">
-              <a
-                href="https://www.facebook.com/profile.php?id=61563239763649"
-                target="_blank"
-                rel="noopener noreferrer"
+            )}
+            {authUser ? (
+              <button
+                type="button"
+                className="nav-link logout-link"
+                style={{ background:'transparent', border:'0', cursor:'pointer' }}
+                onClick={handleLogoutUser}
               >
-                <img src={Fb} alt="Facebook" className="social-icon" />
-              </a>
-            </li>
-            <li className="social-media-item">
-              <a
-                href="https://www.instagram.com/demain_thailande_tls/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img src={Insta} alt="Instagram" className="social-icon" />
-              </a>
-            </li>
-            <li className="social-media-item">
-              <a
-                href="https://www.tiktok.com/@demainthailande?_t=8qZF5VJDbWa&_r=1"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img src={TikTok} alt="TikTok" className="social-icon" />
-              </a>
-            </li>
-          </ul>
-        </div>
-
+                Log Out
+              </button>
+            ) : (
+              <NavLink className="nav-link" to="/Login" onClick={closeMenu}>
+                Log In
+              </NavLink>
+            )}
+          </div>
       </div>
       <button
         className={`navbar-burger ${showLinks ? "show-nav" : ""}`}

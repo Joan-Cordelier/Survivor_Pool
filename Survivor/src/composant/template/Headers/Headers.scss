@@ -43,17 +43,14 @@ $header-height: 120px;
   }
 }
 
-/* Si ton logo utilise .img au lieu de .nav-img */
-/* Logo responsive, basé sur la largeur de l’écran et borné par la hauteur du header */
 .img {
-  display: block;                 /* évite les espaces inline */
-  height: clamp(28px, 10vw, 90px); /* rétrécit sur petits écrans, grandit sans dépasser */
+  display: block;
+  height: clamp(28px, 10vw, 90px);
   max-height: calc(#{$header-height} - 24px);
-  border-radius: 10%; /* ne dépasse jamais la barre (120px - padding) */
-  width: auto;                    /* conserve le ratio */
-  object-fit: contain;            /* ne déborde jamais de son cadre */
+  border-radius: 10%;
+  width: auto;
+  object-fit: contain;
 }/* <- force la même hauteur qu’en v1 */
-
 
 /* Liens nav (desktop) */
 .nav-links {
@@ -93,26 +90,49 @@ $header-height: 120px;
   }
 }
 
-/* Réseaux sociaux */
-.nav-right {
+.nav-dashboard .nav-link {
+  color: rgba(255,255,255,.75);
+  text-decoration: none;
+  font-size: 20px;
+  font-family: 'Montserrat';
+  padding: 10px 12px;
+  border-radius: 6px;
+  transition: color .2s ease, background .2s ease, box-shadow .2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-dashboard .nav-link:hover { color:#fff; background: rgba(255,255,255,0.08); }
+.nav-dashboard .nav-link:focus-visible { outline:none; box-shadow: var(--focus-ring); }
+.nav-dashboard .nav-link.active { color:#ffffff; font-weight:600; }
+
+.logout-link { color:#ff5252 !important; font-weight:600; }
+.logout-link:hover { color:#ffffff !important; background:rgba(255,60,60,0.25); }
+.logout-link:active { background:rgba(255,60,60,0.35); }
+
+.nav-dashboard {
   display: flex;
-  text-align: right;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-left: 38px;
+  position: relative;
+}
 
-  .social-media-item {
-    display: inline-block;
+.nav-dashboard::before {
+  content: "";
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 34px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 2px;
+}
 
-    .social-icon {
-      margin: 10px;
-      display: flex;
-      width: 20px;
-      height: auto;
-      filter: brightness(0) invert(1);
-      transition: transform .2s ease;
-
-      &:hover { transform: scale(1.1); }
-      &:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 4px; }
-    }
-  }
+@media (max-width: 1250px) {
+  .nav-dashboard::before { display:none; }
+  .nav-dashboard { margin-left:0; gap:22px; }
 }
 
 /* Burger */
@@ -219,7 +239,7 @@ $header-height: 120px;
 
   /* Colonnes & listes (ancien sizing) */
   .nav-left,
-  .nav-right {
+  .nav-dashboard {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -229,8 +249,7 @@ $header-height: 120px;
     padding: 0;
   }
 
-  .nav-left-list,
-  .nav-right-list {
+  .nav-left-list {
     display: flex;
     flex-direction: column;
     justify-content: center;  /* présent dans l'ancienne */
