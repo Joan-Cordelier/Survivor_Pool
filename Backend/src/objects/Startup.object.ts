@@ -109,6 +109,18 @@ export async function getAllStartups() {
     }
 }
 
+export async function updateStartup(id: number, updateFields: Prisma.StartupDetailUpdateInput) {
+    try {
+        const startup = await prisma.startupDetail.update({
+            where: { id },
+            data: { ...updateFields },
+        });
+        return startup;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export async function deleteStartup(id: number) {
     try {
         const startup = await prisma.startupDetail.findUnique({

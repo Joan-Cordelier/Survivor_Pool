@@ -6,7 +6,7 @@ import crypto from 'crypto';
 const SALT_BYTES = 16;
 const KEY_LEN = 64;
 
-function hashPassword(password: string): string {
+export function hashPassword(password: string): string {
     const salt = crypto.randomBytes(SALT_BYTES).toString('hex');
     const derived = crypto.scryptSync(password, salt, KEY_LEN).toString('hex');
 

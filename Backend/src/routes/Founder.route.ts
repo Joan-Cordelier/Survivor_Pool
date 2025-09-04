@@ -8,5 +8,6 @@ router.post('/create', requireAuth, authorizeRoles('admin'), FounderController.c
 router.get('/get/:id', FounderController.getFounderByIdController);
 router.get('/get', FounderController.getAllFoundersController);
 router.delete('/delete/:id', requireAuth, authorizeRoles('admin'), FounderController.deleteFounderController);
+router.put('/update/:id', requireAuth, authorizeRoles('admin'), FounderController.updateFounderController);
 
 export default router;

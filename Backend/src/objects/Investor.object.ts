@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client"
 
 
 export async function createInvestor(
@@ -59,6 +60,18 @@ export async function getAllInvestors() {
     try {
         const investors = await prisma.investor.findMany();
         return investors;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateInvestor(id: number, updateFields: Prisma.InvestorUpdateInput) {
+    try {
+        const investor = await prisma.investor.update({
+            where: { id },
+            data: { ...updateFields },
+        });
+        return investor;
     } catch (error) {
         throw error;
     }

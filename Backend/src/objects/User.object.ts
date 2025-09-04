@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import prisma from "../config/db.config";
+import { hashPassword } from "../controller/Auth.controller";
 
 export async function createUser(
     email: string,
@@ -59,6 +61,26 @@ export async function getAllUsers() {
     try {
         const users = await prisma.user.findMany();
         return users;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateUser(id: number, updateFields: Prisma.UserUpdateInput) {
+    if (updateFields.password && typeof updateFields.password === 'string') {
+        updateFields.password = hashPassword(updateFields.password);
+    }
+    try {
+        const user = await prisma.user.update({
+            where: {
+                id
+            },
+            data: {
+                ...updateFields
+            },
+        });
+
+        return user;
     } catch (error) {
         throw error;
     }
