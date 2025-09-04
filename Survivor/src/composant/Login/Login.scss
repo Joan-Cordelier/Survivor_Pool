@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+// Variables (réutilisées depuis le fichier SCSS précédent)
+$secondary-bg-color: #003f88;
+$accent-color: #007bff;
+$accent-hover-color: #0056b3;
+$border-color: #ffffff;
+$border-radius: 10px;
+$box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+$padding-large: 40px;
+$padding-small: 30px;
+$max-width-content: 1200px;
+
+// Styles pour le formulaire de connexion
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; // Prend toute la hauteur de la fenêtre
+  width: 100vw;
+  background-color: #ffffff; // Utilise la couleur principale pour l'arrière-plan
+
+  .form {
+    background-color: #f3f3f3; // Fond semi-transparent
+    padding: $padding-large;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    max-width: 400px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    overflow: visible;
+
+    h2 {
+      font-family: 'Mulish', sans-serif;
+      margin: $padding-small;
+      font-size: 2rem;
+      display: inline-block;          // évite certains rognages
+      line-height: 1.25;              // > 1.1 pour laisser passer les descendantes
+      padding-bottom: 6px;            // un petit coussin pour le "g"
+      margin-bottom: 40px;  
+
+      /* Dégradé sur ce sous-élément aussi */
+      background: linear-gradient(135deg, #F49C9C, #C174F2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .form-name,
+    .form-password {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: $padding-small;
+      width: 100%;
+
+      label {
+        color: #000000;
+        margin-bottom: 5px;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+      }
+
+      input {
+        width: 90%;
+        padding: 10px;
+        border-radius: $border-radius;
+        border: 1px solid $border-color;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #000000;
+        font-size: 1rem;
+        font-family: 'Roboto', sans-serif;
+
+        &:focus {
+          outline: none;
+          background-color: rgba(255, 255, 255, 0.3);
+          border: 2px solid transparent;
+          border-image: linear-gradient(135deg, #F18585, #C174F2) 1;
+          border-image-slice: 1; // applique tout le gradient
+        }
+      }
+    }
+
+    button {
+      background-image: linear-gradient(135deg, #F18585, #C174F2);
+      color: #000000;
+      border: none;
+      padding: 15px 30px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: $border-radius;
+      transition: background-color 0.3s;
+      margin-top: $padding-small;
+      font-size: 1.2rem;
+
+      &:hover {
+        background-image: linear-gradient(135deg, #df7c7c, #ae68da);
+      }
+    }
+
+    p {
+      color: #000000;
+      margin-top: $padding-small;
+      font-family: 'Roboto', sans-serif;
+      font-size: 1rem;
+    }
+  }
+}
+
+.password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-container input {
+    flex: 1;
+    padding-right: 40px; /* Laisser de la place pour l'icône */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+}
+
+
+@media (max-width: 768px) {
+    .form {
+      padding: $padding-small;
+    }
+  
+    button {
+      font-size: 1rem;
+      padding: 10px 20px;
+    }
+  
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+  

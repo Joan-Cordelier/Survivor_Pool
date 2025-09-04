@@ -52,9 +52,9 @@ const Header = () => {
               </NavLink>
             </li>
             <li className="nav-left-list-item">
-              <a className="nav-link" href="https://members.demainthailande.fr" target="_blank" rel="noopener noreferrer">
+              <NavLink className="nav-link" to="/Login" onClick={closeMenu}>
                 Log In
-              </a>
+              </NavLink>
             </li>
 
           </ul>

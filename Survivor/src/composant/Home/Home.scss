@@ -338,24 +338,6 @@ body {
 }
 
 // Bouton Call-to-Action
-.cta-button2 {
-  background-color: #f9bc60;
-  color: #001e1d;
-  border: none;
-  padding: 15px 30px;
-  font-size: 1.2em;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 10px;
-  transition: background-color 0.3s;
-  margin-top: $padding-small;
-
-  &:hover {
-    background-color: rgb(230, 165, 67);
-  }
-}
-
-// Bouton Call-to-Action
 .cta-button3 {
   background-image: linear-gradient(135deg, #F18585, #C174F2);
   color: rgb(255, 255, 255);
