@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Importer useNavigate pour la redirection
+import { useNavigate } from 'react-router-dom';
 import './Login.scss';
+import * as AuthApi from '../../apis/BackendApi/Auth.api';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const navigate = useNavigate(); // Initialiser le hook useNavigate
@@ -12,48 +12,25 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log('Données soumises : ', {
-            username,
-            password
-        });
+    console.log('Données soumises : ', { email, password });
 
         try {
-            // Envoyer la requête d'authentification à l'API Symfony
-            const response = await axios.post('http://localhost:8000/api/odoo/authenticate', {
-                username,
-                password
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                withCredentials: true // Ajoute cette ligne
-            });
-
-            console.log('Réponse reçue:', response.data);
-
-            // Si l'authentification réussit, stocker le token et rediriger
-            if (response.data.status === 'success') {
-                const token = response.data.token;
-
-                // Stocker le token dans le localStorage
-                localStorage.setItem('jwtToken', token);
-
-                console.log("Local storage :" + localStorage);
-
-                // Afficher un message de succès
+            const data = await AuthApi.login(email, password); // data = { user, token }
+            console.log('Réponse reçue:', data);
+            if (data?.token) {
+                // Normalise la clé utilisée par le dashboard ("token").
+                localStorage.setItem('token', data.token);
+                // Nettoie ancien nom s'il existe.
+                localStorage.removeItem('jwtToken');
                 setMessage('Authentification réussie !');
-
-                // Rediriger vers la page protégée avec le hook useNavigate
-                    navigate('/community');
-
+                navigate('/dashboard');
             } else {
-                console.log('Erreur:', response.data.message);
-                setMessage('Erreur : ' + response.data.message);
+                setMessage('Réponse inattendue du serveur.');
             }
-        } catch {
-            console.error('Erreur lors de l\'authentification:');
-            setMessage('Erreur lors de l\'authentification.');
+        } catch (err) {
+            console.error('Erreur lors de l\'authentification:', err);
+            const apiMsg = err?.data?.message || err?.message || 'Erreur lors de l\'authentification.';
+            setMessage(apiMsg);
         }
     };
 
@@ -62,11 +39,11 @@ const Login = () => {
             <form onSubmit={handleSubmit} className='form'>
                 <h2>Log In</h2>
                 <div className='form-name'>
-                    <label>User Name :</label>
+                    <label>Email :</label>
                     <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         required
                     />
                 </div>

@@ -15,8 +15,6 @@ function decodeJwt(token) {
     }
 }
 
-// Sections configurables
-// NOTE: backend list routes are mounted as /<entity>/get so we call those directly
 const SECTIONS = [
   { key: 'overview', label: 'Overview', icon: '📊', roles: ['admin'] },
   { key: 'events', label: 'Events', icon: '🗓️', roles: ['admin'], endpoint: '/event/get' },
@@ -38,49 +36,55 @@ export default function Dashboard() {
   const redirectedRef = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // MODE DEV
-    useEffect(() => {
-        if (user === null && checking) {
-            setUser({
-                id: 'dev-user',
-                email: 'dev@example.com',
-                role: 'admin', // mettre 'user' si tu veux tester sans droits admin
-                raw: { dev: true }
-            });
-            setChecking(false);
-        }
-    }, [user, checking]);
+    // // MODE DEV
+    // useEffect(() => {
+    //     if (user === null && checking) {
+    //         setUser({
+    //             id: 'dev-user',
+    //             email: 'dev@example.com',
+    //             role: 'admin', // mettre 'user' si tu veux tester sans droits admin
+    //             raw: { dev: true }
+    //         });
+    //         setChecking(false);
+    //     }
+    // }, [user, checking]);
 
     // MODE USER
-    // useEffect(() => {
-    //     const token = localStorage.getItem('token');
-    //     if (!token) {
-    //         setError('Aucun token. Redirection...');
-    //         redirectedRef.current = true;
-    //         navigate('/Login', { replace: true });
-    //         return;
-    //     }
-    //     const payload = decodeJwt(token);
-    //     if (!payload) {
-    //         setError('Token invalide.');
-    //         localStorage.removeItem('token');
-    //         navigate('/Login', { replace: true });
-    //         return;
-    //     }
-    //     if (payload.exp && Date.now() / 1000 > payload.exp) {
-    //         setError('Session expirée.');
-    //         localStorage.removeItem('token');
-    //         navigate('/Login', { replace: true });
-    //         return;
-    //     }
-    //     setUser({
-    //         id: payload.id || payload.userId || payload.sub,
-    //         email: payload.email || '(email inconnu)',
-    //         role: payload.role || 'user',
-    //         raw: payload
-    //     });
-    //     setChecking(false);
-    // }, [navigate]);
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setError('Aucun token. Redirection...');
+            redirectedRef.current = true;
+            navigate('/Login', { replace: true });
+            return;
+        }
+        const payload = decodeJwt(token);
+        if (!payload) {
+            setError('Token invalide.');
+            localStorage.removeItem('token');
+            navigate('/Login', { replace: true });
+            return;
+        }
+        if (payload.exp && Date.now() / 1000 > payload.exp) {
+            setError('Session expirée.');
+            localStorage.removeItem('token');
+            navigate('/Login', { replace: true });
+            return;
+        }
+        // Essayer de récupérer un user complet stocké par la page de login
+        let storedUser = null;
+        try { storedUser = JSON.parse(localStorage.getItem('user') || 'null'); } catch { }
+        const hydrated = {
+            id: payload.id || payload.userId || payload.sub,
+            email: payload.email || storedUser?.email || '(email inconnu)',
+            name: payload.name || storedUser?.name || '',
+            role: payload.role || storedUser?.role || 'user',
+            raw: payload
+        };
+        setUser(hydrated);
+        localStorage.setItem('user', JSON.stringify({ id: hydrated.id, email: hydrated.email, name: hydrated.name, role: hydrated.role }));
+        setChecking(false);
+    }, [navigate]);
 
     const loadSection = useCallback(async (key) => {
         const section = SECTIONS.find(s => s.key === key);
@@ -90,7 +94,13 @@ export default function Dashboard() {
             return;
         setLoadingSection(true);
         try {
-            const token = localStorage.getItem('token');
+        // Support rétro-compatible si l'ancien nom de clé a été utilisé
+        const legacy = localStorage.getItem('jwtToken');
+        if (legacy && !localStorage.getItem('token')) {
+          localStorage.setItem('token', legacy);
+          localStorage.removeItem('jwtToken');
+        }
+        const token = localStorage.getItem('token');
             const res = await fetch(section.endpoint, { headers: token ? { Authorization: 'Bearer ' + token } : {} });
             if (!res.ok)
                 throw new Error('HTTP ' + res.status);
@@ -130,9 +140,53 @@ export default function Dashboard() {
     //     );
     // }
 
-  const safeUser = user || { id: 'loading', email: '...', role: 'user', raw: {} };
+  const safeUser = user || { id: 'loading', email: '...', name: '', role: 'user', raw: {} };
   const accessibleSections = (safeUser ? SECTIONS.filter(s => s.roles.includes(safeUser.role)) : []);
   const current = dataCache[active];
+
+  // ---- CRUD helpers (minimal) ----
+  const basePathFromSection = (sectionKey) => {
+    switch(sectionKey){
+      case 'events': return '/event';
+      case 'startups': return '/startup';
+      case 'investors': return '/investor';
+      case 'partners': return '/partner';
+      case 'news': return '/news';
+      case 'users': return '/user';
+      default: return '';
+    }
+  };
+
+  const openCreate = (sectionKey) => {
+    // Placeholder – future modal form
+    alert('Création non implémentée encore pour: ' + sectionKey);
+  };
+
+  const openEdit = (sectionKey, row) => {
+    alert('Édition non implémentée encore. ID: ' + (row.id || 'n/a'));
+  };
+
+  const confirmDelete = async (sectionKey, row) => {
+    if (!row || row.id == null) { alert('ID manquant'); return; }
+    if (!window.confirm('Supprimer l\'élément #' + row.id + ' ?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const base = basePathFromSection(sectionKey);
+      if (!base) throw new Error('Section inconnue');
+      const res = await fetch(`${base}/delete/${row.id}`, { method:'DELETE', headers: token ? { Authorization: 'Bearer ' + token } : {} });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      // Mise à jour locale du cache
+      setDataCache(dc => {
+        const cur = dc[sectionKey];
+        if (!cur) return dc;
+        return { ...dc, [sectionKey]: { ...cur, items: cur.items.filter(it => it.id !== row.id) } };
+      });
+    } catch(e){
+      alert('Erreur suppression: ' + (e.message || e));
+    }
+  };
+
+  const renderModal = () => null; // placeholder
 
   function renderSection() {
     if (active === 'users' && safeUser.role !== 'admin')
@@ -168,22 +222,46 @@ export default function Dashboard() {
     if (current?.error)
         return <div className="section-error">Erreur: {current.error}</div>;
     const list = current?.items || [];
+    // Table columns heuristics
+    const columns = computeColumns(active, list);
     return (
-      <div className="list-wrapper">
-        <div className="list-header">
-          <h2>{SECTIONS.find(s=>s.key===active)?.label}</h2>
-          <span className="count-badge">{list.length}</span>
+      <div className="table-wrapper">
+        <div className="table-toolbar">
+          <div className="ttl">
+            {SECTIONS.find(s=>s.key===active)?.label} <span className="count-badge">{list.length}</span>
+          </div>
+          {safeUser.role === 'admin' && (
+            <button className="btn primary" onClick={()=>openCreate(active)}>+ Ajouter</button>
+          )}
         </div>
         {loadingSection && <div className="inline-loading">Mise à jour...</div>}
         {(!list.length && !loadingSection) && <div className="empty">Aucune donnée.</div>}
-        <ul className="generic-list">
-          {list.slice(0,100).map((item,i)=>(
-            <li key={item.id || item.uuid || i}>
-              <div className="primary">{item.name || item.title || item.email || ('#'+(item.id||i))}</div>
-              <div className="secondary">{item.description || item.role || item.type || ''}</div>
-            </li>
-          ))}
-        </ul>
+        {!!list.length && (
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  {columns.map(c=> <th key={c.key}>{c.label}</th>)}
+                  {safeUser.role === 'admin' && <th style={{width:120}}>Actions</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {list.slice(0,200).map((row,i)=> (
+                  <tr key={row.id || row.uuid || i}>
+                    {columns.map(c=> <td key={c.key}>{formatCell(c, row)}</td>)}
+                    {safeUser.role === 'admin' && (
+                      <td className="actions">
+                        <button onClick={()=>openEdit(active, row)} className="btn sm">✏️</button>
+                        <button onClick={()=>confirmDelete(active, row)} className="btn sm danger">🗑️</button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {renderModal()}
       </div>
     );
   }
@@ -224,3 +302,33 @@ export default function Dashboard() {
     </div>
   );
 }
+
+// Helpers outside component (could be moved) ----
+function computeColumns(sectionKey, list) {
+  if (!list.length) return [ { key: 'id', label: 'ID' } ];
+  const sample = list[0];
+  const baseMap = {
+    events: ['id','name','location','event_type','dates'],
+    startups: ['id','name','email','sector','maturity'],
+    investors: ['id','name','email','investor_type'],
+    partners: ['id','name','email','partnership_type'],
+    news: ['id','title','category','news_date'],
+    users: ['id','name','email','role']
+  };
+  const wanted = baseMap[sectionKey] || Object.keys(sample).slice(0,5);
+  return wanted.filter(k=>k in sample).map(k=>({ key: k, label: k.replace(/_/g,' ') }));
+}
+
+function formatCell(col, row){
+  const val = row[col.key];
+  if (val == null || val === '') return '—';
+  if (typeof val === 'string' && val.length > 60) return val.slice(0,57)+'…';
+  return String(val);
+}
+
+// Simple modal state (module scoped) – quick approach; in larger app use context or a modal component
+let modalState = { open:false, mode:null, section:null, row:null };
+let modalSubscribers = new Set();
+function setModal(next){ modalState = { ...modalState, ...next }; modalSubscribers.forEach(fn=>fn(modalState)); }
+
+// Hooks inside component rely on below; kept simple due to constraints.
