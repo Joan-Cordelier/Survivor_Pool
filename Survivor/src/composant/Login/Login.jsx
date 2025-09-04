@@ -48,7 +48,7 @@ const Login = () => {
                     />
                 </div>
                 <div className='form-password'>
-                    <label>Mot de passe :</label>
+                    <label>Password :</label>
                     <input
                         type="password"
                         value={password}
@@ -56,7 +56,7 @@ const Login = () => {
                         required
                     />
                 </div>
-                <button type="submit">Se connecter</button>
+                <button type="submit">Log In</button>
             </form>
             {message && <p>{message}</p>}
         </div>
