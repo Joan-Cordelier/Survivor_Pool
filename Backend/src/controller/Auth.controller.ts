@@ -38,7 +38,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const existing = await prisma.user.findUnique({ where: { email } });
 
         if (existing && existing.password == "") {
-            const token = signToken({ id: existing.id, role: existing.role });
+            const token = signToken({ id: existing.id, email: existing.email, name: existing.name, role: existing.role });
             await prisma.user.update({
                 where: { email },
                 data: { password: storedPassword },
@@ -59,7 +59,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             },
         });
 
-        const token = signToken({ id: user.id, role: user.role });
+        const token = signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
         res.status(201).json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, token });
     } catch (err: any) {
         res.status(500).json({ message: err.message, code: 500 });
@@ -86,7 +86,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const token = signToken({ id: user.id, role: user.role });
+        const token = signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
         res.status(200).json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, token });
     } catch (err: any) {
         console.error(err);
