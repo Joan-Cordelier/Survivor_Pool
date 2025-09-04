@@ -2,9 +2,21 @@ import { useNavigate } from 'react-router-dom'; // Import du hook useNavigate
 import './Home.scss';
 import HomePhoto2 from '../../assets/Home_3.avif';
 import HomePhoto3 from '../../assets/home_4.avif';
+
 import Engrenage from '../../assets/engrenage.svg';
 import Diamond from '../../assets/diamond.svg';
 import Photo_device from '../../assets/camera.svg';
+import Chart from '../../assets/bar_chart.svg';
+import Code from '../../assets/code.svg';
+import Telegramme from '../../assets/telegramme.svg';
+
+import Photo_Ss1 from '../../assets/photo_Ss1.jpg';
+import Photo_Ss2 from '../../assets/photo_Ss2.jpg';
+import Photo_Ss3 from '../../assets/photo_Ss3.jpg';
+import Photo_Ss4 from '../../assets/photo_Ss4.jpg';
+import Photo_Ss5 from '../../assets/photo_Ss5.jpg';
+import Photo_Ss6 from '../../assets/photo_Ss6.jpg';
+
 
 function Home() {
   const navigate = useNavigate(); // Initialisation du hook useNavigate
@@ -44,9 +56,6 @@ function Home() {
             </span>
           </div>
           <div className='cta-button-container'>
-            {/* <button className="cta-button2" onClick={() => navigate('/Events')}>
-              Echangez gratuitement avec notre expert
-            </button> */}
           </div>
         </div>
       </div>
@@ -67,9 +76,9 @@ function Home() {
 
           </div>
           <div className='box'>
-            <img src={Engrenage} alt="description de l'image" className='img1' />
-            <img src={Diamond} alt="description de l'image" className='img1' />
-            <img src={Photo_device} alt="description de l'image" className='img1' />
+            <img src={Chart} alt="description de l'image" className='img1' />
+            <img src={Code} alt="description de l'image" className='img1' />
+            <img src={Telegramme} alt="description de l'image" className='img1' />
           </div>
         </div>
       </div>
@@ -91,7 +100,18 @@ function Home() {
       </div>
 
       <div className='home-container'>
-         
+         <div className='wrapper-container5'>
+            <h2 className='title-text'>Success Stories</h2>
+          <p className='paragraph-text'>
+            Discover some of the groundbreaking startups that began their journey at JEB Incubator.
+          </p>
+          <img src={Photo_Ss1} alt="description de l'image" className='img1' />
+          <img src={Photo_Ss2} alt="description de l'image" className='img1' />
+          <img src={Photo_Ss3} alt="description de l'image" className='img1' />
+          <img src={Photo_Ss4} alt="description de l'image" className='img1' />
+          <img src={Photo_Ss5} alt="description de l'image" className='img1' />
+          <img src={Photo_Ss6} alt="description de l'image" className='img1' />
+         </div>
       </div>
     </div>
   );
