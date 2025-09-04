@@ -2,6 +2,11 @@ import './project.scss';
 import expertImage from '../../assets/benoit.jpg'; // laissé tel quel, même si non utilisé ici
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from "react";
+import * as StartupApi from '../../apis/BackendApi/Startup.api';
+
+// Simple in-memory cache to avoid duplicate network requests during
+// React 18 StrictMode (dev) remounts. This persists for the page lifetime.
+let startupsCache = null;
 
 const Offre = () => {
   // === Tes fonctions existantes (analytics + stripe) ===
@@ -45,63 +50,60 @@ const Offre = () => {
   };
 
   // === Données demo (remplace par ton API quand prête) ===
-  const DEMO = [
-    {
-      id: "p1",
-      name: "SolarFlow",
-      logoUrl: "https://dummyimage.com/64x64/000/fff&text=S",
-      shortDescription: "IoT solar monitoring for micro-grids.",
-      description: "Real-time analytics and predictive maintenance for distributed solar micro-grids.",
-      founders: ["Amaya Chen", "Noah Rossi"],
-      contacts: { email: "contact@solarflow.io", website: "https://solarflow.io", linkedin: "https://linkedin.com/company/solarflow" },
-      maturity: "MVP",
-      sector: "Energy",
-      location: "Lyon",
-      progress: "Pilots running with 3 municipalities.",
-      needs: ["Seed funding", "Industrial partnerships"],
-      updatedAt: "2025-08-20"
-    },
-    {
-      id: "p2",
-      name: "MediScan",
-      logoUrl: "https://dummyimage.com/64x64/000/fff&text=M",
-      shortDescription: "AI-assisted radiology QA.",
-      description: "Spots anomalies in X-rays and MRIs to support radiologists with faster triage.",
-      founders: ["Sara Benyamina"],
-      contacts: { email: "hello@mediscan.ai", website: "https://mediscan.ai", linkedin: "https://linkedin.com/company/mediscan-ai" },
-      maturity: "Growth",
-      sector: "HealthTech",
-      location: "Paris",
-      progress: "€450k ARR, 12 clinics onboarded.",
-      needs: ["Series A", "Regulatory advisors"],
-      updatedAt: "2025-08-18"
-    },
-    {
-      id: "p3",
-      name: "AgriLoop",
-      logoUrl: "https://dummyimage.com/64x64/000/fff&text=A",
-      shortDescription: "Circular economy for farms.",
-      description: "Marketplace connecting farms with bio-waste recyclers to cut costs and emissions.",
-      founders: ["Lina Haddad", "Yanis Belaïd"],
-      contacts: { email: "team@agriloop.fr", website: "https://agriloop.fr", linkedin: "https://linkedin.com/company/agriloop" },
-      maturity: "Ideation",
-      sector: "AgriTech",
-      location: "Bordeaux",
-      progress: "Prototype and 5 pilot farms.",
-      needs: ["MVP support", "First customers"],
-      updatedAt: "2025-07-30"
-    }
-  ];
+  // Projects are now loaded from the backend. We keep a small normalization step
+  // to adapt different shapes that the API may return.
+
+  const normalizeStartup = (s) => ({
+    id: s.id ?? s._id ?? `${s.name ?? 'startup'}-${Math.random().toString(36).slice(2,8)}`,
+    name: s.name ?? s.title ?? 'Untitled',
+    logoUrl: s.logoUrl ?? s.logo ?? s.image ?? 'https://dummyimage.com/64x64/000/fff&text=?',
+    shortDescription: s.shortDescription ?? s.summary ?? '',
+    description: s.description ?? s.longDescription ?? s.summary ?? '',
+    founders: (Array.isArray(s.founders) ? s.founders : (Array.isArray(s.founderNames) ? s.founderNames : []))
+      .map((f) => (typeof f === 'string' ? f : (f?.name ?? f?.title ?? ''))).filter(Boolean),
+    contacts: s.contacts ?? { email: s.email, website: s.website, linkedin: s.linkedin },
+    maturity: s.maturity ?? s.stage ?? '',
+    sector: s.sector ?? s.industry ?? '',
+    location: s.location ?? s.city ?? '',
+    progress: s.progress ?? s.status ?? '',
+    needs: Array.isArray(s.needs) ? s.needs : (s.needs ? [s.needs] : (Array.isArray(s.requests) ? s.requests : [])),
+    updatedAt: s.updatedAt ?? s.updated_at ?? s.updated ?? null,
+  });
 
   // === State ===
-  const [projects, setProjects] = useState(DEMO);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // // Appel API (décommente et adapte l’URL si besoin)
-  // useEffect(() => {
-  //   axios.get("/api/projects")
-  //     .then(res => setProjects(res.data))
-  //     .catch(() => setProjects(DEMO));
-  // }, []);
+  // Fetch projects from backend (uses fetch-based API client)
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+
+    // Use cache when available to avoid duplicate requests in dev StrictMode
+    if (startupsCache) {
+      setProjects(startupsCache.map(normalizeStartup));
+      setLoading(false);
+      return () => { mounted = false; };
+    }
+
+    StartupApi.getAllStartups()
+      .then((data) => {
+        if (!mounted) return;
+        // Accept either an array directly or an envelope { data: [...] }
+        const raw = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+        startupsCache = raw;
+        setProjects(raw.map(normalizeStartup));
+      })
+      .catch((err) => {
+        console.error('Failed to fetch startups:', err);
+        setProjects([]);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => { mounted = false; };
+  }, []);
 
   // Filtres
   const [q, setQ] = useState("");
