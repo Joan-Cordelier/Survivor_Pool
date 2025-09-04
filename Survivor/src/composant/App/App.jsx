@@ -9,6 +9,7 @@ import Header from '../template/Headers/Headers.jsx';  // Ton header
 import Offre from '../Project/project.jsx';  // Ton offre
 import News from '../News/news.jsx';
 import Login from '../Login/Login.jsx'
+import Dashboard from '../Dashboard/Dashboard.jsx';
 
 // Si tu veux ajouter un Footer plus tard
 import Footer from '../template/Footer/Footer.jsx'; 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/deja-client" element={<DejaClient />} />
         <Route path="/News" element={<News />} />
         <Route path="/Login" element={<Login />} />
+        <Route path="/Dashboard" element={<Dashboard />} />
       </Routes>
       <Footer />  {/* Le Footer sera aussi affiché sur toutes les pages */}
     </Router>

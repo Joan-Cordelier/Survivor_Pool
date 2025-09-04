@@ -56,7 +56,11 @@ const Header = () => {
                 Log In
               </NavLink>
             </li>
-
+            <li className="nav-left-list-item">
+              <NavLink className="nav-link" to="/Dashboard" onClick={closeMenu}>
+                Dashboard
+              </NavLink>
+            </li>
           </ul>
         </div>
 
