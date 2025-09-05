@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import GoogleAnalytics from '../BaliseGoogle/GloogleAnalytics.jsx';
 // Importation de tes composants
 import Home from '../Home/Home.jsx';
@@ -16,7 +16,7 @@ import Footer from '../template/Footer/Footer.jsx';
 
 function App() {
   return (
-    <Router>
+    <BrowserRouter basename="/Survivor_Pool">
       <GoogleAnalytics />
       <Header />  {/* Le Header sera affiché sur toutes les pages */}
       <Routes>
@@ -30,7 +30,7 @@ function App() {
         <Route path="/Dashboard" element={<Dashboard />} />
       </Routes>
       <Footer />  {/* Le Footer sera aussi affiché sur toutes les pages */}
-    </Router>
+    </BrowserRouter>
   );
 }
 

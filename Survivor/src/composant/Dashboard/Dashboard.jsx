@@ -159,7 +159,6 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!checking && user) {
-            // Pré-chargement nécessaire pour les graphes overview
             const baseKeys = ['events', 'startups', 'news'];
             const extraAdmin = user.role === 'admin' ? ['investors', 'partners', 'users'] : [];
             [...baseKeys, ...extraAdmin].forEach(k => loadSection(k));
@@ -278,15 +277,27 @@ export default function Dashboard() {
 
         const submitUserEdit = async (e) => {
                 e.preventDefault();
-                if (!modal.row) return;
+                if (!modal.row)
+                    return;
+
                 const form = e.target;
                 const updateFields = {};
-                const name = form.name.value.trim(); if (name && name !== modal.row.name) updateFields.name = name;
-                const role = form.role.value.trim(); if (role && role !== modal.row.role) updateFields.role = role;
-                const password = form.password.value; if (password) updateFields.password = password;
-                const founder_id = form.founder_id.value ? Number(form.founder_id.value) : null; if (founder_id !== modal.row.founder_id) updateFields.founder_id = founder_id;
-                const investor_id = form.investor_id.value ? Number(form.investor_id.value) : null; if (investor_id !== modal.row.investor_id) updateFields.investor_id = investor_id;
-                if (Object.keys(updateFields).length === 0) { closeModal(); return; }
+                const name = form.name.value.trim();
+
+                if (name && name !== modal.row.name)
+                    updateFields.name = name;
+                const role = form.role.value.trim();
+                    if (role && role !== modal.row.role) updateFields.role = role;
+                const password = form.password.value;
+                    if (password) updateFields.password = password;
+                const founder_id = form.founder_id.value ? Number(form.founder_id.value) : null;
+                if (founder_id !== modal.row.founder_id)
+                    updateFields.founder_id = founder_id;
+                const investor_id = form.investor_id.value ? Number(form.investor_id.value) : null;
+                if (investor_id !== modal.row.investor_id)
+                    updateFields.investor_id = investor_id;
+                if (Object.keys(updateFields).length === 0)
+                    { closeModal(); return; }
                 try {
                         setModal(m=>({...m,loading:true,error:null}));
                         const token = localStorage.getItem('token');
@@ -311,21 +322,22 @@ export default function Dashboard() {
             const fields = SECTION_FORMS[sectionKey] || [];
             const form = e.target;
             const payload = {};
+
             fields.forEach(f => {
-        let v = form[f.name]?.value;
-                if (f.type === 'number' && v !== '') v = Number(v);
-                if (v === '') v = null;
-                if (f.textarea) v = form[f.name].value; // déjà fait mais clair
-        if (v !== null) payload[f.name] = v;
+                let v = form[f.name]?.value;
+                if (f.type === 'number' && v !== '')
+                    v = Number(v);
+                if (v === '')
+                    v = null;
+                if (f.textarea)
+                    v = form[f.name].value;
+                if (v !== null)
+                    payload[f.name] = v;
             });
-            // Normalisation date spécifique avant envoi
-            if (sectionKey === 'events' && payload.dates) {
+            if (sectionKey === 'events' && payload.dates)
                 payload.dates = normalizeDateStr(payload.dates);
-            }
-            if (sectionKey === 'news' && payload.news_date) {
+            if (sectionKey === 'news' && payload.news_date)
                 payload.news_date = normalizeDateStr(payload.news_date);
-            }
-            // Validation minimale required
             for (const f of fields) {
                 if (f.required && (payload[f.name] == null || payload[f.name] === '')) {
                     setModal(m => ({ ...m, error: 'Missing required fields' }));
@@ -336,7 +348,7 @@ export default function Dashboard() {
                 setModal(m=>({...m,loading:true,error:null}));
                 const token = localStorage.getItem('token');
                 const base = basePathFromSection(sectionKey);
-                const res = await fetch(`${base}/create`, { method:'POST', headers:{ 'Content-Type':'application/json', ...(token? {Authorization:'Bearer '+token}:{}) }, body: JSON.stringify(payload) });
+                const res = await fetch(`${base}/create`, { method:'POST', headers:{ 'Content-Type':'application/json', ...(token? {Authorization:'Bearer '+ token}:{}) }, body: JSON.stringify(payload) });
                 if (!res.ok) {
                     let msg = 'HTTP '+res.status;
                     try { const ej = await res.json(); msg = ej.message || msg; } catch {}

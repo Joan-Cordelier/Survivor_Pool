@@ -1,21 +1,23 @@
 import './event.scss';
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as EventApi from '../../apis/BackendApi/Event.api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
 // cache simple pour éviter les doublons en mode Strict
 let eventsCache = null;
+const imageUrlCache = new Map();
 
 const Events = () => {
   // Normalisation des données venant de la table Event
   const normalizeEvent = (e) => ({
     id: e.id ?? e._id ?? `${e.title ?? 'event'}-${Math.random().toString(36).slice(2,8)}`,
-    title: e.title ?? e.name ?? 'Untitled event',
+    title: e.name ?? e.title ?? 'Untitled event',
     description: e.description ?? '',
     location: e.location ?? '',
     event_type: e.event_type ?? '',
     target_audience: e.target_audience ?? '',
-    date: e.event_date ?? e.date ?? null,
-    image: e.image ?? e.banner ?? null,
+    date: e.dates ?? e.event_date ?? e.date ?? null,
+    image: null,
   });
 
   const [events, setEvents] = useState([]);
@@ -143,7 +145,13 @@ const Events = () => {
               className={`card ${expanded ? "expanded" : ""}`}
             >
               <header className="card-header">
-                {e.image && <img src={e.image} alt="" className="logo" />}
+                <div className="logo-wrap">
+                  {e.image ? (
+                    <img src={e.image} alt="" className="logo" />
+                  ) : (
+                    <div className="logo skeleton" aria-hidden="true" />
+                  )}
+                </div>
                 <div className="title-wrap">
                   <h3 className="title">{e.title}</h3>
                   <p className="kicker">{e.location} — {e.date}</p>

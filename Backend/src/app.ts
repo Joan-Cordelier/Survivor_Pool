@@ -21,7 +21,12 @@ import { syncDB } from './utils/SyncDb.utils';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const allowed = [
+  'http://localhost:5173',              // dev
+  'https://joan-cordelier.github.io',   // GitHub Pages
+];
+
+app.use(cors({ origin: allowed, credentials: true }));
 app.use(express.static(path.join(__dirname, "../../Survivor/dist")));
 app.use(express.json());
 

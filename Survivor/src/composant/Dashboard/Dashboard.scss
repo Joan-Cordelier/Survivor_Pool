@@ -1,14 +1,13 @@
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap');
+
+$imported-fonts: true;
+
 .dashboard-loading {
   padding: 60px;
   font-size: 1.2rem;
   text-align: center;
 }
-
-// Nouvelle mise en page admin
-// Couleurs alignées sur project.scss
-// Reprise de la palette brand-from / brand-to avec déclinaisons
-$imported-fonts: true;
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap');
 
 $brand-from: #F18585;
 $brand-to: #C174F2;
@@ -311,7 +310,12 @@ table.data-table .badge { background:#e6eef9; color:#284b75; padding:2px 8px 3px
 }
 // Lighter cards aligned with brand gradient
 .overview-grid .card { 
-  background: linear-gradient(135deg, lighten($brand-from,15%), lighten($brand-to,5%));
+  // Updated to use color.adjust instead of deprecated lighten()
+  background: linear-gradient(
+    135deg,
+    color.adjust($brand-from, $lightness: 15%),
+    color.adjust($brand-to, $lightness: 5%)
+  );
   color:#1d2a3b; 
   position:relative; 
   border:1px solid rgba(0,0,0,0.06); 
