@@ -1,0 +1,36 @@
+name: CD Backend (GHCR)
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*.*.*"]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compute image
+        id: vars
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}-backend" >> $GITHUB_OUTPUT
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Version tag
+        id: tag
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then echo "t=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT; else echo "t=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT; fi
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Survivor_Pool/Backend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.vars.outputs.image }}:${{ steps.tag.outputs.t }}
+            ${{ steps.vars.outputs.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
