@@ -20,10 +20,6 @@ class EventsApi extends BaseJebApi {
     static async getEventImage(id: number): Promise<any> {
         const url = `${this.baseUrl}/events/${id}/image`;
         const imageData = await this.request<any>(url, { method: 'GET' });
-        if (typeof imageData === 'string') {
-            const compressed = zlib.gzipSync(Buffer.from(imageData, 'utf-8'));
-            return compressed.toString('base64');
-        }
         return imageData;
     }
 }
