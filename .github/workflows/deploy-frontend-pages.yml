@@ -27,6 +27,7 @@ jobs:
           echo "VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }}" > .env
 
       - run: yarn install --frozen-lockfile || yarn install
+      - run: npm install react-is
       - run: yarn build
 
       - name: Add SPA fallback
