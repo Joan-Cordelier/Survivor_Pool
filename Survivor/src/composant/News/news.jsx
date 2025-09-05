@@ -83,11 +83,11 @@ export default function News() {
 
   const toggle = (id) => setExpandedId(prev => (prev === id ? null : id));
 
-  useEffect(() => {
-    if (!expandedId) return;
-    const el = cardRefs.current[expandedId];
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [expandedId]);
+  // useEffect(() => {
+  //   if (!expandedId) return;
+  //   const el = cardRefs.current[expandedId];
+  //   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // }, [expandedId]);
 
   const formatDate = (iso) => {
     const t = Date.parse(iso);

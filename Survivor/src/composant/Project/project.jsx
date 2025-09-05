@@ -1,14 +1,13 @@
 import './project.scss';
 import axios from 'axios';
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as StartupApi from '../../apis/BackendApi/Startup.api';
 
-// Simple in-memory cache to avoid duplicate network requests during
-// React 18 StrictMode (dev) remounts. This persists for the page lifetime.
+// Petit cache mémoire pour éviter les doubles requêtes en dev (StrictMode)
 let startupsCache = null;
 
 const Offre = () => {
-  // === Tes fonctions existantes (analytics + stripe) ===
+  // (hérité) Fonctions analytics + stripe, laissé tel quel
   const handleJoinNowClick = () => {
     const sendAnalyticsEvent = () => {
       if (window.gtag) {
@@ -48,47 +47,69 @@ const Offre = () => {
     });
   };
 
-  // === Données demo (remplace par ton API quand prête) ===
-  // Projects are now loaded from the backend. We keep a small normalization step
-  // to adapt different shapes that the API may return.
+  // Normalisation d’un objet startup tel que renvoyé par l’API
+  const normalizeStartup = (s) => {
+    const foundersRaw =
+      Array.isArray(s?.founders) ? s.founders :
+      Array.isArray(s?.founderNames) ? s.founderNames : [];
 
-  const normalizeStartup = (s) => ({
-    id: s.id ?? s._id ?? `${s.name ?? 'startup'}-${Math.random().toString(36).slice(2,8)}`,
-    name: s.name ?? s.title ?? 'Untitled',
-    logoUrl: s.logoUrl ?? s.logo ?? s.image ?? 'https://dummyimage.com/64x64/000/fff&text=?',
-    shortDescription: s.shortDescription ?? s.summary ?? '',
-    description: s.description ?? s.longDescription ?? s.summary ?? '',
-    founders: (Array.isArray(s.founders) ? s.founders : (Array.isArray(s.founderNames) ? s.founderNames : []))
-      .map((f) => (typeof f === 'string' ? f : (f?.name ?? f?.title ?? ''))).filter(Boolean),
-    contacts: s.contacts ?? { email: s.email, website: s.website, linkedin: s.linkedin },
-    maturity: s.maturity ?? s.stage ?? '',
-    sector: s.sector ?? s.industry ?? '',
-    location: s.location ?? s.city ?? '',
-    progress: s.progress ?? s.status ?? '',
-    needs: Array.isArray(s.needs) ? s.needs : (s.needs ? [s.needs] : (Array.isArray(s.requests) ? s.requests : [])),
-    updatedAt: s.updatedAt ?? s.updated_at ?? s.updated ?? null,
-  });
+    const founders = foundersRaw
+      .map((f) => (typeof f === 'string' ? f : (f?.name ?? f?.title ?? '')))
+      .filter(Boolean);
 
-  // === State ===
+    const needsRaw = s?.needs ?? s?.requests ?? [];
+    const needs = Array.isArray(needsRaw)
+      ? needsRaw
+      : String(needsRaw || '')
+          .split(',')
+          .map((x) => x.trim())
+          .filter(Boolean);
+
+    return {
+      id: s?.id ?? s?._id ?? `${s?.name ?? 'startup'}-${Math.random().toString(36).slice(2, 8)}`,
+      name: s?.name ?? s?.title ?? 'Untitled',
+      logoUrl: s?.logoUrl ?? s?.logo ?? s?.image ?? 'https://dummyimage.com/64x64/000/fff&text=?',
+      // aperçu / court
+      shortDescription: s?.shortDescription ?? s?.summary ?? '',
+      // détails
+      description: s?.description ?? s?.longDescription ?? s?.summary ?? '',
+      legal_status: s?.legal_status ?? s?.legalStatus ?? '',
+      address: s?.address ?? s?.location ?? '',
+      email: s?.email ?? s?.contacts?.email ?? '',
+      phone: s?.phone ?? s?.contacts?.phone ?? '',
+      created_at: s?.created_at ?? s?.createdAt ?? '',
+      website_url: s?.website_url ?? s?.website ?? s?.contacts?.website ?? '',
+      social_media_url: s?.social_media_url ?? s?.social ?? s?.contacts?.linkedin ?? s?.contacts?.twitter ?? '',
+      project_status: s?.project_status ?? s?.status ?? '',
+      sector: s?.sector ?? s?.industry ?? '',
+      maturity: s?.maturity ?? s?.stage ?? '',
+      founders,
+      needs,
+      // pour les filtres existants
+      location: s?.location ?? s?.city ?? (s?.address || '').split(',')[1]?.trim() ?? '',
+    };
+  };
+
+  // State
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch projects from backend (uses fetch-based API client)
+  // Récupération depuis l’API (avec cache mémoire)
   useEffect(() => {
     let mounted = true;
     setLoading(true);
 
-    // Use cache when available to avoid duplicate requests in dev StrictMode
     if (startupsCache) {
-      setProjects(startupsCache.map(normalizeStartup));
-      setLoading(false);
+      if (mounted) {
+        setProjects(startupsCache.map(normalizeStartup));
+        setLoading(false);
+      }
       return () => { mounted = false; };
     }
 
     StartupApi.getAllStartups()
       .then((data) => {
         if (!mounted) return;
-        // Accept either an array directly or an envelope { data: [...] }
         const raw = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
         startupsCache = raw;
         setProjects(raw.map(normalizeStartup));
@@ -105,21 +126,21 @@ const Offre = () => {
   }, []);
 
   // Filtres
-  const [q, setQ] = useState("");
-  const [sector, setSector] = useState("");
-  const [maturity, setMaturity] = useState("");
-  const [location, setLocation] = useState("");
+  const [q, setQ] = useState('');
+  const [sector, setSector] = useState('');
+  const [maturity, setMaturity] = useState('');
+  const [location, setLocation] = useState('');
 
   const sectors = useMemo(
-    () => Array.from(new Set(projects.map(p => p.sector).filter(Boolean))).sort(),
+    () => Array.from(new Set(projects.map((p) => p.sector).filter(Boolean))).sort(),
     [projects]
   );
   const maturities = useMemo(
-    () => Array.from(new Set(projects.map(p => p.maturity).filter(Boolean))).sort(),
+    () => Array.from(new Set(projects.map((p) => p.maturity).filter(Boolean))).sort(),
     [projects]
   );
   const locations = useMemo(
-    () => Array.from(new Set(projects.map(p => p.location).filter(Boolean))).sort(),
+    () => Array.from(new Set(projects.map((p) => p.location).filter(Boolean))).sort(),
     [projects]
   );
 
@@ -128,7 +149,7 @@ const Offre = () => {
     return projects.filter((p) => {
       const matchesQ = !needle
         ? true
-        : [p.name, p.shortDescription, p.description]
+        : [p.name, p.shortDescription, p.description, p.sector, p.maturity, p.address]
             .filter(Boolean)
             .some((s) => s.toLowerCase().includes(needle));
       const matchesSector = !sector || p.sector === sector;
@@ -138,20 +159,34 @@ const Offre = () => {
     });
   }, [projects, q, sector, maturity, location]);
 
-  const clearFilters = () => { setQ(""); setSector(""); setMaturity(""); setLocation(""); };
+  const clearFilters = () => { setQ(''); setSector(''); setMaturity(''); setLocation(''); };
 
-  // Expand/collapse
+  // Dépliage cartes
   const [expandedId, setExpandedId] = useState(null);
   const cardRefs = useRef({});
-  const toggle = (id) => setExpandedId(prev => prev === id ? null : id);
+  const toggle = (id) => setExpandedId((prev) => (prev === id ? null : id));
 
-  useEffect(() => {
-    if (!expandedId) return;
-    const el = cardRefs.current[expandedId];
-    el?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [expandedId]);
+  // useEffect(() => {
+  //   if (!expandedId) return;
+  //   const el = cardRefs.current[expandedId];
+  //   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // }, [expandedId]);
 
-  // === RENDER (sans framer-motion) ===
+  // Helpers
+  const formatDate = (iso) => {
+    const t = Date.parse(iso);
+    return Number.isFinite(t)
+      ? new Date(t).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '—';
+  };
+
+  const normalizeNeeds = (needs) => {
+    if (!needs) return [];
+    if (Array.isArray(needs)) return needs;
+    return String(needs).split(',').map((s) => s.trim()).filter(Boolean);
+  };
+
+  // RENDER
   return (
     <div className="projects-page">
       {/* Filters */}
@@ -185,12 +220,18 @@ const Offre = () => {
           <button className="clear" onClick={clearFilters}>Clear</button>
         </div>
         <div className="results">
-          {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+          {loading
+            ? 'Loading…'
+            : `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`}
         </div>
       </div>
 
       {/* Grid + expandable cards */}
       <section className="grid">
+        {!loading && filtered.length === 0 && (
+          <div className="muted" style={{ padding: '8px 4px' }}>No projects found.</div>
+        )}
+
         {filtered.map((p) => {
           const expanded = expandedId === p.id;
           const detailsId = `details-${p.id}`;
@@ -198,13 +239,13 @@ const Offre = () => {
             <article
               key={p.id}
               ref={(el) => (cardRefs.current[p.id] = el)}
-              className={`card ${expanded ? "expanded" : ""}`}
+              className={`card ${expanded ? 'expanded' : ''}`}
             >
               <header className="card-header">
                 <img src={p.logoUrl} alt="" className="logo" />
                 <div className="title-wrap">
                   <h3 className="title">{p.name}</h3>
-                  <p className="kicker">{p.shortDescription}</p>
+                  {p.shortDescription && <p className="kicker">{p.shortDescription}</p>}
                 </div>
                 <button
                   className="more"
@@ -212,68 +253,105 @@ const Offre = () => {
                   aria-expanded={expanded}
                   aria-controls={detailsId}
                 >
-                  {expanded ? "Close" : "More details"}
+                  {expanded ? 'Close' : 'More details'}
                 </button>
               </header>
 
+              {/* Aperçu enrichi (carte fermée) */}
+              {!expanded && (
+                <div className="card-preview">
+                  <div className="preview-row badges">
+                    {p.legal_status && <span className="badge">{p.legal_status}</span>}
+                    {p.sector && (
+                      <>
+                        <span className="dot" />
+                        <span className="badge alt">{p.sector}</span>
+                      </>
+                    )}
+                    {p.maturity && (
+                      <>
+                        <span className="dot" />
+                        <span className="badge">{p.maturity}</span>
+                      </>
+                    )}
+                  </div>
+
+                  <ul className="preview-list">
+                    {p.address && (
+                      <li className="truncate">
+                        <span className="label">Address</span>
+                        <span className="value">{p.address}</span>
+                      </li>
+                    )}
+                    {p.email && (
+                      <li className="truncate">
+                        <span className="label">Email</span>
+                        <a className="value link" href={`mailto:${p.email}`}>{p.email}</a>
+                      </li>
+                    )}
+                    {p.phone && (
+                      <li className="truncate">
+                        <span className="label">Phone</span>
+                        <a className="value link" href={`tel:${p.phone}`}>{p.phone}</a>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              {/* Détails complets (carte ouverte) */}
               {expanded && (
-                <div
-                  id={detailsId}
-                  role="region"
-                  aria-label={`${p.name} details`}
-                  className="card-details"
-                >
+                <div id={detailsId} role="region" aria-label={`${p.name} details`} className="card-details">
                   <div className="details-grid">
                     <div className="col">
                       <h4>About</h4>
-                      <p>{p.description}</p>
-                      <h4>Progress</h4>
-                      <p>{p.progress}</p>
-                      {!!p.needs?.length && (
+                      {p.description ? <p>{p.description}</p> : <p>No description provided.</p>}
+
+                      <h4>Status</h4>
+                      <p>{p.project_status || '—'}</p>
+
+                      {normalizeNeeds(p.needs).length > 0 && (
                         <>
                           <h4>Needs</h4>
                           <div className="chips">
-                            {p.needs.map((n, i) => (
+                            {normalizeNeeds(p.needs).map((n, i) => (
                               <span className="chip" key={i}>{n}</span>
                             ))}
                           </div>
                         </>
                       )}
                     </div>
+
                     <div className="col">
-                      <h4>Founders</h4>
+                      <h4>Company</h4>
                       <ul className="list">
-                        {p.founders.map((f, i) => <li key={i}>{f}</li>)}
+                        {p.legal_status && <li>Legal status: {p.legal_status}</li>}
+                        {p.created_at && <li>Created: {formatDate(p.created_at)}</li>}
+                        {p.sector && <li>Sector: {p.sector}</li>}
+                        {p.maturity && <li>Maturity: {p.maturity}</li>}
+                        {p.address && <li>Address: {p.address}</li>}
                       </ul>
 
                       <h4>Contacts</h4>
                       <ul className="list">
-                        {p.contacts?.email && (
-                          <li><a href={`mailto:${p.contacts.email}`}>{p.contacts.email}</a></li>
+                        {p.email && <li><a href={`mailto:${p.email}`}>{p.email}</a></li>}
+                        {p.phone && <li><a href={`tel:${p.phone}`}>{p.phone}</a></li>}
+                        {p.website_url && (
+                          <li><a href={p.website_url} target="_blank" rel="noreferrer">Website ↗</a></li>
                         )}
-                        {p.contacts?.website && (
-                          <li>
-                            <a href={p.contacts.website} target="_blank" rel="noreferrer">
-                              Website ↗
-                            </a>
-                          </li>
-                        )}
-                        {p.contacts?.linkedin && (
-                          <li>
-                            <a href={p.contacts.linkedin} target="_blank" rel="noreferrer">
-                              LinkedIn ↗
-                            </a>
-                          </li>
+                        {p.social_media_url && (
+                          <li><a href={p.social_media_url} target="_blank" rel="noreferrer">Social media ↗</a></li>
                         )}
                       </ul>
 
-                      <div className="meta">
-                        <span className="badge">{p.sector}</span>
-                        <span className="dot" />
-                        <span className="badge alt">{p.maturity}</span>
-                        <span className="dot" />
-                        <span className="badge">{p.location}</span>
-                      </div>
+                      <h4>Founders</h4>
+                      {Array.isArray(p.founders) && p.founders.length > 0 ? (
+                        <ul className="list">
+                          {p.founders.map((f, i) => <li key={i}>{f}</li>)}
+                        </ul>
+                      ) : (
+                        <p className="muted">No founders listed.</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -287,29 +365,3 @@ const Offre = () => {
 };
 
 export default Offre;
-
-
-    //         <div className='offer-container'>
-    //             <div className="offer-wrapper">
-    //                 <div className="offer-content">
-    //                     <h2 className="offer-title">ABONNEZ-VOUS AU SERVICE COMPLET</h2>
-    //                     <ul className="offer-list">
-    //                         <li>Premières 45 minutes gratuites pour discuter de votre projet avec notre expert</li>
-    //                         <li>Accès à notre communauté de français expatriés qui vivent déjà en Thaïlande</li>
-    //                         <li>Accès à l&apos;e-learning, afin de pouvoir trouver toute l&apos;info qui vous intéresse</li>
-    //                         <li>Accès illimité pendant 1 an</li>
-    //                     </ul>
-    //                     <button id='join-now' className="offer-button" onClick={handleJoinNowClick}>
-    //                         Join Now
-    //                     </button>
-    //                 </div>
-    //                 <div className="offer-image">
-    //                     <img src={expertImage} alt="Expert" />
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     );
-    // };
-
-//     export default Offre
-// }

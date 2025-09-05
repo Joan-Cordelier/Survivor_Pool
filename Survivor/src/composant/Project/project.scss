@@ -1,155 +1,3 @@
-// $padding-small: 20px;
-
-// // Mixin pour Flexbox Centering
-// @mixin flex-center {
-//     display: flex;
-//     justify-content: center;
-//     align-items: center;
-//   }
-  
-//   // Global style to prevent content overflow
-//   * {
-//     box-sizing: border-box;
-//   }
-  
-//   body {
-//     overflow-x: hidden; /* Prevents horizontal scroll */
-//   }
-  
-//   .offer-container {
-//     @include flex-center;
-//     display: flex;
-//     flex-direction: column;
-//     position: relative;
-//     min-height: calc(
-//       100vh - 80px
-//     ); // Laisse de la place pour la barre de navigation
-//     background-color: #659ABD;
-//     max-width: 100%; // Largeur maximale à 100% pour remplir le parent
-//     width: 100%; // Prend toute la largeur du conteneur parent
-//   }
-
-// .offer-wrapper {
-//     display: flex;
-//     justify-content: space-between;
-//     background-color: #284E7B;
-//     box-shadow: 0 0 18px 6px rgba(0, 0, 0, 0.3);
-//     padding: 5vw; /* Utilisation de vw pour les marges internes */
-//     border-radius: 1rem; /* Utilisation de rem pour la bordure */
-//     max-width: 90vw; /* Largeur maximale basée sur le pourcentage */
-//     text-align: center;
-//     width: 90%;
-//     margin: 20px;
-//   }
-  
-//   .offer-content {
-//     display: flex;
-//     flex-direction: column;
-//     justify-content: center;
-//     flex-direction: column;
-//   }
-  
-//   .offer-title {
-//     font-size: 2.3em; /* Utilisation de vw pour rendre le texte responsive */
-//     font-weight: bold;
-//     letter-spacing: 0.1rem; /* Espacement des lettres */
-//     color: #FFFFFE;
-//   }
-  
-//   .offer-list {
-//     display: flex;
-//     flex-direction: column;
-//     align-items: flex-start;
-//     gap: 3vh;
-//     color: #ABD1C6;
-//     list-style: none;
-//     width: 100%;
-//     padding: 0;
-//     margin: 6vh 0; /* Espacement vertical en utilisant vh */
-//     text-align: left;
-//     font-size: 1.5em; /* Taille de police responsive avec vw */
-  
-//     li {
-//       margin-bottom: 1.5vh; /* Espacement entre les éléments */
-//       position: relative;
-//       padding-left: 2rem; /* Positionnement basé sur rem */
-      
-//       &::before {
-//         content: '•';
-//         color: #fff; /* Puce blanche */
-//         font-weight: bold;
-//         position: absolute;
-//         left: 0;
-//       }
-//     }
-//   }
-  
-//   .offer-image {
-//     display: flex;
-//     flex-direction: column;
-//     align-items: center;
-    
-//     img {
-//       border-radius: 100%; /* Cercle parfait */
-//       width: 20vw; /* Taille responsive avec vw */
-//       height: auto; /* Hauteur automatique pour garder les proportions */
-//       object-fit: cover; /* Pour bien remplir l'espace */
-//       margin: auto 50px auto auto;
-//       display: block;
-//       border: 0.5rem solid #fff; /* Bordure blanche */
-//     }
-//   }
-  
-//   .offer-button {
-//     background-color: #f9bc60;
-//     color: black;
-//     border: none;
-//     padding: 15px 30px;
-//     font-size: 2em;
-//     font-weight: bold;
-//     cursor: pointer;
-//     border-radius: 10px;
-//     transition: background-color 0.3s;
-//     margin-top: $padding-small;
-//     width: 20vw;
-//     height: 8vh;
-  
-//     &:hover {
-//       background-color: rgb(230, 165, 67);
-//     }
-//   }
-
-//   @media (max-width: 1250px) {
-//     .offer-image {
-//       display: none;
-//     }
-//   }
-  
-//   @media (max-width: 480px) {
-
-//     .offer-container {
-//       min-height: auto;
-//     }
-//     .offer-title {
-//       font-size: 1.5em;
-//       text-align: center;
-//     }
-
-//     .offer-list {
-//       font-size: 1em;
-//     }
-
-//     .offer-button {
-//       font-size: 1.5em;
-//       width: 50vw;
-//       margin-top: 0;
-//     }
-
-//     .offer-content {
-//       align-items: center;
-//     }
-//   }
-
 /* ===== Projects Page (catalog + expand-in-place) ===== */
 
 /* Palette / variables (modifie si besoin) */
@@ -398,3 +246,55 @@ $filters-sticky-top: 84px;
     animation: none !important;
   }
 }
+
+/* ===== Aperçu enrichi (état réduit) ===== */
+.projects-page .card-preview {
+  padding: 10px 4px 4px;
+}
+
+.projects-page .preview-row.badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+
+  .badge { font-size: 12px; padding: 6px 10px; border-radius: 999px; 
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+  }
+  .badge.alt { background: rgba(255,255,255,.14); }
+  .dot { width: 4px; height: 4px; background: rgba(255,255,255,.5); border-radius: 50%; }
+}
+
+.projects-page .preview-list {
+  list-style: none; margin: 0; padding: 0; display: grid; gap: 6px;
+
+  li {
+    display: grid;
+    grid-template-columns: 120px 1fr; /* label | value */
+    align-items: center;
+    column-gap: 10px;
+    font-size: 14px;
+    color: $soft;
+
+    .label { opacity: .85; color: rgba(255,255,255,.85); }
+    .value { color: #fff; }
+    .link { color: #fff; text-decoration: underline; }
+
+    &.truncate .value {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+  }
+}
+
+/* petite variante responsive : label au-dessus sur mobile */
+@media (max-width: 560px) {
+  .projects-page .preview-list li {
+    grid-template-columns: 1fr;
+    .label { opacity: .75; font-size: 12px; }
+  }
+}
+
+/* détail : style d’un texte atténué */
+.projects-page .muted { color: rgba(255,255,255,.7); }

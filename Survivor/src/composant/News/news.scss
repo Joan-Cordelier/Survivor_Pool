@@ -75,7 +75,7 @@ $filters-sticky-top: 84px;
   flex-direction: column;
 
   &.expanded {
-    grid-column: 1 / -1;
+    grid-column: 1 / -1; /* carte ouverte = pleine largeur */
   }
 }
 
