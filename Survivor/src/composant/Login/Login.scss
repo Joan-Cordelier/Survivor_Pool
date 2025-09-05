@@ -35,7 +35,7 @@ $max-width-content: 1200px;
     overflow: visible;
 
     h2 {
-      font-family: 'Mulish', sans-serif;
+      font-family: 'Mont serrat', sans-serif;
       margin: $padding-small;
       font-size: 2rem;
       display: inline-block;          // évite certains rognages
@@ -61,7 +61,7 @@ $max-width-content: 1200px;
       label {
         color: #000000;
         margin-bottom: 5px;
-        font-family: 'Roboto', sans-serif;
+        font-family: 'Mont serrat', sans-serif;
         font-weight: 400;
       }
 
@@ -73,7 +73,7 @@ $max-width-content: 1200px;
         background-color: #cfcfcf;
         color: #000000;
         font-size: 1rem;
-        font-family: 'Roboto', sans-serif;
+        font-family: 'Open sans', sans-serif;
 
         &:focus {
           outline: none;
@@ -105,7 +105,7 @@ $max-width-content: 1200px;
     p {
       color: #000000;
       margin-top: $padding-small;
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Open sans', sans-serif;
       font-size: 1rem;
     }
   }

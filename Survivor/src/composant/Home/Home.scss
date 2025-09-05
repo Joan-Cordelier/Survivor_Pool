@@ -76,7 +76,7 @@ body {
     border: none;
     padding: 15px 30px;
     font-size: 2em;
-    font-family: "Courier New", Courier, monospace;
+    font-family: "Open sans", Courier, monospace;
     font-weight: bold;
     cursor: pointer;
     border-radius: 5px;
@@ -207,7 +207,7 @@ body {
   }
 
   .color-text {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Open sans', sans-serif;
     font-weight: 400;
     font-size: 1.5rem;
     color: #474747;
@@ -229,7 +229,7 @@ body {
   .title-text {
     font-size: 4em;
     /* Taille du titre */
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Mont serrat', sans-serif;
     font-weight: 500;
     margin-bottom: $padding-small;
   
@@ -244,7 +244,7 @@ body {
   .paragraph-text {
     font-size: 2.3em;
     text-align: justify;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Open sans', sans-serif;
     font-weight: 300;
     color: #474747;
   }
@@ -265,7 +265,7 @@ body {
   // Styles spécifiques pour le titre (h1)
   .title-text {
     font-size: 4em;
-    font-family: "Lobster", cursive;
+    font-family: "Mont serrat", cursive;
     font-weight: bold;
     margin-bottom: $padding-small;
   }
@@ -512,7 +512,7 @@ body {
 /* Titre / texte compact à gauche */
 .wrapper-container5 .title-text {
   margin: 0;
-  font-family: "Mulish", sans-serif;
+  font-family: "Mont serrat", sans-serif;
   font-weight: 800;
   line-height: 1.1;
   font-size: clamp(28px, 4vw, 46px);
