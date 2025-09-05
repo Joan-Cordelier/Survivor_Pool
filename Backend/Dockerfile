@@ -1,15 +1,15 @@
-# Survivor_Pool/Backend/Dockerfile
+# Backend/Dockerfile
 # Multi-stage build for a TypeScript + Prisma Express API
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY Survivor_Pool/Backend/package*.json ./
+COPY Backend/package*.json ./
 RUN npm ci --omit=dev
 
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY Survivor_Pool/Backend/package*.json ./
+COPY Backend/package*.json ./
 RUN npm ci
-COPY Survivor_Pool/Backend/ ./
+COPY Backend/ ./
 # Generate Prisma client if schema exists
 RUN if [ -f src/prisma/schema.prisma ]; then npx prisma generate --schema=src/prisma/schema.prisma; fi
 RUN npm run build
