@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Cell } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.scss';
 
@@ -27,53 +28,53 @@ const SECTIONS = [
 
 const SECTION_FORMS = {
     events: [
-        { name: 'name', label: 'Nom*', required: true },
+        { name: 'name', label: 'Name*', required: true },
         { name: 'dates', label: 'Date', type: 'date', placeholder: '2025-09-04' },
-        { name: 'location', label: 'Lieu' },
+        { name: 'location', label: 'Location' },
         { name: 'event_type', label: 'Type' },
-        { name: 'target_audience', label: 'Audience' },
+        { name: 'target_audience', label: 'Target audience' },
         { name: 'image', label: 'Image (URL/Base64)' },
         { name: 'description', label: 'Description', textarea: true }
     ],
     startups: [
-        { name: 'name', label: 'Nom*', required: true },
+        { name: 'name', label: 'Name*', required: true },
         { name: 'email', label: 'Email*', required: true, type: 'email' },
-        { name: 'legal_status', label: 'Statut légal' },
-        { name: 'address', label: 'Adresse' },
-        { name: 'phone', label: 'Téléphone' },
-        { name: 'website_url', label: 'Site web' },
-        { name: 'social_media_url', label: 'Réseaux sociaux' },
-        { name: 'sector', label: 'Secteur' },
-        { name: 'maturity', label: 'Maturité' },
-        { name: 'project_status', label: 'Statut projet' },
-        { name: 'needs', label: 'Besoins', textarea: true },
+        { name: 'legal_status', label: 'Legal status' },
+        { name: 'address', label: 'Address' },
+        { name: 'phone', label: 'Phone' },
+        { name: 'website_url', label: 'Website URL' },
+        { name: 'social_media_url', label: 'Social media URL' },
+        { name: 'sector', label: 'Sector' },
+        { name: 'maturity', label: 'Maturity' },
+        { name: 'project_status', label: 'Project status' },
+        { name: 'needs', label: 'Needs', textarea: true },
         { name: 'description', label: 'Description', textarea: true }
     ],
     investors: [
-        { name: 'name', label: 'Nom*', required: true },
+        { name: 'name', label: 'Name*', required: true },
         { name: 'email', label: 'Email*', required: true, type: 'email' },
-        { name: 'legal_status', label: 'Statut légal' },
-        { name: 'address', label: 'Adresse' },
-        { name: 'phone', label: 'Téléphone' },
-        { name: 'investor_type', label: 'Type investisseur' },
-        { name: 'investment_focus', label: 'Focus investissement', textarea: true },
+        { name: 'legal_status', label: 'Legal status' },
+        { name: 'address', label: 'Address' },
+        { name: 'phone', label: 'Phone' },
+        { name: 'investor_type', label: 'Investor type' },
+        { name: 'investment_focus', label: 'Investment focus', textarea: true },
         { name: 'description', label: 'Description', textarea: true }
     ],
     partners: [
-        { name: 'name', label: 'Nom', required: true },
+        { name: 'name', label: 'Name', required: true },
         { name: 'email', label: 'Email', type: 'email' },
-        { name: 'legal_status', label: 'Statut légal' },
-        { name: 'address', label: 'Adresse' },
-        { name: 'phone', label: 'Téléphone' },
-        { name: 'partnership_type', label: 'Type partenariat' },
+        { name: 'legal_status', label: 'Legal status' },
+        { name: 'address', label: 'Address' },
+        { name: 'phone', label: 'Phone' },
+        { name: 'partnership_type', label: 'Partnership type' },
         { name: 'description', label: 'Description', textarea: true }
     ],
     news: [
-        { name: 'title', label: 'Titre*', required: true },
+        { name: 'title', label: 'Title*', required: true },
         { name: 'description', label: 'Description*', required: true, textarea: true },
         { name: 'news_date', label: 'Date', type: 'date' },
-        { name: 'location', label: 'Lieu' },
-        { name: 'category', label: 'Catégorie' },
+        { name: 'location', label: 'Location' },
+        { name: 'category', label: 'Category' },
         { name: 'startup_id', label: 'Startup ID', type: 'number' }
     ]
 };
@@ -96,20 +97,20 @@ export default function Dashboard() {
         let storedUser = null;
 
         if (!token) {
-            setError('Aucun token. Redirection...');
+            setError('No token. Redirecting...');
             redirectedRef.current = true;
             navigate('/Login', { replace: true });
             return;
         }
         const payload = decodeJwt(token);
         if (!payload) {
-            setError('Token invalide.');
+            setError('Invalid token.');
             localStorage.removeItem('token');
             navigate('/Login', { replace: true });
             return;
         }
         if (payload.exp && Date.now() / 1000 > payload.exp) {
-            setError('Session expirée.');
+            setError('Session expired.');
             localStorage.removeItem('token');
             navigate('/Login', { replace: true });
             return;
@@ -158,8 +159,10 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!checking && user) {
-            ['events', 'startups', 'news'].forEach(k => loadSection(k));
-            if (user.role === 'admin') loadSection('users');
+            // Pré-chargement nécessaire pour les graphes overview
+            const baseKeys = ['events', 'startups', 'news'];
+            const extraAdmin = user.role === 'admin' ? ['investors', 'partners', 'users'] : [];
+            [...baseKeys, ...extraAdmin].forEach(k => loadSection(k));
         }
     }, [checking, user, loadSection]);
 
@@ -176,7 +179,7 @@ export default function Dashboard() {
     if (checking) {
         return (
             <div className="dashboard-loading">
-                Vérification du token...
+                Checking token...
                 {error && <div style={{ marginTop: 12, fontSize: '.85rem', opacity: .8 }}>{error}</div>}
             </div>
         );
@@ -202,7 +205,7 @@ export default function Dashboard() {
         if (sectionKey === 'users' || SECTION_FORMS[sectionKey]) {
             setModal({ open:true, mode:'create', section:sectionKey, row:null, loading:false, error:null });
         } else {
-            alert('Création non disponible.');
+            alert('Creation not available.');
         }
     };
 
@@ -210,18 +213,18 @@ export default function Dashboard() {
         if (sectionKey === 'users' || SECTION_FORMS[sectionKey]) {
             setModal({ open:true, mode:'edit', section:sectionKey, row, loading:false, error:null });
         } else {
-            alert('Edition non disponible.');
+            alert('Edition not available.');
         }
     };
 
     const confirmDelete = async (sectionKey, row) => {
-        if (!row || row.id == null) { alert('ID manquant'); return; }
-        if (!window.confirm('Supprimer l\'élément #' + row.id + ' ?')) return;
+        if (!row || row.id == null) { alert('Missing ID'); return; }
+        if (!window.confirm('Delete item #' + row.id + ' ?')) return;
         try {
             const token = localStorage.getItem('token');
             const base = basePathFromSection(sectionKey);
             if (!base)
-                throw new Error('Section inconnue');
+                throw new Error('Unknown section');
             const res = await fetch(`${base}/delete/${row.id}`, { method: 'DELETE', headers: token ? { Authorization: 'Bearer ' + token } : {} });
             if (!res.ok)
                 throw new Error('HTTP ' + res.status);
@@ -232,7 +235,7 @@ export default function Dashboard() {
                 return { ...dc, [sectionKey]: { ...cur, items: cur.items.filter(it => it.id !== row.id) } };
             });
         } catch (e) {
-            alert('Erreur suppression: ' + (e.message || e));
+            alert('Delete error: ' + (e.message || e));
         }
     };
 
@@ -250,7 +253,7 @@ export default function Dashboard() {
                         investor_id: form.investor_id.value ? Number(form.investor_id.value) : null,
                 };
                 if (!payload.email || !payload.name || !payload.password) {
-                        setModal(m=>({...m,error:'Champs requis manquants'}));
+                        setModal(m=>({...m,error:'Missing required fields'}));
                         return;
                 }
                 try {
@@ -263,14 +266,13 @@ export default function Dashboard() {
                             throw new Error(msg);
                         }
                         const created = await res.json();
-                        // Update cache
                         setDataCache(dc => {
                                 const cur = dc.users; if (!cur) return dc;
                                 return { ...dc, users:{ ...cur, items:[created, ...cur.items] } };
                         });
                         closeModal();
                 } catch(err) {
-                        setModal(m=>({...m,loading:false,error: err.message || 'Erreur création'}));
+                        setModal(m=>({...m,loading:false,error: err.message || 'Creation error'}));
                 }
         };
 
@@ -298,7 +300,7 @@ export default function Dashboard() {
                         });
                         closeModal();
                 } catch(err) {
-                        setModal(m=>({...m,loading:false,error: err.message || 'Erreur mise à jour'}));
+                        setModal(m=>({...m,loading:false,error: err.message || 'Update error'}));
                 }
         };
 
@@ -326,7 +328,7 @@ export default function Dashboard() {
             // Validation minimale required
             for (const f of fields) {
                 if (f.required && (payload[f.name] == null || payload[f.name] === '')) {
-                    setModal(m => ({ ...m, error: 'Champs requis manquants' }));
+                    setModal(m => ({ ...m, error: 'Missing required fields' }));
                     return;
                 }
             }
@@ -347,7 +349,7 @@ export default function Dashboard() {
                 });
                 closeModal();
             } catch(err) {
-                setModal(m=>({...m,loading:false,error: err.message || 'Erreur création'}));
+                setModal(m=>({...m,loading:false,error: err.message || 'Creation error'}));
             }
         };
 
@@ -394,7 +396,7 @@ export default function Dashboard() {
                 });
                 closeModal();
             } catch(err) {
-                setModal(m=>({...m,loading:false,error: err.message || 'Erreur mise à jour'}));
+                setModal(m=>({...m,loading:false,error: err.message || 'Update error'}));
             }
         };
 
@@ -407,7 +409,7 @@ export default function Dashboard() {
                             <div className="modal-overlay" onMouseDown={(e)=>{ if(e.target.classList.contains('modal-overlay')) closeModal(); }}>
                                 <div className="modal" role="dialog" aria-modal="true">
                                     <div className="modal-head">
-                                        <h3>{isEdit? 'Modifier utilisateur' : 'Nouvel utilisateur'}</h3>
+                                        <h3>{isEdit? 'Edit user' : 'New user'}</h3>
                                         <button className="close-x" onClick={closeModal}>✕</button>
                                     </div>
                                     <form onSubmit={isEdit? submitUserEdit : submitUserCreate} className="modal-form">
@@ -416,11 +418,11 @@ export default function Dashboard() {
                                             <input name="email" type="email" defaultValue={row.email||''} disabled={isEdit} required />
                                         </div>
                                         <div className="form-row">
-                                            <label>Nom*</label>
+                                            <label>Name*</label>
                                             <input name="name" type="text" defaultValue={row.name||''} required />
                                         </div>
                                         <div className="form-row">
-                                            <label>Rôle</label>
+                                            <label>Role</label>
                                             <select name="role" defaultValue={row.role||'default'}>
                                                 <option value="default">default</option>
                                                 <option value="admin">admin</option>
@@ -428,7 +430,7 @@ export default function Dashboard() {
                                             </select>
                                         </div>
                                         <div className="form-row">
-                                            <label>Mot de passe{isEdit? ' (laisser vide pour ne pas changer)' : '*'} </label>
+                                            <label>Password{isEdit? ' (leave empty to keep)' : '*'} </label>
                                             <input name="password" type="password" placeholder={isEdit? '••••••' : ''} {...(!isEdit? {required:true}: {})} />
                                         </div>
                                         <div className="form-row-inline">
@@ -443,8 +445,8 @@ export default function Dashboard() {
                                         </div>
                                         {modal.error && <div className="form-error">{modal.error}</div>}
                                         <div className="modal-actions">
-                                            <button type="button" className="btn sm" onClick={closeModal}>Annuler</button>
-                                            <button type="submit" className="btn primary" disabled={modal.loading}>{modal.loading? 'En cours...' : (isEdit? 'Mettre à jour' : 'Créer')}</button>
+                                            <button type="button" className="btn sm" onClick={closeModal}>Cancel</button>
+                                            <button type="submit" className="btn primary" disabled={modal.loading}>{modal.loading? 'Processing...' : (isEdit? 'Update' : 'Create')}</button>
                                         </div>
                                     </form>
                                 </div>
@@ -458,7 +460,7 @@ export default function Dashboard() {
                         <div className="modal-overlay" onMouseDown={(e)=>{ if(e.target.classList.contains('modal-overlay')) closeModal(); }}>
                             <div className="modal" role="dialog" aria-modal="true">
                                 <div className="modal-head">
-                                    <h3>{isEdit ? 'Modifier' : 'Créer'} {SECTIONS.find(s=>s.key===modal.section)?.label}</h3>
+                                    <h3>{isEdit ? 'Edit' : 'Create'} {SECTIONS.find(s=>s.key===modal.section)?.label}</h3>
                                     <button className="close-x" onClick={closeModal}>✕</button>
                                 </div>
                                 <form onSubmit={isEdit? submitGenericEdit : submitGenericCreate} className="modal-form">
@@ -474,8 +476,8 @@ export default function Dashboard() {
                                     ))}
                                     {modal.error && <div className="form-error">{modal.error}</div>}
                                     <div className="modal-actions">
-                                        <button type="button" className="btn sm" onClick={closeModal}>Annuler</button>
-                                        <button type="submit" className="btn primary" disabled={modal.loading}>{modal.loading ? 'En cours...' : (isEdit? 'Mettre à jour' : 'Créer')}</button>
+                                        <button type="button" className="btn sm" onClick={closeModal}>Cancel</button>
+                                        <button type="submit" className="btn primary" disabled={modal.loading}>{modal.loading ? 'Processing...' : (isEdit? 'Update' : 'Create')}</button>
                                     </div>
                                 </form>
                             </div>
@@ -489,10 +491,171 @@ export default function Dashboard() {
         if (active === 'users' && safeUser.role !== 'admin')
             return <div className="section-error">Forbidden.</div>;
         if (active === 'overview') {
+            const today = new Date();
+            const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const msDay = 86400000;
+            const last7Start = new Date(startToday.getTime() - 7 * msDay);
+            const prev7Start = new Date(startToday.getTime() - 14 * msDay);
+
+            const parseDate = (raw) => {
+                if (!raw)
+                    return null;
+                const d = new Date(raw);
+                return isNaN(d.getTime()) ? null : d;
+            };
+
+            const events = dataCache.events?.items || [];
+            const eventsUpcoming = events.filter(ev => {
+                const d = parseDate(ev.dates);
+                return d && d >= startToday;
+            });
+            const eventsLast7 = events.filter(ev => {
+                const d = parseDate(ev.dates);
+                return d && d >= last7Start && d < startToday;
+            });
+            const eventsPrev7 = events.filter(ev => {
+                const d = parseDate(ev.dates);
+                return d && d >= prev7Start && d < last7Start;
+            });
+
+            const news = dataCache.news?.items || [];
+            const newsLast7 = news.filter(n => {
+                const d = parseDate(n.news_date);
+                return d && d >= last7Start && d < startToday;
+            });
+            const newsPrev7 = news.filter(n => {
+                const d = parseDate(n.news_date);
+                return d && d >= prev7Start && d < last7Start;
+            });
+
+            const startups = dataCache.startups?.items || [];
+            const investors = dataCache.investors?.items || [];
+            const partners = dataCache.partners?.items || [];
+
+            const startupsLast7 = startups.filter(s => {
+                const d = parseDate(s.created_at);
+                return d && d >= last7Start && d < startToday;
+            });
+            const startupsPrev7 = startups.filter(s => {
+                const d = parseDate(s.created_at);
+                return d && d >= prev7Start && d < last7Start;
+            });
+            const investorsLast7 = investors.filter(s => {
+                const d = parseDate(s.created_at);
+                return d && d >= last7Start && d < startToday;
+            });
+            const investorsPrev7 = investors.filter(s => {
+                const d = parseDate(s.created_at);
+                return d && d >= prev7Start && d < last7Start;
+            });
+            const partnersLast7 = partners.filter(s => {
+                const d = parseDate(s.created_at);
+                return d && d >= last7Start && d < startToday;
+            });
+            const partnersPrev7 = partners.filter(s => {
+                const d = parseDate(s.created_at);
+                return d && d >= prev7Start && d < last7Start;
+            });
+
+            const startupsTotal = startups.length;
+            const investorsTotal = investors.length;
+            const partnersTotal = partners.length;
+            const eventsUpcomingTotal = eventsUpcoming.length;
+            const newsLast7Total = newsLast7.length;
+
+            const totalsData = [
+                { name: 'Startups', value: startupsTotal },
+                { name: 'Investors', value: investorsTotal },
+                { name: 'Partners', value: partnersTotal },
+                { name: 'Upcoming Events', value: eventsUpcomingTotal },
+                { name: 'News (7d)', value: newsLast7Total }
+            ];
+
+            const pct = (cur, prev) => {
+                if (prev === 0)
+                    return cur === 0 ? 0 : 100;
+                return ((cur - prev) / prev) * 100;
+            };
+
+            const growthData = [
+                {
+                    name: 'Startups',
+                    value: Number(pct(startupsLast7.length, startupsPrev7.length).toFixed(1)),
+                    cur: startupsLast7.length,
+                    prev: startupsPrev7.length
+                },
+                {
+                    name: 'Investors',
+                    value: Number(pct(investorsLast7.length, investorsPrev7.length).toFixed(1)),
+                    cur: investorsLast7.length,
+                    prev: investorsPrev7.length
+                },
+                {
+                    name: 'Partners',
+                    value: Number(pct(partnersLast7.length, partnersPrev7.length).toFixed(1)),
+                    cur: partnersLast7.length,
+                    prev: partnersPrev7.length
+                },
+                {
+                    name: 'Events',
+                    value: Number(pct(eventsLast7.length, eventsPrev7.length).toFixed(1)),
+                    cur: eventsLast7.length,
+                    prev: eventsPrev7.length
+                },
+                {
+                    name: 'News',
+                    value: Number(pct(newsLast7.length, newsPrev7.length).toFixed(1)),
+                    cur: newsLast7.length,
+                    prev: newsPrev7.length
+                }
+            ];
+
+            const barPalette = ['#6d5dfc','#8b6dfc','#a86dfc','#c26df7','#dd6df0'];
+            const growthColor = (v) => v > 0 ? '#16a34a' : (v < 0 ? '#dc2626' : '#5b6472');
+            const GrowthTooltip = ({ active, payload }) => {
+                if (active && payload && payload.length) {
+                    const p = payload[0].payload;
+                    return (
+                        <div style={{ background:'#fff', border:'1px solid #ccc', padding:8, fontSize:12 }}>
+                            <strong>{p.name}</strong><br/>
+                            7d: {p.cur} | Prev: {p.prev}<br/>
+                            Δ %: {p.value}%
+                        </div>
+                    );
+                }
+                return null;
+            };
             return (
-                <div className="cards-grid">
-                    <div className="card">
-                        <h2>Profil</h2>
+                <div className="overview-grid">
+                    <div className="card counts-card pair-fill">
+                        <h2>Counts</h2>
+                        <div className="counts-list">
+                            {totalsData.map(d => (
+                                <div key={d.name} className="count-pill">
+                                    <span className="lbl">{d.name}</span>
+                                    <span className="val">{d.value}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="card chart-card large-chart">
+                        <h3>Total Startups / Investors / Partners / Upcoming Events / News (last 7 days)</h3>
+                        <div style={{width:'100%', height:340}}>
+                            <ResponsiveContainer>
+                                <BarChart data={totalsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
+                                    <XAxis dataKey="name" stroke="#000" tick={{ fill:'#000', fontSize:12 }} />
+                                    <YAxis stroke="#000" allowDecimals={false} tick={{ fill:'#000', fontSize:12 }} />
+                                    <Tooltip contentStyle={{ background:'#ffffff', border:'1px solid #ccc', color:'#000' }} />
+                                    <Bar dataKey="value" radius={[6,6,0,0]}>
+                                        {totalsData.map((d,i) => <Cell key={d.name} fill={barPalette[i % barPalette.length]} />)}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                    <div className="card profile-card pair-fill">
+                        <h2>Profile</h2>
                         <ul className="mini-info kv-list">
                             <li><span className="k">ID</span><span className="v" title={safeUser.id}>{safeUser.id}</span></li>
                             <li><span className="k">Name</span><span className="v" title={safeUser.name}>{safeUser.name}</span></li>
@@ -500,25 +663,30 @@ export default function Dashboard() {
                             <li><span className="k">Role</span><span className="v">{safeUser.role}</span></li>
                         </ul>
                     </div>
-                    <div className="card">
-                        <h2>Count</h2>
-                        <ul className="mini-info kv-list">
-                            <li><span className="k">Events</span><span className="v">{dataCache.events?.items?.length ?? '—'}</span></li>
-                            <li><span className="k">Startups</span><span className="v">{dataCache.startups?.items?.length ?? '—'}</span></li>
-                            <li><span className="k">News</span><span className="v">{dataCache.news?.items?.length ?? '—'}</span></li>
-                            {safeUser.role === 'admin' && (
-                                <li><span className="k">Users</span><span className="v">{dataCache.users?.items?.length ?? '—'}</span></li>
-                            )}
-                        </ul>
+                    <div className="card chart-card large-chart">
+                        <h3>Growth % (Δ vs previous 7-day period)</h3>
+                        <div style={{width:'100%', height:340}}>
+                            <ResponsiveContainer>
+                                <BarChart data={growthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
+                                    <XAxis dataKey="name" stroke="#000" tick={{ fill:'#000', fontSize:12 }} />
+                                    <YAxis stroke="#000" tickFormatter={(v)=> v + '%'} tick={{ fill:'#000', fontSize:12 }} />
+                                    <Tooltip content={<GrowthTooltip />} />
+                                    <Bar dataKey="value" radius={[6,6,0,0]}>
+                                        {growthData.map(g => <Cell key={g.name} fill={growthColor(g.value)} />)}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
                 </div>
             );
         }
 
         if (loadingSection && !current)
-            return <div className="section-loading">Chargement...</div>;
+            return <div className="section-loading">Loading...</div>;
         if (current?.error)
-            return <div className="section-error">Erreur: {current.error}</div>;
+            return <div className="section-error">Error: {current.error}</div>;
 
         const list = current?.items || [];
         const columns = computeColumns(active, list);
@@ -530,11 +698,11 @@ export default function Dashboard() {
                         {SECTIONS.find(s => s.key === active)?.label} <span className="count-badge">{list.length}</span>
                     </div>
                     {safeUser.role === 'admin' && (
-                        <button className="btn primary" onClick={() => openCreate(active)}>+ Ajouter</button>
+                        <button className="btn primary" onClick={() => openCreate(active)}>+ Add</button>
                     )}
                 </div>
-                {loadingSection && <div className="inline-loading">Mise à jour...</div>}
-                {(!list.length && !loadingSection) && <div className="empty">Aucune donnée.</div>}
+                {loadingSection && <div className="inline-loading">Refreshing...</div>}
+                {(!list.length && !loadingSection) && <div className="empty">No data.</div>}
                 {!!list.length && (
                     <div className="table-scroll">
                         <table className="data-table">
@@ -550,8 +718,8 @@ export default function Dashboard() {
                                         {columns.map(c => <td key={c.key}>{formatCell(c, row)}</td>)}
                                         {safeUser.role === 'admin' && (
                                             <td className="actions">
-                                                <button onClick={() => openEdit(active, row)} className="btn sm">✏️</button>
-                                                <button onClick={() => confirmDelete(active, row)} className="btn sm danger">🗑️</button>
+                                                <button onClick={() => openEdit(active, row)} className="btn sm" title="Edit">✏️</button>
+                                                <button onClick={() => confirmDelete(active, row)} className="btn sm danger" title="Delete">🗑️</button>
                                             </td>
                                         )}
                                     </tr>
@@ -567,9 +735,9 @@ export default function Dashboard() {
 
     return (
         <div className={`admin-dashboard ${menuOpen ? 'has-overlay' : ''}`}>
-            {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)} aria-label="Fermer le menu" />}
+            {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)} aria-label="Close menu" />}
             <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
-                <div className="brand"><span>JEB Admin Panel</span><button className="close-btn" onClick={() => setMenuOpen(false)} aria-label="Fermer le menu">✕</button></div>
+                <div className="brand"><span>JEB Admin Panel</span><button className="close-btn" onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button></div>
                 <div className="user-box" title={safeUser.email}>
                     <div className="u-email">{safeUser.email}</div>
                     <span className={`u-role role-${safeUser.role}`}>{safeUser.role}</span>
@@ -603,7 +771,6 @@ export default function Dashboard() {
     );
 }
 
-// Helpers outside component (could be moved) ----
 function computeColumns(sectionKey, list) {
     if (!list.length) return [{ key: 'id', label: 'ID' }];
     const sample = list[0];
@@ -624,4 +791,35 @@ function formatCell(col, row) {
     if (val == null || val === '') return '—';
     if (typeof val === 'string' && val.length > 60) return val.slice(0, 57) + '…';
     return String(val);
+}
+
+function normalizeDateStr(input) {
+    if (!input)
+        return input;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input))
+        return input;
+
+    let s = String(input).trim().replace(/[\/]/g, '-');
+    const parts = s.split('-');
+
+    if (parts.length === 3) {
+        if (parts[0].length === 4) {
+            const [Y,M,D] = parts;
+            return [Y, M.padStart(2,'0'), D.padStart(2,'0')].join('-');
+        } else {
+
+            const [D,M,Y] = parts;
+            if (Y.length === 4) return [Y, M.padStart(2,'0'), D.padStart(2,'0')].join('-');
+        }
+    }
+
+    const d = new Date(input);
+    if (!isNaN(d.getTime())) {
+        const Y = d.getFullYear();
+        const M = String(d.getMonth()+1).padStart(2,'0');
+        const D = String(d.getDate()).padStart(2,'0');
+
+        return `${Y}-${M}-${D}`;
+    }
+    return input;
 }

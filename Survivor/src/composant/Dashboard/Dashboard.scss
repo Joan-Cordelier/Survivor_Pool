@@ -299,6 +299,78 @@ table.data-table .badge { background:#e6eef9; color:#284b75; padding:2px 8px 3px
   color: #fff; 
   border:1px solid rgba(255,255,255,0.08);
 }
+.overview-grid { 
+  display:grid; 
+  gap:28px; 
+  grid-template-columns: 340px 1fr; /* Colonne gauche (cartes), droite (graphes) */
+  justify-content: stretch; 
+  align-items:stretch; /* égalise les hauteurs par ligne */
+  margin-inline:auto; 
+  width:100%;
+  max-width: 1400px;
+}
+// Lighter cards aligned with brand gradient
+.overview-grid .card { 
+  background: linear-gradient(135deg, lighten($brand-from,15%), lighten($brand-to,5%));
+  color:#1d2a3b; 
+  position:relative; 
+  border:1px solid rgba(0,0,0,0.06); 
+  box-shadow:0 10px 26px -10px rgba(0,0,0,.18), 0 4px 10px -4px rgba(0,0,0,.12);
+  backdrop-filter: blur(4px);
+}
+.overview-grid .card h2, .overview-grid .card h3 { color:#1a2533; }
+.overview-grid .card .kv-list li { background:rgba(255,255,255,0.55); }
+.overview-grid .kv-list li .k { color:#1d2a3b; }
+.overview-grid .kv-list li .v { color:#25374a; }
+.overview-grid .counts-list { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+.overview-grid .count-pill { background:rgba(255,255,255,0.75); border:1px solid rgba(0,0,0,0.08); padding:10px 14px; border-radius:14px; display:flex; flex-direction:column; gap:6px; min-width:110px; box-shadow:0 4px 10px -4px rgba(0,0,0,.15); }
+.overview-grid .count-pill .lbl { font-size:.58rem; text-transform:uppercase; letter-spacing:.55px; opacity:.75; font-weight:600; color:#2a3c52; }
+.overview-grid .count-pill .val { font-size:1.25rem; font-weight:700; font-family:'Montserrat',sans-serif; color:#1d2a3b; line-height:1; }
+.overview-grid .chart-card { padding:18px 18px 22px; }
+/* Les cartes graphiques occupent la colonne de droite */
+.overview-grid .chart-card { grid-column: 2; }
+/* Retrait de l'ancien span complet */
+.overview-grid .large-chart { grid-column: 2; }
+.overview-grid .card { min-height: 220px; padding:26px 24px 30px; }
+.overview-grid .profile-card { min-height:240px; }
+.overview-grid .counts-card { min-height:240px; }
+/* Agrandissement spécifique des lignes dans la carte Profil */
+.overview-grid .profile-card .kv-list li { 
+  font-size:.8rem; 
+  padding:10px 14px; 
+  line-height:1.25; 
+}
+.overview-grid .profile-card .kv-list li .k { 
+  font-size:.78rem; 
+  letter-spacing:.5px; 
+}
+.overview-grid .profile-card .kv-list li .v { 
+  font-size:.82rem; 
+  max-width:60%; 
+}
+/* Remplissage hauteur pour cartes de gauche afin d'égaler cartes graphiques */
+.overview-grid .pair-fill { height:100%; display:flex; flex-direction:column; }
+.overview-grid .pair-fill h2 { margin-top:0; }
+.overview-grid .pair-fill .counts-list { flex:1; display:flex; flex-wrap:wrap; align-content:flex-start; }
+@media (max-width:1100px){
+  .overview-grid { grid-template-columns: 300px 1fr; }
+}
+@media (max-width:900px){
+  /* Empilage sur mobile/tablette */
+  .overview-grid { grid-template-columns: 1fr; }
+  .overview-grid .chart-card { grid-column: 1; }
+  .overview-grid .large-chart { grid-column: 1; }
+}
+@media (min-width:1600px){ .overview-grid { grid-template-columns: repeat(auto-fit,minmax(340px, 360px)); } .overview-grid .large-chart { grid-column: span 2; } }
+.overview-grid .chart-card h3 { margin:0 0 10px; font-size:.85rem; letter-spacing:.5px; font-weight:600; font-family:'Montserrat',sans-serif; }
+.overview-grid .profile-card { min-width:260px; }
+.overview-grid .counts-card { min-width:240px; }
+.overview-grid .recharts-default-tooltip { font-size:.65rem; }
+.overview-grid .recharts-legend-item { font-size:.6rem; }
+
+@media (max-width:760px) {
+  .overview-grid { grid-template-columns: 1fr; }
+}
 .card p, .card li { color: rgba(255,255,255,.85); }
 .kv-list { list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px; }
 .kv-list li { display:flex; justify-content:space-between; align-items:center; font-size:.72rem; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:8px; }
