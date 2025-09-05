@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client"
 
 
 export const createNewsController = async (req: Request, res: Response): Promise<void> => {
-    const { news_date, location, title, category, startup_id, description } = req.body;
+    const { news_date, location, title, category, startup_id, description, image } = req.body;
 
     if (!title || !description) {
         res.status(400).json({ message: "Missing required fields", code: 400 });

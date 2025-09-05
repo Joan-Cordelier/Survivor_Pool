@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client"
 
 
 export const createFounderController = async (req: Request, res: Response): Promise<void> => {
-    const { name, startup_id } = req.body;
+    const { name, startup_id, image } = req.body;
 
     if (!name || !startup_id) {
         res.status(400).json({ message: "Missing required fields", code: 400 });
@@ -13,7 +13,8 @@ export const createFounderController = async (req: Request, res: Response): Prom
     try {
         const founder = await createFounder(
             name,
-            startup_id
+            startup_id,
+            image
         );
         res.status(201).json(founder);
     } catch (err: any) {

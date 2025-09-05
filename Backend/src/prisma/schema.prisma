@@ -15,6 +15,7 @@ model User {
   role        String  @db.VarChar(255)
   founder_id  Int?
   investor_id Int?
+  image       String? @db.MediumText
 }
 
 model Event {
@@ -69,6 +70,7 @@ model NewsDetail {
   location    String? @db.VarChar(255)
   category    String? @db.VarChar(255)
   startup_id  Int?
+  image       String? @db.MediumText
 }
 
 model StartupDetail {

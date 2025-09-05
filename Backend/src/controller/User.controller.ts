@@ -3,7 +3,7 @@ import { createUser, getUserById, getAllUsers, deleteUser, updateUser } from "..
 import { Prisma } from "@prisma/client"
 
 export const createUserController = async (req: Request, res: Response): Promise<void> => {
-    const { email, name, role, password, founder_id, investor_id } = req.body;
+    const { email, name, role, password, founder_id, investor_id, image } = req.body;
 
     if (!email || !name || !password) {
         res.status(400).json({ message: "Missing required fields", code: 400 });
@@ -16,7 +16,8 @@ export const createUserController = async (req: Request, res: Response): Promise
             password,
             role ?? 'default',
             founder_id ?? null,
-            investor_id ?? null
+            investor_id ?? null,
+            image ?? null
         );
         res.status(201).json(user);
     } catch (err: any) {

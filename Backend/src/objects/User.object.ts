@@ -8,7 +8,8 @@ export async function createUser(
     password: string,
     role: string,
     founder_id?: number | null,
-    investor_id?: number | null
+    investor_id?: number | null,
+    image?: string | null
 ) {
     try {
         const UserExist = await prisma.user.findUnique({
@@ -25,7 +26,8 @@ export async function createUser(
             password: hashed,
             role,
             founder_id: founder_id ?? null,
-            investor_id: investor_id ?? null
+            investor_id: investor_id ?? null,
+            image: image ?? null
         };
         const user = await prisma.user.create({ data });
 

@@ -9,6 +9,7 @@ export async function createNews(
     location?: string,
     category?: string,
     startup_id?: number,
+    image?: string,
 ) {
     try {
         if (id) {
@@ -29,7 +30,8 @@ export async function createNews(
                 title,
                 category,
                 startup_id,
-                description
+                description,
+                image
             },
         });
         return news;

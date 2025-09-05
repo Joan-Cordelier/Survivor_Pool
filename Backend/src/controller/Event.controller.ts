@@ -4,14 +4,14 @@ import { Prisma } from "@prisma/client"
 
 
 export const createEventController = async (req: Request, res: Response): Promise<void> => {
-    const { name, date, location, description, event_type, target_audience } = req.body;
+    const { name, date, location, description, event_type, target_audience, image } = req.body;
 
     if (!name) {
         res.status(400).json({ error: "Name is required" });
         return;
     }
     try {
-        const event = await createEvent(name, date, location, description, event_type, target_audience);
+        const event = await createEvent(name, date, location, description, event_type, target_audience, image);
         res.status(201).json(event);
     } catch (error) {
         res.status(500).json({ error: "Failed to create event" });
