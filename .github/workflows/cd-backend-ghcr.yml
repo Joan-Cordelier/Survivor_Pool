@@ -27,7 +27,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: Survivor_Pool/Backend/Dockerfile
+          file: Backend/Dockerfile
           push: true
           tags: |
             ${{ steps.vars.outputs.image }}:${{ steps.tag.outputs.t }}

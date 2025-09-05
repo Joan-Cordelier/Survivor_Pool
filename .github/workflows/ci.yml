@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Survivor_Pool/Backend
+        working-directory: Backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: Survivor_Pool/Backend/package-lock.json
+          cache-dependency-path: Backend/package-lock.json
       - run: npm ci
       - name: Prisma generate (optional)
         run: |
@@ -27,21 +27,21 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-dist
-          path: Survivor_Pool/Backend/dist
+          path: Backend/dist
 
   frontend:
     name: Frontend (Vite + Yarn)
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Survivor_Pool/Survivor
+        working-directory: Survivor
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
-          cache-dependency-path: Survivor_Pool/Survivor/yarn.lock
+          cache-dependency-path: Survivor/yarn.lock
       - run: yarn install --frozen-lockfile || yarn install
       - run: yarn build
       - name: Add SPA fallback for GitHub Pages
@@ -51,5 +51,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-dist
-          path: Survivor_Pool/Survivor/dist
+          path: Survivor/dist
           if-no-files-found: ignore
