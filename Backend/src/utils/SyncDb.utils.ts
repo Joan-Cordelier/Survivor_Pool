@@ -317,13 +317,11 @@ async function syncImages() {
     }
 
     for (const event of events) {
-        // Sync each event with the database
         let image: string | undefined;
         try {
             image = await EventsApi.getEventImage(event.id);
-            await updateEvent(event.id, {
-                image
-            });
+            if (image && image.startsWith('data:image'))
+                await updateEvent(event.id, { image });
         } catch (error) {
             console.error("Error updating event:", error);
         }
@@ -334,22 +332,19 @@ async function syncImages() {
         let image: string | undefined;
         try {
             image = await UsersApi.getUserImage(user.id);
-            await updateUser(user.id, {
-                image
-            });
+            if (image && image.startsWith('data:image'))
+                await updateUser(user.id, { image });
         } catch (error) {
             console.error("Error updating user:", error);
         }
     }
 
     for (const newsItem of newsList) {
-        // Sync each news item with the database
         let image: string | undefined;
         try {
             image = await NewsApi.getNewsImage(newsItem.id);
-            await updateNews(newsItem.id, {
-                image
-            });
+            if (image && image.startsWith('data:image'))
+                await updateNews(newsItem.id, { image });
         } catch (error) {
             console.error("Error updating news item:", error);
         }

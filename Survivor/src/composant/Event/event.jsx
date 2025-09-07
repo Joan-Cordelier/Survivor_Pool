@@ -17,7 +17,7 @@ const Events = () => {
     event_type: e.event_type ?? '',
     target_audience: e.target_audience ?? '',
     date: e.dates ?? e.event_date ?? e.date ?? null,
-    image: null,
+    image: e.image ?? null,
   });
 
   const [events, setEvents] = useState([]);

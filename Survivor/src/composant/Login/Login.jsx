@@ -7,7 +7,7 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
-    const navigate = useNavigate(); // Initialiser le hook useNavigate
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -15,19 +15,15 @@ const Login = () => {
     console.log('Données soumises : ', { email, password });
 
         try {
-            const data = await AuthApi.login(email, password); // data = { user, token }
+            const data = await AuthApi.login(email, password);
             console.log('Réponse reçue:', data);
                         if (data?.token) {
-                                // Persist token + user (avec rôle) pour que le Header le détecte au re-mount
                                 localStorage.setItem('token', data.token);
-                                if (data.user) {
+                                if (data.user)
                                     localStorage.setItem('user', JSON.stringify(data.user));
-                                }
                                 localStorage.removeItem('jwtToken');
                                 setMessage('Authentification réussie !');
-                                // Force un refresh pour que le Header hydrate immédiatement et affiche Dashboard si admin
-                                // On redirige vers la route Dashboard (même casse que NavLink)
-                                window.location.href = '/Dashboard';
+                                navigate('/Dashboard');
             } else {
                 setMessage('Réponse inattendue du serveur.');
             }

@@ -6,32 +6,42 @@ class BaseJebApi {
     protected static apiKey?: string = JEB_API_KEY;
 
     protected static async request<T>(url: string, options: RequestInit = {}): Promise<T> {
+        const isImageEndpoint = /\/image$/i.test(url);
         const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-            'accept': 'application/json',
+            ...(isImageEndpoint ? {} : { 'Content-Type': 'application/json', 'accept': 'application/json' }),
             ...options.headers as Record<string, string>,
         };
-        if (this.apiKey) {
-            headers['X-Group-Authorization'] = this.apiKey;
-        }
+        if (this.apiKey) headers['X-Group-Authorization'] = this.apiKey;
 
         try {
             const response = await fetch(url, { ...options, headers });
-            const text = await response.text();
-            let data: any;
-            try {
-                data = text ? JSON.parse(text) : {};
-            } catch (e) {
-                data = text;
-            }
 
             if (!response.ok) {
-                console.log(data);
-                console.error(`Error in request to ${url}: ${JSON.stringify(data)}`);
-                throw { message: data, status: response.status };
+                let errorBody: any;
+                try { errorBody = await response.text(); } catch { errorBody = ''; }
+                console.error(`Error in request to ${url}: ${errorBody}`);
+                throw { message: errorBody, status: response.status };
             }
 
-            return data as T;
+            if (isImageEndpoint) {
+                // Read as arrayBuffer then convert to data URL (guess MIME by simple signatures)
+                const buf = await response.arrayBuffer();
+                const bytes = new Uint8Array(buf);
+                // PNG signature 89 50 4E 47, JPEG FF D8 FF
+                let mime = 'image/png';
+                if (bytes.length > 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) mime = 'image/jpeg';
+                const base64 = Buffer.from(bytes).toString('base64');
+                const dataUrl = `data:${mime};base64,${base64}`;
+                return dataUrl as any as T;
+            }
+
+            // Fallback JSON/text logic
+            const text = await response.text();
+            try {
+                return (text ? JSON.parse(text) : {}) as T;
+            } catch {
+                return text as any as T;
+            }
         } catch (error) {
             console.error(`Error occurred in request to ${url}:`, error);
             throw error;
