@@ -117,7 +117,7 @@ $focus-ring: 0 0 0 3px rgba(255,255,255,.35) !default;
 
   .card {
     background: #252525;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #3a3a3a;
     border-radius: 1rem;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     overflow: hidden;
@@ -125,19 +125,20 @@ $focus-ring: 0 0 0 3px rgba(255,255,255,.35) !default;
     flex-direction: column;
     transition: transform 0.15s, box-shadow 0.15s;
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
+    &.expanded { grid-column: span 2; }
+    @media (max-width: 900px) {
+      &.expanded { grid-column: auto; }
+  }
 
     &.expanded {
       grid-column: span 2;
     }
 
     .card-header {
-      display: flex;
-      align-items: center;
+      display: grid;
+      grid-template-columns: 96px 1fr auto; /* image | texte | bouton */
       gap: 1rem;
+      align-items: center;
       padding: 1rem;
 
       .logo {
@@ -145,20 +146,24 @@ $focus-ring: 0 0 0 3px rgba(255,255,255,.35) !default;
         height: 120px;
         object-fit: cover;
         border-radius: 0.5rem;
-        background: #f3f4f6;
+        background: #252525;
       }
 
       .title-wrap {
         flex: 1;
         .title {
-          font-size: 1.2rem;
-          font-weight: 600;
           font-family: 'Montserrat', sans-serif;
+          font-size: 1.1rem;
+          font-weight: 600;
           margin: 0;
+          /* 2 lignes max, puis ellipsis */
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
         .kicker {
-          font-size: 0.9rem;
           font-family: 'open sans', sans-serif;
+          font-size: 0.9rem;
           color: #e0e0e0;
           margin: 0.2rem 0 0;
         }
@@ -217,4 +222,94 @@ $focus-ring: 0 0 0 3px rgba(255,255,255,.35) !default;
       grid-column: span 1;
     }
   }
+}
+
+/* === Responsive fixes (append-only) === */
+
+/* Champs des filtres: prennent toute la cellule du grid */
+.events-page .filters .filters-row input[type="search"],
+.events-page .filters .filters-row input[type="date"],
+.events-page .filters .filters-row select,
+.events-page .filters .filters-row .clear {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Grille des cartes: autoriser des colonnes plus étroites sur petits écrans */
+@media (max-width: 640px) {
+  .events-page .grid { grid-template-columns: 1fr; }
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .events-page .grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+}
+
+/* Titre: peut se compresser et couper proprement */
+.events-page .card .card-header .title-wrap { min-width: 0; }
+.events-page .card .card-header .title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  /* Standard (nouveaux moteurs) */
+  line-clamp: 2;
+
+  /* Ancien WebKit (très répandu) */
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: break-word;
+}
+.events-page .card .card-header .kicker {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bouton: ne rétrécit pas; pas de retour à la ligne sauf mobile très étroit */
+.events-page .card .card-header .more {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Image: carrée et scalable */
+.events-page .card .card-header .logo {
+  width: 96px; height: 96px; /* correspond à ta grille 96px | 1fr | auto */
+  max-width: 100%;
+}
+@supports (aspect-ratio: 1/1) {
+  .events-page .card .card-header .logo {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+
+/* Reflow du header sur mobile: bouton passe en-dessous, à droite */
+@media (max-width: 640px) {
+  .events-page .card .card-header {
+    grid-template-columns: 72px 1fr;
+    grid-template-areas:
+      "logo title"
+      "more more";
+    align-items: start;
+    column-gap: 12px;
+    row-gap: 8px;
+  }
+  .events-page .card .card-header .logo { grid-area: logo; width: 72px; height: 72px; }
+  .events-page .card .card-header .title-wrap { grid-area: title; }
+  .events-page .card .card-header .more { grid-area: more; justify-self: end; }
+}
+
+/* Très étroit: bouton pleine largeur pour éviter tout chevauchement */
+@media (max-width: 360px) {
+  .events-page .card .card-header .more {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Expanded: jamais 2 colonnes sur écrans < 900px */
+@media (max-width: 900px) {
+  .events-page .card.expanded { grid-column: auto; }
 }

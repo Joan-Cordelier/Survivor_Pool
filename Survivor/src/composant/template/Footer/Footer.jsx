@@ -10,13 +10,13 @@ const Footer = () => {
   return (
     <div className="footer">
       <div className="footer-follow">
-        <a href="https://www.instagram.com/demain_thailande_tls/">
+        <a href="">
           <img className="footer-icon" src={instagram} alt="Instagram" />{" "}
         </a>
-        <a href="https://www.tiktok.com/@demainthailande?_t=8qZF5VJDbWa&_r=1">
+        <a href="">
           <img className="footer-icon" src={Tiktok} alt="Instagram" />{" "}
         </a>
-        <a href="https://www.facebook.com/profile.php?id=61563239763649">
+        <a href="">
           <img className="footer-icon" src={Fb} alt="Facebook" />{" "}
         </a>
       </div>
@@ -26,7 +26,7 @@ const Footer = () => {
         <p className="logo-p">&quot;Laissez-nous réaliser vos rêves&quot;</p>
       </div>
       <div className="footer-contact">
-        <a href="mailto:contact@demainthailande.fr">
+        <a href="mailto:">
           <img className="footer-icon" src={mail} alt="Mail" />{" "}
           contact@jebincubator.fr
         </a>

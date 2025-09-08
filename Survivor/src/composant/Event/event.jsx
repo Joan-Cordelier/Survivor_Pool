@@ -1,6 +1,7 @@
 import './event.scss';
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as EventApi from '../../apis/BackendApi/Event.api';
+import Defualt_img from '../../assets/Photo_default.svg';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
 // cache simple pour éviter les doublons en mode Strict
@@ -97,10 +98,21 @@ const Events = () => {
   const cardRefs = useRef({});
   const toggle = (id) => setExpandedId(prev => prev === id ? null : id);
 
+  function scrollIntoViewIfNeeded(el) {
+    const r  = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    if (r.top < 0 || r.bottom > vh) {
+      el.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    }
+  }
+
+
   useEffect(() => {
     if (!expandedId) return;
-    cardRefs.current[expandedId]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const el = cardRefs.current[expandedId];
+    if (el) scrollIntoViewIfNeeded(el);
   }, [expandedId]);
+
 
   return (
     <div className="events-page">
@@ -146,12 +158,24 @@ const Events = () => {
             >
               <header className="card-header">
                 <div className="logo-wrap">
-                  {e.image ? (
-                    <img src={e.image} alt="" className="logo" />
-                  ) : (
-                    <div className="logo skeleton" aria-hidden="true" />
-                  )}
+                  <img
+                    src={e.image || Defualt_img}
+                    alt=""
+                    className="logo"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(ev) => {
+                      if (ev.currentTarget.src === Defualt_img) return; // évite boucle
+                      ev.currentTarget.onerror = null;
+                      ev.currentTarget.src = Defualt_img;
+                      // fige aussi dans le state pour les prochains renders
+                      setEvents(prev =>
+                        prev.map(x => x.id === e.id ? { ...x, image: Defualt_img } : x)
+                      );
+                    }}
+                  />
                 </div>
+
                 <div className="title-wrap">
                   <h3 className="title">{e.title}</h3>
                   <p className="kicker">{e.location} — {e.date}</p>
