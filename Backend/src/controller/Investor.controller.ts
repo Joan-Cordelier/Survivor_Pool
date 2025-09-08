@@ -12,7 +12,21 @@ export const createInvestorController = async (req: Request, res: Response): Pro
     }
 
     try {
-        const investor = await createInvestor(name, email, legal_status, address, phone, created_at, description, investor_type, investment_focus);
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+        const effectiveCreatedAt = (created_at && typeof created_at === 'string' && created_at.trim() !== '') ? created_at : todayStr;
+        const investor = await createInvestor(
+            name,
+            email,
+            undefined,
+            legal_status,
+            address,
+            phone,
+            effectiveCreatedAt,
+            description,
+            investor_type,
+            investment_focus
+        );
         res.status(201).json(investor);
     } catch (error) {
         res.status(500).json({ error: "Failed to create investor" });
@@ -97,8 +111,9 @@ export const updateInvestorController = async (req: Request, res: Response): Pro
     const filteredFields: Prisma.InvestorUpdateInput = {};
 
     for (const field of authorizedFields) {
-        if (updateFields[field]) {
-            (filteredFields as any)[field] = updateFields[field];
+        if (Object.prototype.hasOwnProperty.call(updateFields, field)) {
+            const value = updateFields[field];
+            (filteredFields as any)[field] = (value === '' ? null : value);
         }
     }
 

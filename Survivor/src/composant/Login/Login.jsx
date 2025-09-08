@@ -24,6 +24,9 @@ const Login = () => {
                                 localStorage.removeItem('jwtToken');
                                 setMessage('Authentification réussie !');
                                 navigate('/Dashboard');
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 50);
             } else {
                 setMessage('Réponse inattendue du serveur.');
             }

@@ -4,7 +4,6 @@ import { Prisma } from "@prisma/client";
 export async function createNews(
     title: string,
     description: string,
-    id?: number,
     news_date?: string,
     location?: string,
     category?: string,
@@ -12,28 +11,20 @@ export async function createNews(
     image?: string,
 ) {
     try {
-        if (id) {
-            const newsExist = await prisma.newsDetail.findUnique({
-                where: { id }
-            });
+        const data: any = { title, description };
 
-            if (newsExist) {
-                throw new Error("News with this ID already exists");
-            }
-        }
+        if (news_date != null && news_date !== '')
+            data.news_date = news_date;
+        if (location != null && location !== '')
+            data.location = location;
+        if (category != null && category !== '')
+            data.category = category;
+        if (typeof startup_id === 'number' && !isNaN(startup_id))
+            data.startup_id = startup_id;
+        if (image != null && image !== '')
+            data.image = image;
 
-        const news = await prisma.newsDetail.create({
-            data: {
-                id,
-                news_date,
-                location,
-                title,
-                category,
-                startup_id,
-                description,
-                image
-            },
-        });
+        const news = await prisma.newsDetail.create({ data });
         return news;
     } catch (error) {
         throw error;

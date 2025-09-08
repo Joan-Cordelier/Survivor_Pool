@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Cell } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.scss';
@@ -75,7 +75,7 @@ const SECTION_FORMS = {
         { name: 'news_date', label: 'Date', type: 'date' },
         { name: 'location', label: 'Location' },
         { name: 'category', label: 'Category' },
-        { name: 'startup_id', label: 'Startup ID', type: 'number' }
+    { name: 'startup_id', label: 'Startup', select: true }
     ]
 };
 
@@ -90,6 +90,8 @@ export default function Dashboard() {
     const redirectedRef = useRef(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [modal, setModal] = useState({ open:false, mode:null, section:null, row:null, loading:false, error:null });
+    const [chartsReady, setChartsReady] = useState(false);
+    const [overviewBatchLoading, setOverviewBatchLoading] = useState(false);
 
     // MODE USER
     useEffect(() => {
@@ -157,18 +159,63 @@ export default function Dashboard() {
         }
     }, [dataCache]);
 
-    useEffect(() => {
-        if (!checking && user) {
-            const baseKeys = ['events', 'startups', 'news'];
-            const extraAdmin = user.role === 'admin' ? ['investors', 'partners', 'users'] : [];
-            [...baseKeys, ...extraAdmin].forEach(k => loadSection(k));
+    const batchLoadOverview = useCallback(async () => {
+        if (overviewBatchLoading) return;
+        const keys = ['events','startups','investors','partners','news'];
+        const missing = keys.filter(k => !dataCache[k]);
+        if (!missing.length) return;
+        try {
+            setOverviewBatchLoading(true);
+            const token = localStorage.getItem('token');
+            const headers = token ? { Authorization: 'Bearer ' + token } : {};
+            const endpoint = (k) => ({
+                events: '/event/get',
+                startups: '/startup/get',
+                investors: '/investor/get',
+                partners: '/partner/get',
+                news: '/news/get'
+            })[k];
+            const promises = missing.map(k => fetch(endpoint(k), { headers }).then(r => r.ok ? r.json() : Promise.reject(new Error(k+': '+r.status))));
+            const settled = await Promise.allSettled(promises);
+            const updates = {};
+            settled.forEach((res, idx) => {
+                const k = missing[idx];
+                if (res.status === 'fulfilled') {
+                    const value = res.value;
+                    const items = Array.isArray(value) ? value : (value?.data || []);
+                    updates[k] = { items, error: null };
+                } else {
+                    updates[k] = { items: [], error: res.reason?.message || 'Load error' };
+                }
+            });
+            if (Object.keys(updates).length) {
+                setDataCache(dc => ({ ...dc, ...updates }));
+            }
+        } finally {
+            setOverviewBatchLoading(false);
         }
-    }, [checking, user, loadSection]);
+    }, [dataCache, overviewBatchLoading]);
 
     useEffect(() => {
-        if (!checking)
-            loadSection(active);
-    }, [active, checking, loadSection]);
+        if (!checking && user) {
+            if (active === 'overview') {
+                batchLoadOverview();
+            } else {
+                const section = SECTIONS.find(s => s.key === active && s.endpoint);
+                if (section && !dataCache[active]) loadSection(active);
+            }
+        }
+    }, [checking, user, active, batchLoadOverview, loadSection, dataCache]);
+
+    useEffect(() => {
+        const keys = ['events','startups','investors','partners','news'];
+        if (keys.every(k => dataCache[k])) {
+            const id = requestAnimationFrame(() => setChartsReady(true));
+            return () => cancelAnimationFrame(id);
+        }
+    }, [dataCache]);
+
+    useEffect(() => {}, [active, checking, loadSection]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -325,12 +372,12 @@ export default function Dashboard() {
 
             fields.forEach(f => {
                 let v = form[f.name]?.value;
-                if (f.type === 'number' && v !== '')
-                    v = Number(v);
                 if (v === '')
                     v = null;
                 if (f.textarea)
                     v = form[f.name].value;
+                if (v !== null && /_id$/.test(f.name) && !isNaN(Number(v)))
+                    v = Number(v);
                 if (v !== null)
                     payload[f.name] = v;
             });
@@ -375,9 +422,9 @@ export default function Dashboard() {
             fields.forEach(f => {
                 const original = modal.row[f.name];
                 let v = form[f.name]?.value;
-                if (f.type === 'number' && v !== '') v = Number(v);
                 if (v === '') v = null;
                 if (f.textarea) v = form[f.name].value;
+                if (v !== null && /_id$/.test(f.name) && !isNaN(Number(v))) v = Number(v);
                 if (v !== original && !(v == null && (original === null || original === undefined))) {
                     updateFields[f.name] = v;
                 }
@@ -476,16 +523,30 @@ export default function Dashboard() {
                                     <button className="close-x" onClick={closeModal}>✕</button>
                                 </div>
                                 <form onSubmit={isEdit? submitGenericEdit : submitGenericCreate} className="modal-form">
-                                    {fields.map(f => (
-                                        <div className="form-row" key={f.name}>
-                                            <label>{f.label}</label>
-                                            {f.textarea ? (
-                                                <textarea name={f.name} defaultValue={row[f.name] || ''} style={{resize:'vertical', minHeight:80}} {...(f.required && !isEdit ? {required:true}: {})} />
-                                            ) : (
-                                                <input name={f.name} type={f.type || 'text'} defaultValue={row[f.name] || ''} {...(f.required && !isEdit ? {required:true}: {})} />
-                                            )}
-                                        </div>
-                                    ))}
+                                    {fields.map(f => {
+                                        if (f.name === 'startup_id' && f.select) {
+                                            const startups = (dataCache.startups?.items) || [];
+                                            return (
+                                                <div className="form-row" key={f.name}>
+                                                    <label>{f.label}</label>
+                                                    <select name={f.name} defaultValue={row[f.name] || ''}>
+                                                        <option value="">-- None --</option>
+                                                        {startups.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                    </select>
+                                                </div>
+                                            );
+                                        }
+                                        return (
+                                            <div className="form-row" key={f.name}>
+                                                <label>{f.label}</label>
+                                                {f.textarea ? (
+                                                    <textarea name={f.name} defaultValue={row[f.name] || ''} style={{resize:'vertical', minHeight:80}} {...(f.required && !isEdit ? {required:true}: {})} />
+                                                ) : (
+                                                    <input name={f.name} type={f.type || 'text'} defaultValue={row[f.name] || ''} {...(f.required && !isEdit ? {required:true}: {})} />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                     {modal.error && <div className="form-error">{modal.error}</div>}
                                     <div className="modal-actions">
                                         <button type="button" className="btn sm" onClick={closeModal}>Cancel</button>
@@ -503,6 +564,19 @@ export default function Dashboard() {
         if (active === 'users' && safeUser.role !== 'admin')
             return <div className="section-error">Forbidden.</div>;
         if (active === 'overview') {
+            const requiredKeys = ['events','startups','investors','partners','news'];
+            const loadingOverview = requiredKeys.some(k => !dataCache[k]);
+            if (loadingOverview || !chartsReady) {
+                return (
+                    <div className="overview-loading" style={{display:'grid', gap:16}}>
+                        <div className="card" style={{height:140, background:'#2a2a2a', borderRadius:12}} />
+                        <div className="card" style={{height:380, background:'#2a2a2a', borderRadius:12}} />
+                        <div className="card" style={{height:160, background:'#2a2a2a', borderRadius:12}} />
+                        <div className="card" style={{height:380, background:'#2a2a2a', borderRadius:12}} />
+                        <div style={{textAlign:'center', opacity:.7}}>{overviewBatchLoading ? 'Fetching data…' : 'Preparing charts…'}</div>
+                    </div>
+                );
+            }
             const today = new Date();
             const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             const msDay = 86400000;
@@ -576,11 +650,11 @@ export default function Dashboard() {
             const newsLast7Total = newsLast7.length;
 
             const totalsData = [
-                { name: 'Startups', value: startupsTotal },
-                { name: 'Investors', value: investorsTotal },
-                { name: 'Partners', value: partnersTotal },
-                { name: 'Upcoming Events', value: eventsUpcomingTotal },
-                { name: 'News (7d)', value: newsLast7Total }
+                { name: 'Startups', value: startupsTotal || 0 },
+                { name: 'Investors', value: investorsTotal || 0 },
+                { name: 'Partners', value: partnersTotal || 0 },
+                { name: 'Upcoming Events', value: eventsUpcomingTotal || 0 },
+                { name: 'News (7d)', value: newsLast7Total || 0 }
             ];
 
             const pct = (cur, prev) => {
@@ -589,37 +663,19 @@ export default function Dashboard() {
                 return ((cur - prev) / prev) * 100;
             };
 
+            const safePct = (a,b) => {
+                try {
+                    const val = pct(a,b);
+                    if (!isFinite(val)) return 0;
+                    return Number(val.toFixed(1));
+                } catch { return 0; }
+            };
             const growthData = [
-                {
-                    name: 'Startups',
-                    value: Number(pct(startupsLast7.length, startupsPrev7.length).toFixed(1)),
-                    cur: startupsLast7.length,
-                    prev: startupsPrev7.length
-                },
-                {
-                    name: 'Investors',
-                    value: Number(pct(investorsLast7.length, investorsPrev7.length).toFixed(1)),
-                    cur: investorsLast7.length,
-                    prev: investorsPrev7.length
-                },
-                {
-                    name: 'Partners',
-                    value: Number(pct(partnersLast7.length, partnersPrev7.length).toFixed(1)),
-                    cur: partnersLast7.length,
-                    prev: partnersPrev7.length
-                },
-                {
-                    name: 'Events',
-                    value: Number(pct(eventsLast7.length, eventsPrev7.length).toFixed(1)),
-                    cur: eventsLast7.length,
-                    prev: eventsPrev7.length
-                },
-                {
-                    name: 'News',
-                    value: Number(pct(newsLast7.length, newsPrev7.length).toFixed(1)),
-                    cur: newsLast7.length,
-                    prev: newsPrev7.length
-                }
+                { name: 'Startups', value: safePct(startupsLast7.length, startupsPrev7.length), cur: startupsLast7.length, prev: startupsPrev7.length },
+                { name: 'Investors', value: safePct(investorsLast7.length, investorsPrev7.length), cur: investorsLast7.length, prev: investorsPrev7.length },
+                { name: 'Partners', value: safePct(partnersLast7.length, partnersPrev7.length), cur: partnersLast7.length, prev: partnersPrev7.length },
+                { name: 'Events', value: safePct(eventsLast7.length, eventsPrev7.length), cur: eventsLast7.length, prev: eventsPrev7.length },
+                { name: 'News', value: safePct(newsLast7.length, newsPrev7.length), cur: newsLast7.length, prev: newsPrev7.length }
             ];
 
             const barPalette = ['#6d5dfc','#8b6dfc','#a86dfc','#c26df7','#dd6df0'];
@@ -659,7 +715,7 @@ export default function Dashboard() {
                                     <XAxis dataKey="name" stroke="#000" tick={{ fill:'#000', fontSize:12 }} />
                                     <YAxis stroke="#000" allowDecimals={false} tick={{ fill:'#000', fontSize:12 }} />
                                     <Tooltip contentStyle={{ background:'#ffffff', border:'1px solid #ccc', color:'#000' }} />
-                                    <Bar dataKey="value" radius={[6,6,0,0]}>
+                                    <Bar dataKey="value" radius={[6,6,0,0]} isAnimationActive={false}>
                                         {totalsData.map((d,i) => <Cell key={d.name} fill={barPalette[i % barPalette.length]} />)}
                                     </Bar>
                                 </BarChart>
@@ -684,7 +740,7 @@ export default function Dashboard() {
                                     <XAxis dataKey="name" stroke="#000" tick={{ fill:'#000', fontSize:12 }} />
                                     <YAxis stroke="#000" tickFormatter={(v)=> v + '%'} tick={{ fill:'#000', fontSize:12 }} />
                                     <Tooltip content={<GrowthTooltip />} />
-                                    <Bar dataKey="value" radius={[6,6,0,0]}>
+                                    <Bar dataKey="value" radius={[6,6,0,0]} isAnimationActive={false}>
                                         {growthData.map(g => <Cell key={g.name} fill={growthColor(g.value)} />)}
                                     </Bar>
                                 </BarChart>

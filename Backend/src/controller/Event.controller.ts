@@ -4,14 +4,14 @@ import { Prisma } from "@prisma/client"
 
 
 export const createEventController = async (req: Request, res: Response): Promise<void> => {
-    const { name, date, location, description, event_type, target_audience, image } = req.body;
+    const { name, dates, date, location, description, event_type, target_audience, image } = req.body;
 
     if (!name) {
         res.status(400).json({ error: "Name is required" });
         return;
     }
     try {
-        const event = await createEvent(name, date, location, description, event_type, target_audience, image);
+        const event = await createEvent(name, undefined, (dates || date) || undefined, location, description, event_type, target_audience, image);
         res.status(201).json(event);
     } catch (error) {
         res.status(500).json({ error: "Failed to create event" });
@@ -90,14 +90,23 @@ export const updateEventController = async (req: Request, res: Response): Promis
         return;
     }
 
-    const authorizedFields = [ "name", "date", "location", "description", "event_type", "target_audience", "image" ];
+    const authorizedFields = [ "name", "dates", "date", "location", "description", "event_type", "target_audience", "image" ];
     const filteredFields: Prisma.EventUpdateInput = {};
 
     for (const field of authorizedFields) {
-        if (updateFields[field]) {
-            (filteredFields as any)[field] = updateFields[field];
+        if (Object.prototype.hasOwnProperty.call(updateFields, field)) {
+            const value = updateFields[field];
+            if (field === 'date') {
+                (filteredFields as any).dates = value === '' ? null : value;
+            } else if (field === 'dates') {
+                (filteredFields as any).dates = value === '' ? null : value;
+            } else {
+                (filteredFields as any)[field] = value === '' ? null : value;
+            }
         }
     }
+
+    delete (filteredFields as any).date;
 
     if (Object.keys(filteredFields).length === 0) {
         console.error('No valid fields to update');

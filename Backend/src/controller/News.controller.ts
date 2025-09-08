@@ -12,12 +12,13 @@ export const createNewsController = async (req: Request, res: Response): Promise
     }
     try {
         const news = await createNews(
-            news_date ?? null,
-            location ?? null,
-            title,
-            category ?? null,
-            startup_id ?? null,
-            description
+            String(title).trim(),
+            String(description).trim(),
+            news_date ? String(news_date).trim() : undefined,
+            location ? String(location).trim() : undefined,
+            category ? String(category).trim() : undefined,
+            startup_id ? Number(startup_id) : undefined,
+            image ? String(image) : undefined
         );
         res.status(201).json(news);
     } catch (err: any) {

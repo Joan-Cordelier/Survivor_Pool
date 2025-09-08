@@ -15,6 +15,7 @@ export const createStartupController = async (req: Request, res: Response): Prom
         const startup = await createStartup(
             name,
             email,
+            undefined,
             legal_status,
             address,
             phone,
