@@ -6,10 +6,15 @@ import { Prisma } from '@prisma/client';
 export const createPartnerController = async (req: Request, res: Response): Promise<void> => {
     const { name, email, legal_status, address, phone, created_at, description, partnership_type } = req.body;
 
+    if (!name || !email) {
+        res.status(400).json({ error: 'Name and email are required' });
+        return;
+    }
     try {
         const partner = await createPartner(
             name,
             email,
+            undefined,
             legal_status,
             address,
             phone,

@@ -1,7 +1,16 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Cell } from 'recharts';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.scss';
+
+/* API CALLS */
+import * as EventApi from '../../apis/BackendApi/Event.api';
+import * as StartupApi from '../../apis/BackendApi/Startup.api';
+import * as InvestorApi from '../../apis/BackendApi/Investor.api';
+import * as PartnerApi from '../../apis/BackendApi/Partner.api';
+import * as NewsApi from '../../apis/BackendApi/News.api';
+import * as UserApi from '../../apis/BackendApi/User.api';
+import * as FounderApi from '../../apis/BackendApi/Founder.api';
 
 function decodeJwt(token) {
     if (!token)
@@ -20,6 +29,7 @@ const SECTIONS = [
     { key: 'overview', label: 'Overview', icon: '📊', roles: ['admin'] },
     { key: 'events', label: 'Events', icon: '🗓️', roles: ['admin'], endpoint: '/event/get' },
     { key: 'startups', label: 'Startups', icon: '🚀', roles: ['admin'], endpoint: '/startup/get' },
+    { key: 'founders', label: 'Founders', icon: '👤', roles: ['admin'], endpoint: '/founder/get' },
     { key: 'investors', label: 'Investors', icon: '💼', roles: ['default', 'admin'], endpoint: '/investor/get' },
     { key: 'partners', label: 'Partners', icon: '🤝', roles: ['default', 'admin'], endpoint: '/partner/get' },
     { key: 'news', label: 'News', icon: '📰', roles: ['admin'], endpoint: '/news/get' },
@@ -61,8 +71,8 @@ const SECTION_FORMS = {
         { name: 'description', label: 'Description', textarea: true }
     ],
     partners: [
-        { name: 'name', label: 'Name', required: true },
-        { name: 'email', label: 'Email', type: 'email' },
+        { name: 'name', label: 'Name*', required: true },
+        { name: 'email', label: 'Email*', type: 'email', required: true },
         { name: 'legal_status', label: 'Legal status' },
         { name: 'address', label: 'Address' },
         { name: 'phone', label: 'Phone' },
@@ -75,12 +85,19 @@ const SECTION_FORMS = {
         { name: 'news_date', label: 'Date', type: 'date' },
         { name: 'location', label: 'Location' },
         { name: 'category', label: 'Category' },
-    { name: 'startup_id', label: 'Startup', select: true }
+        { name: 'startup_id', label: 'Startup', select: true },
+        { name: 'image', label: 'Image (URL/Base64)' }
+    ],
+    founders: [
+        { name: 'name', label: 'Name*', required: true },
+        { name: 'startup_id', label: 'Startup', select: true },
+        { name: 'image', label: 'Image (URL/Base64)' }
     ]
 };
 
 export default function Dashboard() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [user, setUser] = useState(null);
     const [checking, setChecking] = useState(true);
     const [error, setError] = useState(null);
@@ -92,6 +109,18 @@ export default function Dashboard() {
     const [modal, setModal] = useState({ open:false, mode:null, section:null, row:null, loading:false, error:null });
     const [chartsReady, setChartsReady] = useState(false);
     const [overviewBatchLoading, setOverviewBatchLoading] = useState(false);
+    const [imageData, setImageData] = useState(null);
+
+    const readImageAsDataUrl = (file) => new Promise((resolve, reject) => {
+        try {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsDataURL(file);
+        } catch (e) {
+            reject(e);
+        }
+    });
 
     // MODE USER
     useEffect(() => {
@@ -101,20 +130,20 @@ export default function Dashboard() {
         if (!token) {
             setError('No token. Redirecting...');
             redirectedRef.current = true;
-            navigate('/Login', { replace: true });
+            navigate('/Login', { replace: true, state: { from: location?.pathname || '/' } });
             return;
         }
         const payload = decodeJwt(token);
         if (!payload) {
             setError('Invalid token.');
             localStorage.removeItem('token');
-            navigate('/Login', { replace: true });
+            navigate('/Login', { replace: true, state: { from: location?.pathname || '/' } });
             return;
         }
         if (payload.exp && Date.now() / 1000 > payload.exp) {
             setError('Session expired.');
             localStorage.removeItem('token');
-            navigate('/Login', { replace: true });
+            navigate('/Login', { replace: true, state: { from: location?.pathname || '/' } });
             return;
         }
         try {
@@ -128,7 +157,12 @@ export default function Dashboard() {
             raw: payload
         };
         setUser(hydrated);
-        localStorage.setItem('user', JSON.stringify({ id: hydrated.id, email: hydrated.email, name: hydrated.name, role: hydrated.role }));
+        try {
+            const prev = JSON.parse(localStorage.getItem('user') || 'null');
+            localStorage.setItem('user', JSON.stringify({ id: hydrated.id, email: hydrated.email, name: hydrated.name, role: hydrated.role, image: prev?.image }));
+        } catch {
+            localStorage.setItem('user', JSON.stringify({ id: hydrated.id, email: hydrated.email, name: hydrated.name, role: hydrated.role }));
+        }
         setChecking(false);
     }, [navigate]);
 
@@ -146,11 +180,22 @@ export default function Dashboard() {
                 localStorage.setItem('token', legacy);
                 localStorage.removeItem('jwtToken');
             }
-            const token = localStorage.getItem('token');
-            const res = await fetch(section.endpoint, {headers: token ? { Authorization: 'Bearer ' + token } : {}});
-            if (!res.ok)
-                throw new Error('HTTP ' + res.status);
-            const items = await res.json();
+
+            let items = [];
+            if (key === 'events')
+                items = await EventApi.getAllEvents();
+            else if (key === 'startups')
+                items = await StartupApi.getAllStartups();
+            else if (key === 'investors')
+                items = await InvestorApi.getAllInvestors();
+            else if (key === 'founders')
+                items = await FounderApi.getAllFounders();
+            else if (key === 'partners')
+                items = await PartnerApi.getAllPartners();
+            else if (key === 'news')
+                items = await NewsApi.getAllNews();
+            else if (key === 'users')
+                items = await UserApi.getAllUsers();
             setDataCache(dc => ({ ...dc, [key]: { items: Array.isArray(items) ? items : (items.data || []), error: null } }));
         } catch (e) {
             setDataCache(dc => ({ ...dc, [key]: { items: [], error: e.message || 'Erreur de chargement' } }));
@@ -166,16 +211,19 @@ export default function Dashboard() {
         if (!missing.length) return;
         try {
             setOverviewBatchLoading(true);
-            const token = localStorage.getItem('token');
-            const headers = token ? { Authorization: 'Bearer ' + token } : {};
-            const endpoint = (k) => ({
-                events: '/event/get',
-                startups: '/startup/get',
-                investors: '/investor/get',
-                partners: '/partner/get',
-                news: '/news/get'
-            })[k];
-            const promises = missing.map(k => fetch(endpoint(k), { headers }).then(r => r.ok ? r.json() : Promise.reject(new Error(k+': '+r.status))));
+            const promises = missing.map(k => {
+                if (k === 'events')
+                    return EventApi.getAllEvents();
+                if (k === 'startups')
+                    return StartupApi.getAllStartups();
+                if (k === 'investors')
+                    return InvestorApi.getAllInvestors();
+                if (k === 'partners')
+                    return PartnerApi.getAllPartners();
+                if (k === 'news')
+                    return NewsApi.getAllNews();
+                return Promise.resolve([]);
+            });
             const settled = await Promise.allSettled(promises);
             const updates = {};
             settled.forEach((res, idx) => {
@@ -216,6 +264,30 @@ export default function Dashboard() {
     }, [dataCache]);
 
     useEffect(() => {}, [active, checking, loadSection]);
+    useEffect(() => {
+        if (!modal.open || modal.section !== 'users')
+            return;
+
+        if (!dataCache.founders) {
+            import('../../apis/BackendApi/Founder.api').then(mod => mod.getAllFounders())
+                .then(items => setDataCache(dc => ({ ...dc, founders: { items: Array.isArray(items)? items : (items?.data||[]), error: null } })))
+                .catch(() => setDataCache(dc => ({ ...dc, founders: { items: [], error: 'Load error'} })));
+        }
+        if (!dataCache.investors) {
+            InvestorApi.getAllInvestors()
+                .then(items => setDataCache(dc => ({ ...dc, investors: { items: Array.isArray(items)? items : (items?.data||[]), error: null } })))
+                .catch(() => setDataCache(dc => ({ ...dc, investors: { items: [], error: 'Load error'} })));
+        }
+    }, [modal.open, modal.section, dataCache.founders, dataCache.investors]);
+
+    useEffect(() => {
+        if (!modal.open || modal.section !== 'founders') return;
+        if (!dataCache.startups) {
+            StartupApi.getAllStartups()
+                .then(items => setDataCache(dc => ({ ...dc, startups: { items: Array.isArray(items)? items : (items?.data||[]), error: null } })))
+                .catch(() => setDataCache(dc => ({ ...dc, startups: { items: [], error: 'Load error'} })));
+        }
+    }, [modal.open, modal.section, dataCache.startups]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -239,6 +311,7 @@ export default function Dashboard() {
         switch (sectionKey) {
             case 'events': return '/event';
             case 'startups': return '/startup';
+            case 'founders': return '/founder';
             case 'investors': return '/investor';
             case 'partners': return '/partner';
             case 'news': return '/news';
@@ -249,6 +322,7 @@ export default function Dashboard() {
 
     const openCreate = (sectionKey) => {
         if (sectionKey === 'users' || SECTION_FORMS[sectionKey]) {
+            setImageData(null);
             setModal({ open:true, mode:'create', section:sectionKey, row:null, loading:false, error:null });
         } else {
             alert('Creation not available.');
@@ -257,6 +331,7 @@ export default function Dashboard() {
 
     const openEdit = (sectionKey, row) => {
         if (sectionKey === 'users' || SECTION_FORMS[sectionKey]) {
+            setImageData(row?.image || null);
             setModal({ open:true, mode:'edit', section:sectionKey, row, loading:false, error:null });
         } else {
             alert('Edition not available.');
@@ -268,12 +343,20 @@ export default function Dashboard() {
         if (!window.confirm('Delete item #' + row.id + ' ?')) return;
         try {
             const token = localStorage.getItem('token');
-            const base = basePathFromSection(sectionKey);
-            if (!base)
-                throw new Error('Unknown section');
-            const res = await fetch(`${base}/delete/${row.id}`, { method: 'DELETE', headers: token ? { Authorization: 'Bearer ' + token } : {} });
-            if (!res.ok)
-                throw new Error('HTTP ' + res.status);
+            if (sectionKey === 'events')
+                await EventApi.deleteEvent(row.id, token);
+            else if (sectionKey === 'startups')
+                await StartupApi.deleteStartup(row.id, token);
+            else if (sectionKey === 'investors')
+                await InvestorApi.deleteInvestor(row.id, token);
+            else if (sectionKey === 'founders')
+                await FounderApi.deleteFounder(row.id, token);
+            else if (sectionKey === 'partners')
+                await PartnerApi.deletePartner(row.id, token);
+            else if (sectionKey === 'news')
+                await NewsApi.deleteNews(row.id, token);
+            else if (sectionKey === 'users')
+                await UserApi.deleteUser(row.id, token);
             setDataCache(dc => {
                 const cur = dc[sectionKey];
                 if (!cur)
@@ -285,42 +368,38 @@ export default function Dashboard() {
         }
     };
 
-        const closeModal = () => setModal(m => ({ ...m, open:false }));
+    const closeModal = () => { setImageData(null); setModal(m => ({ ...m, open:false })); };
 
-        const submitUserCreate = async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const payload = {
-                        email: form.email.value.trim(),
-                        name: form.name.value.trim(),
-                        role: form.role.value.trim() || 'default',
-                        password: form.password.value,
-                        founder_id: form.founder_id.value ? Number(form.founder_id.value) : null,
-                        investor_id: form.investor_id.value ? Number(form.investor_id.value) : null,
-                };
-                if (!payload.email || !payload.name || !payload.password) {
-                        setModal(m=>({...m,error:'Missing required fields'}));
-                        return;
-                }
-                try {
-                        setModal(m=>({...m,loading:true,error:null}));
-                        const token = localStorage.getItem('token');
-                        const res = await fetch('/user/create', { method:'POST', headers:{ 'Content-Type':'application/json', ...(token? {Authorization:'Bearer '+token}:{}) }, body: JSON.stringify(payload) });
-                        if (!res.ok) {
-                            let msg = 'HTTP '+res.status;
-                            try { const errJson = await res.json(); msg = errJson.message || msg; } catch {}
-                            throw new Error(msg);
-                        }
-                        const created = await res.json();
-                        setDataCache(dc => {
-                                const cur = dc.users; if (!cur) return dc;
-                                return { ...dc, users:{ ...cur, items:[created, ...cur.items] } };
-                        });
-                        closeModal();
-                } catch(err) {
-                        setModal(m=>({...m,loading:false,error: err.message || 'Creation error'}));
-                }
+    const submitUserCreate = async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const payload = {
+            email: form.email.value.trim(),
+            name: form.name.value.trim(),
+            role: form.role.value.trim() || 'default',
+            password: form.password.value,
+            founder_id: form.founder_id.value ? Number(form.founder_id.value) : null,
+            investor_id: form.investor_id.value ? Number(form.investor_id.value) : null,
         };
+        if (!payload.email || !payload.name || !payload.password) {
+            setModal(m => ({ ...m, error: 'Missing required fields' }));
+            return;
+        }
+        try {
+            setModal(m => ({ ...m, loading: true, error: null }));
+            const token = localStorage.getItem('token');
+            const imgB64 = (form.image?.value || '').trim();
+            if (imgB64) payload.image = imgB64;
+            const created = await UserApi.createUser(payload, token);
+            setDataCache(dc => {
+                const cur = dc.users; if (!cur) return dc;
+                return { ...dc, users: { ...cur, items: [created, ...cur.items] } };
+            });
+            closeModal();
+        } catch (err) {
+            setModal(m => ({ ...m, loading: false, error: err.message || 'Creation error' }));
+        }
+    };
 
         const submitUserEdit = async (e) => {
                 e.preventDefault();
@@ -343,14 +422,15 @@ export default function Dashboard() {
                 const investor_id = form.investor_id.value ? Number(form.investor_id.value) : null;
                 if (investor_id !== modal.row.investor_id)
                     updateFields.investor_id = investor_id;
+                const imgU = form.image?.value || null;
+                if (imgU !== (modal.row?.image || null))
+                    updateFields.image = imgU || null;
                 if (Object.keys(updateFields).length === 0)
                     { closeModal(); return; }
                 try {
                         setModal(m=>({...m,loading:true,error:null}));
                         const token = localStorage.getItem('token');
-                        const res = await fetch(`/user/update/${modal.row.id}`, { method:'PUT', headers:{ 'Content-Type':'application/json', ...(token? {Authorization:'Bearer '+token}:{}) }, body: JSON.stringify({ updateFields }) });
-                        if (!res.ok) throw new Error('HTTP '+res.status);
-                        const data = await res.json();
+                        const data = await UserApi.updateUser(modal.row.id, { updateFields }, token);
                         const updated = data.user || data;
                         setDataCache(dc => {
                                 const cur = dc.users; if (!cur) return dc;
@@ -394,14 +474,19 @@ export default function Dashboard() {
             try {
                 setModal(m=>({...m,loading:true,error:null}));
                 const token = localStorage.getItem('token');
-                const base = basePathFromSection(sectionKey);
-                const res = await fetch(`${base}/create`, { method:'POST', headers:{ 'Content-Type':'application/json', ...(token? {Authorization:'Bearer '+ token}:{}) }, body: JSON.stringify(payload) });
-                if (!res.ok) {
-                    let msg = 'HTTP '+res.status;
-                    try { const ej = await res.json(); msg = ej.message || msg; } catch {}
-                    throw new Error(msg);
-                }
-                const created = await res.json();
+                let created;
+                if (sectionKey === 'events')
+                    created = await EventApi.createEvent(payload, token);
+                else if (sectionKey === 'startups')
+                    created = await StartupApi.createStartup(payload, token);
+                else if (sectionKey === 'investors')
+                    created = await InvestorApi.createInvestor(payload, token);
+                else if (sectionKey === 'founders')
+                    created = await FounderApi.createFounder(payload, token);
+                else if (sectionKey === 'partners')
+                    created = await PartnerApi.createPartner(payload, token);
+                else if (sectionKey === 'news')
+                    created = await NewsApi.createNews(payload, token);
                 setDataCache(dc => {
                     const cur = dc[sectionKey]; if (!cur) return dc;
                     return { ...dc, [sectionKey]: { ...cur, items: [created, ...cur.items] } };
@@ -429,25 +514,34 @@ export default function Dashboard() {
                     updateFields[f.name] = v;
                 }
             });
-            if (sectionKey === 'events' && Object.prototype.hasOwnProperty.call(updateFields, 'dates')) {
+                if (sectionKey === 'events' && Object.prototype.hasOwnProperty.call(updateFields, 'dates')) {
                 updateFields.dates = updateFields.dates ? normalizeDateStr(updateFields.dates) : updateFields.dates;
             }
             if (sectionKey === 'news' && Object.prototype.hasOwnProperty.call(updateFields, 'news_date')) {
                 updateFields.news_date = updateFields.news_date ? normalizeDateStr(updateFields.news_date) : updateFields.news_date;
             }
+                const imgVal = form.image?.value || null;
+                if (imgVal !== (modal.row?.image || null)) {
+                    updateFields.image = imgVal || null;
+                }
             if (Object.keys(updateFields).length === 0) { closeModal(); return; }
             try {
                 setModal(m=>({...m,loading:true,error:null}));
                 const token = localStorage.getItem('token');
-                const base = basePathFromSection(sectionKey);
-                const res = await fetch(`${base}/update/${modal.row.id}`, { method:'PUT', headers:{ 'Content-Type':'application/json', ...(token? {Authorization:'Bearer '+token}:{}) }, body: JSON.stringify({ updateFields }) });
-                if (!res.ok) {
-                    let msg = 'HTTP '+res.status;
-                    try { const ej = await res.json(); msg = ej.message || msg; } catch {}
-                    throw new Error(msg);
-                }
-                const data = await res.json();
-                const keyMap = { events:'event', startups:'startup', investors:'investor', partners:'partner', news:'news' };
+                let data;
+                if (sectionKey === 'events')
+                    data = await EventApi.updateEvent(modal.row.id, { updateFields }, token);
+                else if (sectionKey === 'startups')
+                    data = await StartupApi.updateStartup(modal.row.id, { updateFields }, token);
+                else if (sectionKey === 'investors')
+                    data = await InvestorApi.updateInvestor(modal.row.id, { updateFields }, token);
+                else if (sectionKey === 'founders')
+                    data = await FounderApi.updateFounder(modal.row.id, { updateFields }, token);
+                else if (sectionKey === 'partners')
+                    data = await PartnerApi.updatePartner(modal.row.id, { updateFields }, token);
+                else if (sectionKey === 'news')
+                    data = await NewsApi.updateNews(modal.row.id, { updateFields }, token);
+                const keyMap = { events:'event', startups:'startup', founders:'founder', investors:'investor', partners:'partner', news:'news' };
                 const updated = data[keyMap[sectionKey]] || data;
                 setDataCache(dc => {
                     const cur = dc[sectionKey]; if (!cur) return dc;
@@ -460,7 +554,8 @@ export default function Dashboard() {
         };
 
         const renderModal = () => {
-                if (!modal.open) return null;
+                if (!modal.open)
+                    return null;
                 if (modal.section === 'users') {
                         const isEdit = modal.mode === 'edit';
                         const row = modal.row || {};
@@ -485,7 +580,8 @@ export default function Dashboard() {
                                             <select name="role" defaultValue={row.role||'default'}>
                                                 <option value="default">default</option>
                                                 <option value="admin">admin</option>
-                                                <option value="user">user</option>
+                                                <option value="investor">investor</option>
+                                                <option value="founder">founder</option>
                                             </select>
                                         </div>
                                         <div className="form-row">
@@ -494,13 +590,45 @@ export default function Dashboard() {
                                         </div>
                                         <div className="form-row-inline">
                                             <div>
-                                                <label>Founder ID</label>
-                                                <input name="founder_id" type="number" defaultValue={row.founder_id||''} />
+                                                <label>Founder</label>
+                                                <select name="founder_id" defaultValue={row.founder_id||''}>
+                                                    <option value="">-- None --</option>
+                                                    {(dataCache.founders?.items||[]).map(f => (
+                                                        <option key={f.id} value={f.id}>{f.name || ('#'+f.id)}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                             <div>
-                                                <label>Investor ID</label>
-                                                <input name="investor_id" type="number" defaultValue={row.investor_id||''} />
+                                                <label>Investor</label>
+                                                <select name="investor_id" defaultValue={row.investor_id||''}>
+                                                    <option value="">-- None --</option>
+                                                    {(dataCache.investors?.items||[]).map(inv => (
+                                                        <option key={inv.id} value={inv.id}>{inv.name || ('#'+inv.id)}</option>
+                                                    ))}
+                                                </select>
                                             </div>
+                                        </div>
+                                        <div className="form-row">
+                                            <label>Avatar image</label>
+                                            <input type="hidden" name="image" defaultValue={row.image||''} />
+                                            {imageData && <div style={{marginBottom:8}}><img src={imageData} alt="preview" style={{maxWidth:160,borderRadius:8}}/></div>}
+                                            <input type="file" accept="image/*" onChange={async (e)=>{
+                                                const inputEl = e.currentTarget;
+                                                const formEl = inputEl?.form || null;
+                                                const f = inputEl.files?.[0];
+                                                if (!f)
+                                                    return;
+                                                if (!f.type.startsWith('image/')) {
+                                                    alert('Only image files allowed.');
+                                                    inputEl.value='';
+                                                    return;
+                                                }
+                                                const b64 = await readImageAsDataUrl(f);
+                                                setImageData(b64);
+                                                const hidden = formEl?.elements?.namedItem('image');
+                                                if (hidden && 'value' in hidden)
+                                                    hidden.value = b64;
+                                            }} />
                                         </div>
                                         {modal.error && <div className="form-error">{modal.error}</div>}
                                         <div className="modal-actions">
@@ -533,6 +661,26 @@ export default function Dashboard() {
                                                         <option value="">-- None --</option>
                                                         {startups.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                                     </select>
+                                                </div>
+                                            );
+                                        }
+                                        if ((modal.section === 'events' && f.name === 'image') || (modal.section === 'news' && f.name === 'image') || (modal.section === 'founders' && f.name === 'image')) {
+                                            return (
+                                                <div className="form-row" key={f.name}>
+                                                    <label>{f.label || 'Image'}</label>
+                                                    <input type="hidden" name="image" defaultValue={row.image||''} />
+                                                    {imageData && <div style={{marginBottom:8}}><img src={imageData} alt="preview" style={{maxWidth:240,borderRadius:8}}/></div>}
+                                                    <input type="file" accept="image/*" onChange={async (e)=>{
+                                                        const inputEl = e.currentTarget;
+                                                        const formEl = inputEl?.form || null;
+                                                        const f = inputEl.files?.[0];
+                                                        if (!f) return;
+                                                        if (!f.type.startsWith('image/')) { alert('Only image files allowed.'); inputEl.value=''; return; }
+                                                        const b64 = await readImageAsDataUrl(f);
+                                                        setImageData(b64);
+                                                        const hidden = formEl?.elements?.namedItem('image');
+                                                        if (hidden && 'value' in hidden) hidden.value = b64;
+                                                    }} />
                                                 </div>
                                             );
                                         }
@@ -845,6 +993,7 @@ function computeColumns(sectionKey, list) {
     const baseMap = {
         events: ['id', 'name', 'location', 'event_type', 'dates'],
         startups: ['id', 'name', 'email', 'sector', 'maturity'],
+    founders: ['id', 'name', 'startup_id'],
         investors: ['id', 'name', 'email', 'investor_type'],
         partners: ['id', 'name', 'email', 'partnership_type'],
         news: ['id', 'title', 'category', 'news_date'],

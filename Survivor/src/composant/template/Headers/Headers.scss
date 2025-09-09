@@ -317,3 +317,81 @@ $header-height: 120px;
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* Avatar + profile menu */
+.profile-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700; /* bold */
+  color: rgba(255,255,255,.9);
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  aspect-ratio: 1 / 1; /* keep it perfectly square */
+  flex: 0 0 auto;      /* avoid flexbox stretching */
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.2);
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden; /* ensure image is clipped to circle */
+  padding: 0;        /* no inner spacing */
+  line-height: 0;    /* avoid text line-height affecting size */
+}
+.avatar-btn:hover { background: rgba(0,0,0,0.3); }
+.avatar-btn.has-image { background: transparent; }
+.avatar-circle { font-weight: 700; font-size: 20px; font-family: 'Montserrat', sans-serif; }
+
+/* Image avatar styling */
+.avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  pointer-events: none; /* click passes to button */
+}
+
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: #ffffff;
+  color: #111;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 6px;
+  z-index: 1200;
+}
+.profile-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: inherit;
+  background: transparent;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif; /* align with other buttons */
+}
+.profile-item:hover { background: #f3f4f6; }
+.profile-item.danger { color: #b91c1c; }
+.profile-item.danger:hover { background: #fee2e2; }

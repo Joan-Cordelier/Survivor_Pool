@@ -1,28 +1,72 @@
 import "./Headers.scss";
-import { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import Fb from "../../../assets/facebook.svg";
-import Insta from "../../../assets/instagram.svg";
-import TikTok from "../../../assets/tiktok.svg";
+import { useState, useEffect, useRef } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import * as UserApi from '../../../apis/BackendApi/User.api';
 import Logo from "../../../assets/logo.png";
 
 const Header = () => {
   const [showLinks, setshowLinks] = useState(false);
   const [authUser, setAuthUser] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
-  // Hydrate user auth state on mount
+  const location = useLocation();
+
   useEffect(() => {
     try {
       const token = localStorage.getItem('token');
       const stored = localStorage.getItem('user');
       if (token && stored) {
-        setAuthUser(JSON.parse(stored));
-      } else if (token) {
-        // fallback minimal; tentera d'être remplacé après qu'un user soit stocké
+        const parsed = JSON.parse(stored);
+        setAuthUser(parsed);
+        if (parsed?.id && !parsed?.image) {
+          (async () => {
+            try {
+              const full = await UserApi.getUserById(parsed.id);
+              if (full) {
+                if (full.image) {
+                  const merged = { ...parsed, image: full.image };
+                  localStorage.setItem('user', JSON.stringify(merged));
+                  setAuthUser(merged);
+                } else {
+                  localStorage.setItem('user', JSON.stringify({ ...parsed, name: full.name || parsed.name, email: full.email || parsed.email }));
+                }
+              }
+            } catch {}
+          })();
+        }
+      } else if (token)
         setAuthUser({ tokenOnly: true, role: 'default' });
-      }
     } catch { /* ignore */ }
   }, []);
+
+  useEffect(() => {
+    const onAuthChanged = () => {
+      try {
+        const token = localStorage.getItem('token');
+        const stored = localStorage.getItem('user');
+        if (token && stored) {
+          setAuthUser(JSON.parse(stored));
+        } else if (token) {
+          setAuthUser({ tokenOnly: true, role: 'default' });
+        } else {
+          setAuthUser(null);
+        }
+      } catch { /* noop */ }
+    };
+    window.addEventListener('auth-changed', onAuthChanged);
+    return () => window.removeEventListener('auth-changed', onAuthChanged);
+  }, []);
+
+  // Close profile menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDocClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [menuOpen]);
 
   const handleLogoutUser = () => {
     localStorage.removeItem('token');
@@ -41,7 +85,7 @@ const Header = () => {
   };
   return (
     <nav className="nav"> 
-      <NavLink to="/">
+      <NavLink to="//">
         <img src={Logo} alt="description de l'image" className="img" />
       </NavLink>
 
@@ -78,25 +122,56 @@ const Header = () => {
             </li>
           </ul>
         </div>
-          <div className="nav-dashboard">
-            {authUser?.role === 'admin' && (
-              <NavLink className="nav-link" to="/Dashboard" onClick={closeMenu}>
-                Dashboard
-              </NavLink>
-            )}
-            {authUser ? (
-              <button
-                type="button"
-                className="nav-link logout-link"
-                style={{ background:'transparent', border:'0', cursor:'pointer' }}
-                onClick={handleLogoutUser}
+          <div className="nav-dashboard" ref={menuRef}>
+            {!authUser ? (
+              <NavLink
+                className="nav-link"
+                to="/Login"
+                state={{ from: (location?.pathname === '/Login' ? '/' : `${location?.pathname || '/' }${location?.search || ''}${location?.hash || ''}`) }}
+                onClick={closeMenu}
               >
-                Log Out
-              </button>
-            ) : (
-              <NavLink className="nav-link" to="/Login" onClick={closeMenu}>
                 Log In
               </NavLink>
+            ) : (
+              <div className="profile-wrap">
+                <button
+                  type="button"
+                  className={`avatar-btn ${authUser?.image ? 'has-image' : ''}`}
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen(o => !o)}
+                  title={authUser?.email || 'Profile'}
+                >
+                  {authUser?.image ? (
+                    <img
+                      src={authUser.image}
+                      alt={authUser?.name || authUser?.email || 'Avatar'}
+                      className="avatar-img"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="avatar-circle">{(authUser?.name || authUser?.email || 'U').slice(0,1).toUpperCase()}</span>
+                  )}
+                </button>
+                <span className="user-name">
+                  {authUser?.name || authUser?.email || ''}
+                </span>
+                {menuOpen && (
+                  <div className="profile-menu" role="menu">
+                    <NavLink className="profile-item" role="menuitem" to="/Profile" onClick={() => { setMenuOpen(false); closeMenu(); }}>
+                      Profile
+                    </NavLink>
+                    {authUser?.role === 'admin' && (
+                      <NavLink className="profile-item" role="menuitem" to="/Dashboard" onClick={() => { setMenuOpen(false); closeMenu(); }}>
+                        Dashboard
+                      </NavLink>
+                    )}
+                    <button className="profile-item danger" role="menuitem" onClick={() => { setMenuOpen(false); handleLogoutUser(); }}>
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
       </div>

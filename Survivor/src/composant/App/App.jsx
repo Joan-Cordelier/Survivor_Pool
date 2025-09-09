@@ -4,7 +4,7 @@ import GoogleAnalytics from '../BaliseGoogle/GloogleAnalytics.jsx';
 import Home from '../Home/Home.jsx';
 import Rendezvous from '../Event/event.jsx';
 import Contact from '../Contact/Contact.jsx';
-import DejaClient from '../Client/Client.jsx';
+import Profile from '../Profile/Profile.jsx';
 import Header from '../template/Headers/Headers.jsx';  // Ton header
 import Offre from '../Project/project.jsx';  // Ton offre
 import News from '../News/news.jsx';
@@ -24,7 +24,7 @@ function App() {
         <Route path="/Projects" element={<Offre />} />
         <Route path="/Events" element={<Rendezvous />} />
         <Route path="/About" element={<Contact />} />
-        <Route path="/deja-client" element={<DejaClient />} />
+        <Route path="/Profile" element={<Profile />} />
         <Route path="/News" element={<News />} />
         <Route path="/Login" element={<Login />} />
         <Route path="/Dashboard" element={<Dashboard />} />

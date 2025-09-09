@@ -12,21 +12,19 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-    console.log('Données soumises : ', { email, password });
-
         try {
             const data = await AuthApi.login(email, password);
-            console.log('Réponse reçue:', data);
-                        if (data?.token) {
-                                localStorage.setItem('token', data.token);
-                                if (data.user)
-                                    localStorage.setItem('user', JSON.stringify(data.user));
-                                localStorage.removeItem('jwtToken');
-                                setMessage('Authentification réussie !');
-                                navigate('/Dashboard');
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 50);
+            
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+                if (data.user)
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.removeItem('jwtToken');
+                setMessage('Authentification réussie !');
+                navigate('/');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 50);
             } else {
                 setMessage('Réponse inattendue du serveur.');
             }

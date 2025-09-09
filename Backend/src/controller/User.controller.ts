@@ -98,7 +98,7 @@ export const updateUserController = async (req: Request, res: Response): Promise
         return;
     }
 
-    const authorizedFields = ['name', 'role', 'password', 'founder_id', 'investor_id'];
+    const authorizedFields = ['name', 'role', 'password', 'founder_id', 'investor_id', 'image'];
     const filteredFields: Prisma.UserUpdateInput = {};
 
     for (const field of authorizedFields) {

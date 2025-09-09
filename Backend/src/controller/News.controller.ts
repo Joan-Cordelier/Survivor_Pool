@@ -99,12 +99,23 @@ export const updateNewsController = async (req: Request, res: Response): Promise
         return;
     }
 
-    const authorizedFields = [ "title", "description", "location", "category", "startup_id" ];
+    const authorizedFields = [ "title", "description", "location", "category", "startup_id", "news_date", "image" ];
     const filteredFields: Prisma.NewsDetailUpdateInput = {};
 
     for (const field of authorizedFields) {
-        if (updateFields[field]) {
-            (filteredFields as any)[field] = updateFields[field];
+        if (Object.prototype.hasOwnProperty.call(updateFields, field)) {
+            let value = updateFields[field];
+            if (field === 'startup_id') {
+                if (value === '' || value == null)
+                    value = null;
+                else
+                    value = Number(value);
+            }
+            if (field === 'news_date' && value === '')
+                value = null;
+            if (value === '')
+                value = null;
+            (filteredFields as any)[field] = value;
         }
     }
 
