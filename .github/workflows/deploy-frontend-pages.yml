@@ -28,6 +28,7 @@ jobs:
 
       - run: yarn install --frozen-lockfile || yarn install
       - run: npm install react-is
+      - run: yarn add react-markdown remark-gfm
       - run: yarn build
 
       - name: Add SPA fallback
