@@ -1,37 +1,61 @@
 import './news.scss';
-import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import * as NewsApi from '../../apis/BackendApi/News.api';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-let ReactMarkdown, remarkGfm;
+// Petit cache mémoire pour éviter les doubles requêtes en dev (StrictMode)
+let itemsCache = null;
 
-const DEMO = [
-  {
-    news_date: '2025-07-03',
-    location: 'Zurich',
-    title: 'NeuroFlex launches neural implant to boost entrepreneurial creativity',
-    category: 'Partnership',
-    startup_id: 8,
-    id: 8,
-    image: 'https://images.unsplash.com/photo-1532186653228-0f5cfc2b2b24?q=80&w=1200&auto=format&fit=crop',
-    description:
-      "# NeuroFlex Unveils Neural Implant Designed to Unlock Entrepreneurial Creativity\n\n**ZURICH, Switzerland** — NeuroFlex, a neurotechnology startup..."
-  }
-];
+const News = () => {
+  // Normalisation des données venant de la table News
+  const normalizeNews = (n) => ({
+    id: n.id ?? `${n.title ?? 'news'}-${Math.random().toString(36).slice(2,8)}`,
+    title: n.title ?? 'Untitled news',
+    description: n.description ?? '',
+    location: n.location ?? '',
+    category: n.category ?? '',
+    startup_id: n.startup_id ?? '',
+    news_date: n.news_date ?? '',
+    image: n.image ?? ''
+  });
 
-export default function News() {
-  const [items, setItems] = useState(DEMO);         
-  const [error, setError] = useState(null);        
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+
+    if (itemsCache) {
+      setItems(itemsCache.map(normalizeNews));
+      setLoading(false);
+      return () => { mounted = false; };
+    }
+
+    NewsApi.getAllNews()
+        .then((data) => {
+          if (!mounted) return;
+          const raw = Array.isArray(data) ? data : (data?.data ?? []);
+          itemsCache = raw;
+          setItems(raw.map(normalizeNews));
+          setError(null);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch news:', err);
+          setItems([]);
+          setError('Failed to fetch news.');
+        })
+        .finally(() => mounted && setLoading(false));
+
+    return () => { mounted = false; };
+  }, []);
+
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
   const [startupId, setStartupId] = useState('');
-  const [expandedId, setExpandedId] = useState(null);
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 6;
-  const cardRefs = useRef({});
-
-  useEffect(() => {
-  }, []);
 
   const categories = useMemo(
     () => Array.from(new Set((items || []).map(n => n?.category).filter(Boolean))).sort(),
@@ -75,19 +99,23 @@ export default function News() {
       .sort((a, b) => safeParse(b?.news_date) - safeParse(a?.news_date));
   }, [items, q, category, location, startupId]);
 
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 6;
   const paged = useMemo(() => filtered.slice(0, page * PAGE_SIZE), [filtered, page]);
 
   const clearFilters = () => {
     setQ(''); setCategory(''); setLocation(''); setStartupId('');
   };
 
+  const [expandedId, setExpandedId] = useState(null);
+  const cardRefs = useRef({});
   const toggle = (id) => setExpandedId(prev => (prev === id ? null : id));
 
-  // useEffect(() => {
-  //   if (!expandedId) return;
-  //   const el = cardRefs.current[expandedId];
-  //   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  // }, [expandedId]);
+  useEffect(() => {
+    if (!expandedId) return;
+    const el = cardRefs.current[expandedId];
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [expandedId]);
 
   const formatDate = (iso) => {
     const t = Date.parse(iso);
@@ -108,6 +136,8 @@ export default function News() {
     const txt = stripMarkdown(md);
     return txt.length > len ? txt.slice(0, len - 1) + '…' : txt;
   };
+
+  const USE_MARKDOWN = false;
 
   return (
     <div className="news-page">
@@ -138,7 +168,9 @@ export default function News() {
           <button className="clear" onClick={clearFilters}>Clear</button>
         </div>
         <div className="results">
-          {filtered.length} result{filtered.length !== 1 ? 's' : ''} — sorted by latest
+          {loading
+            ? 'Loading…'
+            : `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`}
         </div>
       </div>
 
@@ -210,3 +242,5 @@ export default function News() {
     </div>
   );
 }
+
+export default News;

@@ -142,7 +142,9 @@ const Events = () => {
           <button className="clear" onClick={clearFilters}>Réinitialiser</button>
         </div>
         <div className="results">
-          {filtered.length} événement{filtered.length !== 1 ? "s" : ""}
+          {loading
+            ? 'Loading…'
+            : `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`}
         </div>
       </div>
 
