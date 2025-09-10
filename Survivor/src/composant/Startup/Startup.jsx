@@ -78,7 +78,6 @@ export default function StartupPage() {
                     const res = await StartupApi.getStartupById(founderId);
                     s = res?.startup || res;
                 } catch (err) {
-                    // Fallback: some backends expect startup id; try scanning all startups
                     try {
                         const all = await StartupApi.getAllStartups();
                         const arr = Array.isArray(all) ? all : (all?.data || []);
@@ -90,7 +89,6 @@ export default function StartupPage() {
                     setStartup(null);
                 } else {
                     setStartup(s);
-                    // hydrate form fields
                     setName(s.name || '');
                     setEmail(s.email || '');
                     setSector(s.sector || '');
@@ -130,7 +128,6 @@ export default function StartupPage() {
             const updated = res.startup || res;
             const merged = { ...startup, ...updated };
             setStartup(merged);
-            // sync form with saved values
             setName(merged.name || '');
             setEmail(merged.email || '');
             setSector(merged.sector || '');
