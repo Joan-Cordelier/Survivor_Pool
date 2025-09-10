@@ -24,7 +24,7 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      '/fouder': {
+      '/founder': {
         target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false,
