@@ -161,6 +161,11 @@ const Header = () => {
                     <NavLink className="profile-item" role="menuitem" to="/Profile" onClick={() => { setMenuOpen(false); closeMenu(); }}>
                       Profile
                     </NavLink>
+                    {authUser?.role === 'founder' && (
+                      <NavLink className="profile-item" role="menuitem" to="/Startup" onClick={() => { setMenuOpen(false); closeMenu(); }}>
+                        Startup
+                      </NavLink>
+                    )}
                     {authUser?.role === 'admin' && (
                       <NavLink className="profile-item" role="menuitem" to="/Dashboard" onClick={() => { setMenuOpen(false); closeMenu(); }}>
                         Dashboard

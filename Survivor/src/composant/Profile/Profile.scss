@@ -12,16 +12,18 @@ $nav-fallback: #284E7B;
 .profile-card {
   max-width: 880px;
   margin: 0 auto;
-  background: #1f2937;
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #f3f4f6;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   overflow: hidden;
+  color: #111;
 }
 
 .profile-header {
   background-image: linear-gradient(135deg, $brand-from, $brand-to);
   padding: 28px 28px 60px;
+  color: #fff;
 }
 
 .profile-identity {
@@ -42,24 +44,98 @@ $nav-fallback: #284E7B;
   font-family: 'Montserrat', sans-serif;
   font-size: 32px;
 }
-.profile-avatar img { width: 100%; height: 100%; object-fit: cover; display:block; }
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
 
-.profile-name { font-size: 22px; font-weight: 800; font-family: 'Montserrat', sans-serif; }
-.profile-email { opacity: .9; font-size: 14px; }
-.profile-role { margin-left: auto; background: rgba(255,255,255,.2); padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.profile-name {
+    font-size: 22px;
+    font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
+}
 
-.profile-body { padding: 24px 28px 32px; display: grid; gap: 18px; }
+.profile-email {
+    opacity: .9;
+    font-size: 14px;
+}
 
-.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 720px) { .field-grid { grid-template-columns: 1fr; } }
+.profile-role {
+    margin-left: auto;
+    background: rgba(255, 255, 255, .2);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
 
-.field { display: grid; gap: 8px; }
-.field label { font-size: 12px; opacity: .8; }
+.profile-body {
+    padding: 24px 28px 32px;
+    display: grid;
+    gap: 18px;
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 720px) {
+    .field-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.field {
+    display: grid;
+    gap: 8px;
+}
+
+.field label {
+    font-size: 12px;
+    opacity: .8;
+}
+
 .field input, .field textarea, .field select {
   background: #111827; color: #fff; border: 1px solid rgba(255,255,255,0.12);
   border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none;
 }
-.field textarea { min-height: 100px; resize: vertical; }
+
+.field textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.profile-card .field input,
+.profile-card .field textarea,
+.profile-card .field select {
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid #d1d5db;
+}
+
+.profile-card .field input::placeholder,
+.profile-card .field textarea::placeholder {
+    color: #9ca3af;
+}
+
+.profile-card .field input:focus,
+.profile-card .field textarea:focus,
+.profile-card .field select:focus {
+    border-color: $brand-to;
+    box-shadow: 0 0 0 3px rgba($brand-to, 0.25);
+    outline: none;
+}
+
+.profile-card .field input[disabled],
+.profile-card .field textarea[disabled],
+.profile-card .field select[disabled] {
+    background: #f9fafb;
+    color: #6b7280;
+}
 
 .actions {
     display: flex;
@@ -84,8 +160,17 @@ $nav-fallback: #284E7B;
 
 .btn.ghost {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+}
+
+.profile-card .btn.ghost {
+    border-color: rgba(17, 24, 39, 0.2);
+    color: #111827;
+}
+
+.profile-card .btn.ghost:hover {
+    background: #e5e7eb;
 }
 
 .section-title {

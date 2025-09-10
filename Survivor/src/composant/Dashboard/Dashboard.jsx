@@ -90,7 +90,7 @@ const SECTION_FORMS = {
     ],
     founders: [
         { name: 'name', label: 'Name*', required: true },
-        { name: 'startup_id', label: 'Startup', select: true },
+        { name: 'startup_id', label: 'Startup*', select: true, required: true },
         { name: 'image', label: 'Image (URL/Base64)' }
     ]
 };
@@ -647,6 +647,9 @@ export default function Dashboard() {
                     const isEdit = modal.mode === 'edit';
                     const fields = SECTION_FORMS[modal.section];
                     const row = modal.row || {};
+                    const startupsList = (dataCache.startups?.items) || [];
+                    const requireStartup = modal.section === 'founders';
+                    const noStartups = requireStartup && startupsList.length === 0;
                     return (
                         <div className="modal-overlay" onMouseDown={(e)=>{ if(e.target.classList.contains('modal-overlay')) closeModal(); }}>
                             <div className="modal" role="dialog" aria-modal="true">
@@ -657,13 +660,11 @@ export default function Dashboard() {
                                 <form onSubmit={isEdit? submitGenericEdit : submitGenericCreate} className="modal-form">
                                     {fields.map(f => {
                                         if (f.name === 'startup_id' && f.select) {
-                                            const startups = (dataCache.startups?.items) || [];
                                             return (
                                                 <div className="form-row" key={f.name}>
                                                     <label>{f.label}</label>
-                                                    <select name={f.name} defaultValue={row[f.name] || ''}>
-                                                        <option value="">-- None --</option>
-                                                        {startups.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                    <select name={f.name} defaultValue={row[f.name] || ''} required>
+                                                        {startupsList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                                     </select>
                                                 </div>
                                             );
@@ -700,9 +701,12 @@ export default function Dashboard() {
                                         );
                                     })}
                                     {modal.error && <div className="form-error">{modal.error}</div>}
+                                    {noStartups && (
+                                        <div className="form-error">Create a Startup first to assign a founder.</div>
+                                    )}
                                     <div className="modal-actions">
                                         <button type="button" className="btn sm" onClick={closeModal}>Cancel</button>
-                                        <button type="submit" className="btn primary" disabled={modal.loading}>{modal.loading ? 'Processing...' : (isEdit? 'Update' : 'Create')}</button>
+                                        <button type="submit" className="btn primary" disabled={modal.loading || noStartups}>{modal.loading ? 'Processing...' : (isEdit? 'Update' : 'Create')}</button>
                                     </div>
                                 </form>
                             </div>
