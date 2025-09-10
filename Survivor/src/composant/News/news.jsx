@@ -205,7 +205,6 @@ const News = () => {
 
               {!expanded ? (
                 <>
-                  <p className="excerpt">{excerpt(n?.description)}</p>
                   <button className="more" onClick={() => toggle(n?.id)} aria-expanded={expanded} aria-controls={detailsId}>
                     Read more
                   </button>

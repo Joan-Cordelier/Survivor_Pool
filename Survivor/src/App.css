@@ -3,6 +3,8 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  --font-heading: "Montserrat", system-ui, -apple-system, "Segoe UI";
+  --font-body:    "Open Sans", system-ui, -apple-system, "Segoe UI";
 }
 
 .logo {

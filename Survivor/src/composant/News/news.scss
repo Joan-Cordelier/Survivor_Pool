@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap');
+
 $brand-from: #F18585 !default;
 $brand-to:   #C174F2 !default;
 $card:  #10192e !default;
@@ -99,14 +101,22 @@ $filters-sticky-top: 84px;
 
 .news-card .hdr {
   padding: 14px 16px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   .title {
     margin: 0 0 6px; font-size: 20px; line-height: 1.25;
+    font-family: "Montserrat", sans-serif;
+    text-align: center;
   }
 
   .meta {
     display: inline-flex; align-items: center; gap: 10px;
     font-size: 13px; color: $muted;
+    .when {
+      text-align: center;
+    }
   }
   .dot { width: 4px; height: 4px; background: rgba(255,255,255,.5); border-radius: 50%; }
 }
@@ -165,3 +175,21 @@ $filters-sticky-top: 84px;
 @media (prefers-reduced-motion: reduce) {
   .news-page * { transition: none !important; animation: none !important; }
 }
+
+/* les cartes s’étirent à la même hauteur dans la grille */
+.news-grid { align-items: stretch; }
+
+/* hauteur mini commune pour créer l’espace nécessaire au "margin-top:auto" */
+.news-card { min-height: 420px; }     /* ajuste 380–460px selon ton design */
+@media (max-width: 600px) {
+  .news-card { min-height: 340px; }
+}
+
+/* le bouton prend l’espace restant au-dessus de lui => collé en bas */
+.news-card .more {
+  margin-top: auto;
+  align-self: flex-start;   /* garde le bouton à gauche comme avant */
+}
+
+/* (optionnel) si tu veux aussi masquer la ligne méta en mode fermé : */
+/* .news-card:not(.expanded) .hdr .meta { display: none; } */
