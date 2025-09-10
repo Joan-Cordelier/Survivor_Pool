@@ -14,6 +14,7 @@ import PartnerRouter from './routes/Partner.route';
 import StartupRouter from './routes/Startup.route';
 import UserRouter from './routes/User.route';
 import AuthRouter from './routes/Auth.route';
+import MessageRouter from './routes/Message.route';
 
 //utils
 import { syncDB } from './utils/SyncDb.utils';
@@ -39,6 +40,7 @@ app.use('/partner', PartnerRouter);
 app.use('/startup', StartupRouter);
 app.use('/user', UserRouter);
 app.use('/auth', AuthRouter);
+app.use('/message', MessageRouter);
 
 app.get("/", (req, res) => {
   res.send('Hello World!');

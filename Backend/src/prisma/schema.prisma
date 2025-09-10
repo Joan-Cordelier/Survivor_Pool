@@ -2,9 +2,18 @@ datasource db {
   provider          = "mysql"
   url               = env("DATABASE_URL")
 }
-
 generator client {
   provider = "prisma-client-js"
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  sender      User     @relation("SentMessages", fields: [sender_id], references: [id])
+  sender_id   Int
+  receiver    User     @relation("ReceivedMessages", fields: [receiver_id], references: [id])
+  receiver_id Int
+  content     String   @db.Text
+  sent_at     DateTime @default(now())
 }
 
 model User {
@@ -16,6 +25,8 @@ model User {
   founder_id  Int?
   investor_id Int?
   image       String? @db.MediumText
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 }
 
 model Event {
