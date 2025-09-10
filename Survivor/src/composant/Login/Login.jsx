@@ -21,7 +21,7 @@ const Login = () => {
                     localStorage.setItem('user', JSON.stringify(data.user));
                 localStorage.removeItem('jwtToken');
                 setMessage('Authentification réussie !');
-                navigate('/');
+                navigate('/Profile');
                 setTimeout(() => {
                     window.location.reload();
                 }, 50);

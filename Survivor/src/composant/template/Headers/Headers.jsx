@@ -85,7 +85,7 @@ const Header = () => {
   };
   return (
     <nav className="nav"> 
-      <NavLink to="//">
+      <NavLink to="/">
         <img src={Logo} alt="description de l'image" className="img" />
       </NavLink>
 

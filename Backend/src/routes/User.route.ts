@@ -8,6 +8,6 @@ router.post('/create', requireAuth, authorizeRoles('admin'), UserController.crea
 router.get('/get/:id', UserController.getUserByIdController);
 router.get('/get', UserController.getAllUsersController);
 router.delete('/delete/:id', requireAuth, authorizeRoles('admin'), UserController.deleteUserController);
-router.put('/update/:id', requireAuth, authorizeRoles('admin'), UserController.updateUserController);
+router.put('/update/:id', requireAuth, UserController.updateUserController);
 
 export default router;

@@ -98,6 +98,13 @@ export const updateUserController = async (req: Request, res: Response): Promise
         return;
     }
 
+    const requester = (req as any).user || {};
+    const isAdmin = requester?.role === 'admin';
+    if (!isAdmin && requester?.id !== id) {
+        res.status(403).json({ message: 'Forbidden', code: 403 });
+        return;
+    }
+
     const authorizedFields = ['name', 'role', 'password', 'founder_id', 'investor_id', 'image'];
     const filteredFields: Prisma.UserUpdateInput = {};
 

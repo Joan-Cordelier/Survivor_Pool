@@ -388,7 +388,7 @@ export default function Dashboard() {
         try {
             setModal(m => ({ ...m, loading: true, error: null }));
             const token = localStorage.getItem('token');
-            const imgB64 = (form.image?.value || '').trim();
+            const imgB64 = (imageData || form.image?.value || '').trim();
             if (imgB64) payload.image = imgB64;
             const created = await UserApi.createUser(payload, token);
             setDataCache(dc => {
@@ -422,7 +422,7 @@ export default function Dashboard() {
                 const investor_id = form.investor_id.value ? Number(form.investor_id.value) : null;
                 if (investor_id !== modal.row.investor_id)
                     updateFields.investor_id = investor_id;
-                const imgU = form.image?.value || null;
+                const imgU = imageData || form.image?.value || null;
                 if (imgU !== (modal.row?.image || null))
                     updateFields.image = imgU || null;
                 if (Object.keys(updateFields).length === 0)
@@ -461,6 +461,10 @@ export default function Dashboard() {
                 if (v !== null)
                     payload[f.name] = v;
             });
+            if (fields.some(f=>f.name==='image')) {
+                if (imageData)
+                    payload.image = imageData;
+            }
             if (sectionKey === 'events' && payload.dates)
                 payload.dates = normalizeDateStr(payload.dates);
             if (sectionKey === 'news' && payload.news_date)
@@ -520,7 +524,7 @@ export default function Dashboard() {
             if (sectionKey === 'news' && Object.prototype.hasOwnProperty.call(updateFields, 'news_date')) {
                 updateFields.news_date = updateFields.news_date ? normalizeDateStr(updateFields.news_date) : updateFields.news_date;
             }
-                const imgVal = form.image?.value || null;
+                const imgVal = imageData || form.image?.value || null;
                 if (imgVal !== (modal.row?.image || null)) {
                     updateFields.image = imgVal || null;
                 }

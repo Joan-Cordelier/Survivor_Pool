@@ -5,16 +5,18 @@ import { Prisma } from "@prisma/client"
 
 export const createFounderController = async (req: Request, res: Response): Promise<void> => {
     const { name, startup_id, image } = req.body;
+    const startupId = startup_id == null || startup_id === '' ? NaN : Number(startup_id);
 
-    if (!name || !startup_id) {
-        res.status(400).json({ message: "Missing required fields", code: 400 });
+    if (!name || isNaN(startupId)) {
+        res.status(400).json({ message: "Missing or invalid fields", code: 400 });
         return;
     }
     try {
         const founder = await createFounder(
-            name,
-            startup_id,
-            image
+            String(name).trim(),
+            startupId,
+            undefined,
+            image ?? null
         );
         res.status(201).json(founder);
     } catch (err: any) {
