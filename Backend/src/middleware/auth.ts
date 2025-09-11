@@ -54,9 +54,11 @@ export function authorizeRoles(...allowedRoles: string[]) {
         if (!req.user)
             return res.status(401).json({ message: 'Authentication required', code: 401 });
 
-        const role = (req.user as any).role;
+    const role = (req.user as any).role;
+    const userRole = role ? String(role).toLowerCase() : '';
+    const allowed = allowedRoles.map(r => String(r).toLowerCase());
 
-        if (!role || !allowedRoles.includes(role))
+    if (!userRole || !allowed.includes(userRole))
             return res.status(403).json({ message: 'Forbidden', code: 403 });
         return next();
     };

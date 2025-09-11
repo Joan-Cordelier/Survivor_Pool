@@ -125,7 +125,11 @@ export default function Messaging() {
         }
     }
 
-    useEffect(() => { if (!user) return; loadConversations(); }, [user]);
+    useEffect(() => {
+        if (!user)
+            return;
+        loadConversations();
+    }, [user]);
 
     // polling: fetch only received messages and append truly new messages
     useEffect(() => {

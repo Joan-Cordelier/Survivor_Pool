@@ -8,6 +8,6 @@ router.post('/create', requireAuth, authorizeRoles('admin'), StartupController.c
 router.get('/get', StartupController.getAllStartupsController);
 router.get('/get/:id', StartupController.getStartupByIdController);
 router.delete('/delete/:id', requireAuth, authorizeRoles('admin'), StartupController.deleteStartupController);
-router.put('/update/:id', requireAuth, authorizeRoles('admin'), StartupController.updateStartupController);
+router.put('/update/:id', requireAuth, authorizeRoles('admin', 'founder'), StartupController.updateStartupController);
 
 export default router;

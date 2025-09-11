@@ -105,3 +105,71 @@ $brand-to:   #C174F2;
   .startup-layout { grid-template-columns: 1fr; }
   .startup-sidebar { position: sticky; top: var(--global-header-height, 70px); z-index: 2; }
 }
+
+/* Founders list */
+.founders-section { margin-top: 20px; }
+.founders-list { display: grid; grid-template-columns: 1fr; gap: 0; margin-top: 6px; border:1px solid rgba(0,0,0,0.08); border-radius: 12px; overflow: hidden; background:#fff; }
+.founders-list .empty { background: #f9fafb; border-radius: 10px; }
+.founder-item { display:grid; grid-template-columns: 1fr auto auto; align-items:center; gap:12px; padding: 10px 12px; border-bottom:1px solid rgba(0,0,0,0.06); }
+.founder-item:last-child { border-bottom: none; }
+.founder-item .left { display:flex; align-items:center; gap:10px; min-width: 0; }
+.founder-avatar { width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:11px; color:#fff; background: linear-gradient(135deg, $brand-from, $brand-to); overflow:hidden; flex:0 0 auto; }
+.founder-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.founder-name { font-weight:700; font-family:'Montserrat',sans-serif; font-size: 13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.founder-id { font-size:12px; opacity:.7; font-family:'Open Sans', sans-serif; }
+.founder-actions { display:flex; align-items:center; justify-content:flex-end; }
+
+.btn.msg {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: linear-gradient(135deg, $brand-from, $brand-to);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 8px 18px -10px rgba(0,0,0,.35);
+  transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+}
+.btn.msg .ico { display:inline-grid; place-items:center; width: 14px; height: 14px; }
+.btn.msg .ico img { width: 14px; height: 14px; display:block; }
+.btn.msg:hover { filter: brightness(1.04); transform: translateY(-1px); box-shadow: 0 10px 22px -10px rgba(0,0,0,.4); }
+.btn.msg:active { transform: translateY(0); filter: brightness(0.98); }
+.btn.msg:focus-visible { outline: 2px solid rgba(193,116,242,0.6); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  .btn.msg { width: 28px; height: 28px; min-width: 28px; }
+  .btn.msg .ico, .btn.msg .ico img { width: 12px; height: 12px; }
+}
+
+/* KPI: Opportunity tracking */
+.kpi { max-width: 880px; margin: 0 auto; padding: 18px 20px; }
+.kpi-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 12px; }
+.kpi-title { font-family:'Montserrat',sans-serif; font-weight:800; font-size: 1.05rem; letter-spacing:.3px; }
+.kpi-sub { font-size: 12px; opacity: .7; }
+.kpi-summary { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.kpi-summary .lbl { font-size: 12px; opacity: .7; }
+.kpi-summary .val { font-family:'Montserrat',sans-serif; font-weight:800; font-size: 1.2rem; }
+.kpi-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.kpi-item { background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 12px; display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+.kpi-item .kpi-icon { width: 28px; height: 28px; display:grid; place-items:center; border-radius: 8px; background: linear-gradient(135deg, $brand-from, $brand-to); color:#fff; font-size: 14px; }
+.kpi-item .lbl { font-size: 12px; opacity:.75; }
+.kpi-item .val { font-family:'Montserrat',sans-serif; font-weight:800; }
+.kpi-note { margin-top: 12px; font-size: 12px; opacity: .7; }
+@media (max-width: 760px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Charts */
+.charts-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 8px; }
+.chart-card { background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding: 10px 12px; display:flex; flex-direction:column; }
+.chart-card.wide { grid-column: 1 / -1; }
+.chart-title { font-size: 12px; font-weight:700; font-family:'Montserrat',sans-serif; opacity:.85; margin-bottom: 4px; }
+.chart-body { width:100%; height: 240px; display:flex; align-items:center; justify-content:center; }
+.chart-body .empty { opacity:.6; font-size: 12px; }
+@media (max-width: 920px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
