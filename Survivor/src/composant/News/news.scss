@@ -77,7 +77,7 @@ $filters-sticky-top: 84px;
   flex-direction: column;
 
   &.expanded {
-    grid-column: 1 / -1; /* carte ouverte = pleine largeur */
+    grid-column: 1 / -1;
   }
 }
 
@@ -180,7 +180,7 @@ $filters-sticky-top: 84px;
 .news-grid { align-items: stretch; }
 
 /* hauteur mini commune pour créer l’espace nécessaire au "margin-top:auto" */
-.news-card { min-height: 420px; }     /* ajuste 380–460px selon ton design */
+.news-card { min-height: 420px; }
 @media (max-width: 600px) {
   .news-card { min-height: 340px; }
 }
@@ -188,8 +188,5 @@ $filters-sticky-top: 84px;
 /* le bouton prend l’espace restant au-dessus de lui => collé en bas */
 .news-card .more {
   margin-top: auto;
-  align-self: flex-start;   /* garde le bouton à gauche comme avant */
+  align-self: flex-start;
 }
-
-/* (optionnel) si tu veux aussi masquer la ligne méta en mode fermé : */
-/* .news-card:not(.expanded) .hdr .meta { display: none; } */

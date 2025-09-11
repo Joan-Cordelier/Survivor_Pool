@@ -2,9 +2,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
 // Variables (réutilisées depuis le fichier SCSS précédent)
-$secondary-bg-color: #003f88;
-$accent-color: #007bff;
-$accent-hover-color: #0056b3;
 $border-color: #ffffff;
 $border-radius: 10px;
 $box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
@@ -17,12 +14,12 @@ $max-width-content: 1200px;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; // Prend toute la hauteur de la fenêtre
+  height: 100vh;
   width: 100vw;
-  background-color: #ffffff; // Utilise la couleur principale pour l'arrière-plan
+  background-color: #ffffff;
 
   .form {
-    background-color: #f3f3f3; // Fond semi-transparent
+    background-color: #f3f3f3;
     padding: $padding-large;
     border-radius: $border-radius;
     box-shadow: $box-shadow;
@@ -38,10 +35,10 @@ $max-width-content: 1200px;
       font-family: 'Mont serrat', sans-serif;
       margin: $padding-small;
       font-size: 2rem;
-      display: inline-block;          // évite certains rognages
-      line-height: 1.25;              // > 1.1 pour laisser passer les descendantes
-      padding-bottom: 6px;            // un petit coussin pour le "g"
-      margin-bottom: 40px;  
+      display: inline-block;
+      line-height: 1.25;
+      padding-bottom: 6px;
+      margin-bottom: 40px;
 
       /* Dégradé sur ce sous-élément aussi */
       background: linear-gradient(135deg, #F49C9C, #C174F2);
@@ -119,7 +116,7 @@ $max-width-content: 1200px;
 
 .password-container input {
     flex: 1;
-    padding-right: 40px; /* Laisser de la place pour l'icône */
+    padding-right: 40px;
 }
 
 .toggle-password {

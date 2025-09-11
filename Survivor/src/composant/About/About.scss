@@ -13,7 +13,7 @@ $radius-lg: 20px;
 $radius-md: 12px;
 $radius-sm: 10px;
 
-/* === Page wrapper === */
+/* Page wrapper */
 .about-page {
   max-width: 1100px;
   margin: 0 auto;
@@ -21,7 +21,7 @@ $radius-sm: 10px;
   color: #fff;
 }
 
-/* === HERO === */
+/* HERO */
 .about-hero {
   position: relative;
   background: linear-gradient(135deg, $brand-from, $brand-to);
@@ -62,7 +62,7 @@ $radius-sm: 10px;
   }
 }
 
-/* === Mission / Vision === */
+/* Mission / Vision */
 .about-grid {
   margin-top: 18px;
   display: grid; gap: 16px;
@@ -91,13 +91,13 @@ $radius-sm: 10px;
   }
 }
 
-/* === Section title === */
+/* Section title */
 .sec-title {
   margin: 22px 0 12px; text-align: center;
   font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 22px;
 }
 
-/* === Piliers === */
+/* Piliers */
 .pillars { margin-top: 6px; }
 
 .pillars-grid {
@@ -125,7 +125,7 @@ $radius-sm: 10px;
     font-size: 20px;
 
     grid-column: 1;
-    grid-row: 1 / span 2; /* l’icône occupe la hauteur du bloc */
+    grid-row: 1 / span 2;
   }
 
   h4 {
@@ -143,7 +143,7 @@ $radius-sm: 10px;
   }
 }
 
-/* === Steps / Process === */
+/* Steps / Process */
 .steps { margin-top: 10px; }
 
 .steps-list {
@@ -186,7 +186,7 @@ $radius-sm: 10px;
   }
 }
 
-/* === Stats === */
+/* Stats */
 .stats {
   margin: 20px 0 6px;
   display: grid; gap: 14px;
@@ -203,7 +203,7 @@ $radius-sm: 10px;
   .lbl { margin-top: 4px; font-family: "Open Sans", sans-serif; font-size: 13px; color: $muted; }
 }
 
-/* === Partners === */
+/* Partners */
 .partners { margin-top: 10px; }
 
 .partners .logos {
@@ -217,7 +217,7 @@ $radius-sm: 10px;
   }
 }
 
-/* === Responsive tweaks === */
+/* Responsive tweaks */
 @media (max-width: 600px) {
   .about-hero { padding: 22px 16px 30px; }
   .about-hero .about-title { font-size: 24px; }

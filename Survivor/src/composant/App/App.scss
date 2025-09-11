@@ -1,6 +1,4 @@
 // Variables
-$primary-bg-color: #002855;
-$secondary-bg-color: #003f88;
 $text-color: white;
 $font-family: 'Arial', sans-serif;
 $navbar-padding: 20px;
@@ -20,7 +18,7 @@ $hover-color: #00aced;
 }
 
 body {
-  overflow-x: hidden; /* Prevents horizontal scroll */
+  overflow-x: hidden;
 }
 
 // Styles globaux
@@ -35,28 +33,28 @@ html, body {
 .app-container {
   display: flex;
   flex-direction: column;
-  background-color: $primary-bg-color; /* Fond bleu foncé */
+  background-color: $primary-bg-color;
   color: $text-color;
-  min-height: 100vh; /* Assure que la hauteur couvre tout l'écran */
+  min-height: 100vh;
   @include flex-center;
-  justify-content: center; /* Place le News en haut */
+  justify-content: center;
   width: 100vw;
   align-items: center;
 
   .page-content {
-    width: 100vw; /* Prend toute la largeur de la vue */
-    max-width: 100vw; /* S'assure que rien ne dépasse */
+    width: 100vw;
+    max-width: 100vw;
     padding: 0;
     margin: 0;
   }
 
   .navbar {
     position: relative;
-    z-index: 10; /* Assure que la navbar reste visible au-dessus d'autres éléments */
-    width: 100%; /* La navbar prend toute la largeur */
-    @include flex-center; /* Centre les boutons horizontalement */
+    z-index: 10;
+    width: 100%;
+    @include flex-center;
     padding: $navbar-padding;
-    background-color: $secondary-bg-color; /* Couleur légèrement plus claire pour la barre de navigation */
+    background-color: $secondary-bg-color;
     margin-bottom: $navbar-padding;
 
     .nav-list {
@@ -80,7 +78,7 @@ html, body {
         transition: color 0.3s;
 
         &:hover {
-          color: $hover-color; /* Change de couleur au survol */
+          color: $hover-color;
         }
       }
     }
