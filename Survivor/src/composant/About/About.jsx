@@ -141,20 +141,7 @@ const About = () => {
           <img src={logo} alt="" />
         </div>
       </section>
-
-      {/* CTA */}
-      <section className="cta">
-        <h3>Ready to build with us?</h3>
-        <p>
-          Whether you’re raising your first round or preparing to scale, we can help you
-          find the right partners and momentum.
-        </p>
-        <div className="cta-actions">
-          <a className="btn btn-primary" href="/apply">Apply now</a>
-          <a className="btn btn-ghost" href="/contact">Contact</a>
-        </div>
-      </section>
-    </div>
+</div>
   );
 };
 

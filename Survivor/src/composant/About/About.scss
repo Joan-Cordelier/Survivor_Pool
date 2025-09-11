@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap');
 
-/* Variables alignées avec ton thème */
+/* === Theme vars (inchangées) === */
 $brand-from: #F18585 !default;
 $brand-to:   #C174F2 !default;
 $card:       #10192e !default;
@@ -13,6 +13,7 @@ $radius-lg: 20px;
 $radius-md: 12px;
 $radius-sm: 10px;
 
+/* === Page wrapper === */
 .about-page {
   max-width: 1100px;
   margin: 0 auto;
@@ -20,7 +21,7 @@ $radius-sm: 10px;
   color: #fff;
 }
 
-/* HERO */
+/* === HERO === */
 .about-hero {
   position: relative;
   background: linear-gradient(135deg, $brand-from, $brand-to);
@@ -37,6 +38,7 @@ $radius-sm: 10px;
     background: rgba(255,255,255,.15);
     box-shadow: 0 6px 20px rgba(0,0,0,.18), inset 0 0 0 2px rgba(255,255,255,.25);
     display: grid; place-items: center;
+
     img { width: 58px; height: 58px; object-fit: contain; display: block; }
   }
 
@@ -57,11 +59,10 @@ $radius-sm: 10px;
   .about-accent {
     position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
     width: 120px; height: 4px; border-radius: 999px; background: rgba(255,255,255,.55);
-    display: inline-block;
   }
 }
 
-/* Mission / Vision */
+/* === Mission / Vision === */
 .about-grid {
   margin-top: 18px;
   display: grid; gap: 16px;
@@ -78,7 +79,8 @@ $radius-sm: 10px;
 
   .card-title {
     margin: 0 0 8px;
-    font-family: "Montserrat", sans-serif; font-weight: 700; font-size: 20px; line-height: 1.25;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700; font-size: 20px; line-height: 1.25;
     text-align: center;
   }
 
@@ -89,28 +91,31 @@ $radius-sm: 10px;
   }
 }
 
-/* Section title */
+/* === Section title === */
 .sec-title {
   margin: 22px 0 12px; text-align: center;
   font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 22px;
 }
 
-/* Piliers */
-.pillars {
-  margin-top: 6px;
-}
+/* === Piliers === */
+.pillars { margin-top: 6px; }
 
 .pillars-grid {
   display: grid; gap: 14px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+/* Fix: texte reste dans la 2e colonne (plus de wrap “en colonne”) */
 .pillar {
   background: linear-gradient(180deg, $card, $card2);
   border: 1px solid rgba(255,255,255,.06);
   border-radius: $radius-md;
   padding: 16px;
-  display: grid; grid-template-columns: 42px 1fr; gap: 12px; align-items: start;
+
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
 
   .ic {
     width: 42px; height: 42px; border-radius: 12px;
@@ -118,22 +123,33 @@ $radius-sm: 10px;
     background: rgba(255,255,255,.08);
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
     font-size: 20px;
+
+    grid-column: 1;
+    grid-row: 1 / span 2; /* l’icône occupe la hauteur du bloc */
   }
 
   h4 {
-    margin: 0 0 6px; font-family: "Montserrat", sans-serif; font-weight: 700; font-size: 16px;
+    grid-column: 2 / -1;
+    margin: 0 0 6px;
+    font-family: "Montserrat", sans-serif; font-weight: 700; font-size: 16px;
+    min-width: 0;
   }
 
   p {
-    margin: 0; font-family: "Open Sans", sans-serif; font-size: 14px; line-height: 1.6; color: $muted;
+    grid-column: 2 / -1;
+    margin: 0;
+    font-family: "Open Sans", sans-serif; font-size: 14px; line-height: 1.6; color: $muted;
+    min-width: 0; overflow-wrap: break-word;
   }
 }
 
-/* Steps / Process */
+/* === Steps / Process === */
 .steps { margin-top: 10px; }
+
 .steps-list {
   list-style: none; padding: 0; margin: 0;
-  display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .steps-list li {
@@ -141,23 +157,40 @@ $radius-sm: 10px;
   border: 1px solid rgba(255,255,255,.06);
   border-radius: $radius-md;
   padding: 14px 14px 16px;
-  display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start;
+
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px; align-items: start;
 
   .n {
     width: 36px; height: 36px; border-radius: 10px;
     background: linear-gradient(135deg, $brand-from, $brand-to);
     display: grid; place-items: center; font-weight: 800;
     box-shadow: 0 6px 18px rgba(0,0,0,.18);
+
+    grid-row: 1 / span 2;
   }
 
-  h5 { margin: 0 0 4px; font-family: "Montserrat", sans-serif; font-weight: 700; font-size: 15px; }
-  p  { margin: 0; font-family: "Open Sans", sans-serif; font-size: 14px; color: $muted; }
+  h5 {
+    grid-column: 2 / -1;
+    margin: 0 0 4px;
+    font-family: "Montserrat", sans-serif; font-weight: 700; font-size: 15px;
+    min-width: 0;
+  }
+
+  p {
+    grid-column: 2 / -1;
+    margin: 0;
+    font-family: "Open Sans", sans-serif; font-size: 14px; color: $muted;
+    min-width: 0; overflow-wrap: break-word;
+  }
 }
 
-/* Stats */
+/* === Stats === */
 .stats {
   margin: 20px 0 6px;
-  display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .stat {
@@ -170,8 +203,9 @@ $radius-sm: 10px;
   .lbl { margin-top: 4px; font-family: "Open Sans", sans-serif; font-size: 13px; color: $muted; }
 }
 
-/* Partners */
+/* === Partners === */
 .partners { margin-top: 10px; }
+
 .partners .logos {
   margin-top: 8px;
   display: grid; gap: 16px; justify-items: center;
@@ -183,38 +217,7 @@ $radius-sm: 10px;
   }
 }
 
-/* CTA */
-.cta {
-  position: relative;
-  margin-top: 18px;
-  background: linear-gradient(180deg, $card, $card2);
-  border: 1px solid rgba(255,255,255,.06);
-  border-radius: $radius-lg;
-  padding: 20px 18px;
-  text-align: center;
-  box-shadow: $shadow-1;
-
-  h3 { margin: 0 0 6px; font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 20px; }
-  p  { margin: 0 auto 12px; max-width: 720px; font-family: "Open Sans", sans-serif; color: rgba(255,255,255,.95); }
-
-  .cta-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-
-  .btn {
-    height: 40px; padding: 0 16px; border-radius: $radius-sm; border: none; cursor: pointer;
-    font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
-  }
-  .btn-primary {
-    color: #fff; background: linear-gradient(135deg, $brand-from, $brand-to);
-    box-shadow: 0 8px 22px rgba(0,0,0,.2);
-    transition: transform .12s ease, filter .18s ease;
-    &:hover { transform: translateY(-1px); filter: brightness(1.05); }
-  }
-  .btn-ghost {
-    color: #fff; background: transparent; border: 1px solid rgba(255,255,255,.25);
-  }
-}
-
-/* Responsive */
+/* === Responsive tweaks === */
 @media (max-width: 600px) {
   .about-hero { padding: 22px 16px 30px; }
   .about-hero .about-title { font-size: 24px; }
