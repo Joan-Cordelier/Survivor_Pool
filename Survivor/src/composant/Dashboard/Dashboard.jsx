@@ -106,10 +106,80 @@ export default function Dashboard() {
     const [loadingSection, setLoadingSection] = useState(false);
     const redirectedRef = useRef(false);
     const [menuOpen, setMenuOpen] = useState(false);
-    const [modal, setModal] = useState({ open:false, mode:null, section:null, row:null, loading:false, error:null });
+    const [modal, setModal] = useState({ open: false, mode: null, section: null, row: null, loading: false, error: null });
     const [chartsReady, setChartsReady] = useState(false);
     const [overviewBatchLoading, setOverviewBatchLoading] = useState(false);
     const [imageData, setImageData] = useState(null);
+
+// Export PDF
+const pdfRef = useRef(null);
+const [exporting, setExporting] = useState(false);
+
+const exportDashboard = useCallback(async () => {
+  if (!pdfRef.current) return;
+
+  document.documentElement.classList.add('pdf-export');
+
+  try {
+    setExporting(true);
+
+    const html2canvas = (await import('html2canvas')).default;
+    const jsPDF = (await import('jspdf')).default;
+
+    const node = pdfRef.current;
+    await new Promise((r) => requestAnimationFrame(r));
+
+    const scale = Math.min(2, window.devicePixelRatio || 1.5);
+    const canvas = await html2canvas(node, {
+      scale,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      scrollY: -window.scrollY,
+      windowWidth: document.documentElement.clientWidth,
+    });
+
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const pxPerMm = canvas.width / pageW;
+    const pageHpx = Math.floor(pageH * pxPerMm);
+
+    let y = 0, pageIndex = 0;
+    while (y < canvas.height) {
+      const sliceH = Math.min(pageHpx, canvas.height - y);
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sliceH;
+
+      const ctx = pageCanvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      ctx.drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+      const img = pageCanvas.toDataURL('image/png');
+      if (pageIndex > 0) doc.addPage();
+      doc.addImage(img, 'PNG', 0, 0, pageW, sliceH / pxPerMm);
+      doc.setFontSize(9);
+      doc.setTextColor(90);
+      const title = `JEB Dashboard — ${SECTIONS.find(s => s.key === active)?.label || 'Overview'}`;
+      const ts = new Date().toLocaleString();
+      doc.text(title, 10, 6);
+      doc.text(ts, pageW - 10, 6, { align: 'right' });
+      doc.setDrawColor(230); doc.line(10, 8, pageW - 10, 8);
+      doc.text(`Page ${pageIndex + 1}`, pageW - 10, pageH - 6, { align: 'right' });
+
+      y += sliceH;
+      pageIndex++;
+    }
+
+    doc.save(`dashboard_${active}_${new Date().toISOString().slice(0,10)}.pdf`);
+  } catch (err) {
+    console.error(err);
+    alert('PDF export failed. ' + (err?.message || ''));
+  } finally {
+    setExporting(false);
+    document.documentElement.classList.remove('pdf-export');
+  }
+}, [active]);
 
     const readImageAsDataUrl = (file) => new Promise((resolve, reject) => {
         try {
@@ -148,7 +218,7 @@ export default function Dashboard() {
         }
         try {
             storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-        } catch {}
+        } catch { }
         const hydrated = {
             id: payload.id || payload.userId || payload.sub,
             email: payload.email || storedUser?.email || '-',
@@ -206,7 +276,7 @@ export default function Dashboard() {
 
     const batchLoadOverview = useCallback(async () => {
         if (overviewBatchLoading) return;
-        const keys = ['events','startups','investors','partners','news'];
+        const keys = ['events', 'startups', 'investors', 'partners', 'news'];
         const missing = keys.filter(k => !dataCache[k]);
         if (!missing.length) return;
         try {
@@ -256,27 +326,27 @@ export default function Dashboard() {
     }, [checking, user, active, batchLoadOverview, loadSection, dataCache]);
 
     useEffect(() => {
-        const keys = ['events','startups','investors','partners','news'];
+        const keys = ['events', 'startups', 'investors', 'partners', 'news'];
         if (keys.every(k => dataCache[k])) {
             const id = requestAnimationFrame(() => setChartsReady(true));
             return () => cancelAnimationFrame(id);
         }
     }, [dataCache]);
 
-    useEffect(() => {}, [active, checking, loadSection]);
+    useEffect(() => { }, [active, checking, loadSection]);
     useEffect(() => {
         if (!modal.open || modal.section !== 'users')
             return;
 
         if (!dataCache.founders) {
             import('../../apis/BackendApi/Founder.api').then(mod => mod.getAllFounders())
-                .then(items => setDataCache(dc => ({ ...dc, founders: { items: Array.isArray(items)? items : (items?.data||[]), error: null } })))
-                .catch(() => setDataCache(dc => ({ ...dc, founders: { items: [], error: 'Load error'} })));
+                .then(items => setDataCache(dc => ({ ...dc, founders: { items: Array.isArray(items) ? items : (items?.data || []), error: null } })))
+                .catch(() => setDataCache(dc => ({ ...dc, founders: { items: [], error: 'Load error' } })));
         }
         if (!dataCache.investors) {
             InvestorApi.getAllInvestors()
-                .then(items => setDataCache(dc => ({ ...dc, investors: { items: Array.isArray(items)? items : (items?.data||[]), error: null } })))
-                .catch(() => setDataCache(dc => ({ ...dc, investors: { items: [], error: 'Load error'} })));
+                .then(items => setDataCache(dc => ({ ...dc, investors: { items: Array.isArray(items) ? items : (items?.data || []), error: null } })))
+                .catch(() => setDataCache(dc => ({ ...dc, investors: { items: [], error: 'Load error' } })));
         }
     }, [modal.open, modal.section, dataCache.founders, dataCache.investors]);
 
@@ -284,8 +354,8 @@ export default function Dashboard() {
         if (!modal.open || modal.section !== 'founders') return;
         if (!dataCache.startups) {
             StartupApi.getAllStartups()
-                .then(items => setDataCache(dc => ({ ...dc, startups: { items: Array.isArray(items)? items : (items?.data||[]), error: null } })))
-                .catch(() => setDataCache(dc => ({ ...dc, startups: { items: [], error: 'Load error'} })));
+                .then(items => setDataCache(dc => ({ ...dc, startups: { items: Array.isArray(items) ? items : (items?.data || []), error: null } })))
+                .catch(() => setDataCache(dc => ({ ...dc, startups: { items: [], error: 'Load error' } })));
         }
     }, [modal.open, modal.section, dataCache.startups]);
 
@@ -323,7 +393,7 @@ export default function Dashboard() {
     const openCreate = (sectionKey) => {
         if (sectionKey === 'users' || SECTION_FORMS[sectionKey]) {
             setImageData(null);
-            setModal({ open:true, mode:'create', section:sectionKey, row:null, loading:false, error:null });
+            setModal({ open: true, mode: 'create', section: sectionKey, row: null, loading: false, error: null });
         } else {
             alert('Creation not available.');
         }
@@ -332,7 +402,7 @@ export default function Dashboard() {
     const openEdit = (sectionKey, row) => {
         if (sectionKey === 'users' || SECTION_FORMS[sectionKey]) {
             setImageData(row?.image || null);
-            setModal({ open:true, mode:'edit', section:sectionKey, row, loading:false, error:null });
+            setModal({ open: true, mode: 'edit', section: sectionKey, row, loading: false, error: null });
         } else {
             alert('Edition not available.');
         }
@@ -368,7 +438,7 @@ export default function Dashboard() {
         }
     };
 
-    const closeModal = () => { setImageData(null); setModal(m => ({ ...m, open:false })); };
+    const closeModal = () => { setImageData(null); setModal(m => ({ ...m, open: false })); };
 
     const submitUserCreate = async (e) => {
         e.preventDefault();
@@ -401,335 +471,334 @@ export default function Dashboard() {
         }
     };
 
-        const submitUserEdit = async (e) => {
-                e.preventDefault();
-                if (!modal.row)
-                    return;
+    const submitUserEdit = async (e) => {
+        e.preventDefault();
+        if (!modal.row)
+            return;
 
-                const form = e.target;
-                const updateFields = {};
-                const name = form.name.value.trim();
+        const form = e.target;
+        const updateFields = {};
+        const name = form.name.value.trim();
 
-                if (name && name !== modal.row.name)
-                    updateFields.name = name;
-                const role = form.role.value.trim();
-                    if (role && role !== modal.row.role) updateFields.role = role;
-                const password = form.password.value;
-                    if (password) updateFields.password = password;
-                const founder_id = form.founder_id.value ? Number(form.founder_id.value) : null;
-                if (founder_id !== modal.row.founder_id)
-                    updateFields.founder_id = founder_id;
-                const investor_id = form.investor_id.value ? Number(form.investor_id.value) : null;
-                if (investor_id !== modal.row.investor_id)
-                    updateFields.investor_id = investor_id;
-                const imgU = imageData || form.image?.value || null;
-                if (imgU !== (modal.row?.image || null))
-                    updateFields.image = imgU || null;
-                if (Object.keys(updateFields).length === 0)
-                    { closeModal(); return; }
-                try {
-                        setModal(m=>({...m,loading:true,error:null}));
-                        const token = localStorage.getItem('token');
-                        const data = await UserApi.updateUser(modal.row.id, { updateFields }, token);
-                        const updated = data.user || data;
-                        setDataCache(dc => {
-                                const cur = dc.users; if (!cur) return dc;
-                                return { ...dc, users:{ ...cur, items: cur.items.map(u=> u.id===updated.id ? updated : u) } };
-                        });
-                        closeModal();
-                } catch(err) {
-                        setModal(m=>({...m,loading:false,error: err.message || 'Update error'}));
-                }
-        };
+        if (name && name !== modal.row.name)
+            updateFields.name = name;
+        const role = form.role.value.trim();
+        if (role && role !== modal.row.role) updateFields.role = role;
+        const password = form.password.value;
+        if (password) updateFields.password = password;
+        const founder_id = form.founder_id.value ? Number(form.founder_id.value) : null;
+        if (founder_id !== modal.row.founder_id)
+            updateFields.founder_id = founder_id;
+        const investor_id = form.investor_id.value ? Number(form.investor_id.value) : null;
+        if (investor_id !== modal.row.investor_id)
+            updateFields.investor_id = investor_id;
+        const imgU = imageData || form.image?.value || null;
+        if (imgU !== (modal.row?.image || null))
+            updateFields.image = imgU || null;
+        if (Object.keys(updateFields).length === 0) { closeModal(); return; }
+        try {
+            setModal(m => ({ ...m, loading: true, error: null }));
+            const token = localStorage.getItem('token');
+            const data = await UserApi.updateUser(modal.row.id, { updateFields }, token);
+            const updated = data.user || data;
+            setDataCache(dc => {
+                const cur = dc.users; if (!cur) return dc;
+                return { ...dc, users: { ...cur, items: cur.items.map(u => u.id === updated.id ? updated : u) } };
+            });
+            closeModal();
+        } catch (err) {
+            setModal(m => ({ ...m, loading: false, error: err.message || 'Update error' }));
+        }
+    };
 
-        // Soumissions génériques (hors users)
+    // Soumissions génériques (hors users)
     const submitGenericCreate = async (e) => {
-            e.preventDefault();
-            const sectionKey = modal.section;
-            const fields = SECTION_FORMS[sectionKey] || [];
-            const form = e.target;
-            const payload = {};
+        e.preventDefault();
+        const sectionKey = modal.section;
+        const fields = SECTION_FORMS[sectionKey] || [];
+        const form = e.target;
+        const payload = {};
 
-            fields.forEach(f => {
-                let v = form[f.name]?.value;
-                if (v === '')
-                    v = null;
-                if (f.textarea)
-                    v = form[f.name].value;
-                if (v !== null && /_id$/.test(f.name) && !isNaN(Number(v)))
-                    v = Number(v);
-                if (v !== null)
-                    payload[f.name] = v;
+        fields.forEach(f => {
+            let v = form[f.name]?.value;
+            if (v === '')
+                v = null;
+            if (f.textarea)
+                v = form[f.name].value;
+            if (v !== null && /_id$/.test(f.name) && !isNaN(Number(v)))
+                v = Number(v);
+            if (v !== null)
+                payload[f.name] = v;
+        });
+        if (fields.some(f => f.name === 'image')) {
+            if (imageData)
+                payload.image = imageData;
+        }
+        if (sectionKey === 'events' && payload.dates)
+            payload.dates = normalizeDateStr(payload.dates);
+        if (sectionKey === 'news' && payload.news_date)
+            payload.news_date = normalizeDateStr(payload.news_date);
+        for (const f of fields) {
+            if (f.required && (payload[f.name] == null || payload[f.name] === '')) {
+                setModal(m => ({ ...m, error: 'Missing required fields' }));
+                return;
+            }
+        }
+        try {
+            setModal(m => ({ ...m, loading: true, error: null }));
+            const token = localStorage.getItem('token');
+            let created;
+            if (sectionKey === 'events')
+                created = await EventApi.createEvent(payload, token);
+            else if (sectionKey === 'startups')
+                created = await StartupApi.createStartup(payload, token);
+            else if (sectionKey === 'investors')
+                created = await InvestorApi.createInvestor(payload, token);
+            else if (sectionKey === 'founders')
+                created = await FounderApi.createFounder(payload, token);
+            else if (sectionKey === 'partners')
+                created = await PartnerApi.createPartner(payload, token);
+            else if (sectionKey === 'news')
+                created = await NewsApi.createNews(payload, token);
+            setDataCache(dc => {
+                const cur = dc[sectionKey]; if (!cur) return dc;
+                return { ...dc, [sectionKey]: { ...cur, items: [created, ...cur.items] } };
             });
-            if (fields.some(f=>f.name==='image')) {
-                if (imageData)
-                    payload.image = imageData;
-            }
-            if (sectionKey === 'events' && payload.dates)
-                payload.dates = normalizeDateStr(payload.dates);
-            if (sectionKey === 'news' && payload.news_date)
-                payload.news_date = normalizeDateStr(payload.news_date);
-            for (const f of fields) {
-                if (f.required && (payload[f.name] == null || payload[f.name] === '')) {
-                    setModal(m => ({ ...m, error: 'Missing required fields' }));
-                    return;
-                }
-            }
-            try {
-                setModal(m=>({...m,loading:true,error:null}));
-                const token = localStorage.getItem('token');
-                let created;
-                if (sectionKey === 'events')
-                    created = await EventApi.createEvent(payload, token);
-                else if (sectionKey === 'startups')
-                    created = await StartupApi.createStartup(payload, token);
-                else if (sectionKey === 'investors')
-                    created = await InvestorApi.createInvestor(payload, token);
-                else if (sectionKey === 'founders')
-                    created = await FounderApi.createFounder(payload, token);
-                else if (sectionKey === 'partners')
-                    created = await PartnerApi.createPartner(payload, token);
-                else if (sectionKey === 'news')
-                    created = await NewsApi.createNews(payload, token);
-                setDataCache(dc => {
-                    const cur = dc[sectionKey]; if (!cur) return dc;
-                    return { ...dc, [sectionKey]: { ...cur, items: [created, ...cur.items] } };
-                });
-                closeModal();
-            } catch(err) {
-                setModal(m=>({...m,loading:false,error: err.message || 'Creation error'}));
-            }
-        };
+            closeModal();
+        } catch (err) {
+            setModal(m => ({ ...m, loading: false, error: err.message || 'Creation error' }));
+        }
+    };
 
-        const submitGenericEdit = async (e) => {
-            e.preventDefault();
-            const sectionKey = modal.section;
-            if (!modal.row) return;
-            const fields = SECTION_FORMS[sectionKey] || [];
-            const form = e.target;
-            const updateFields = {};
-            fields.forEach(f => {
-                const original = modal.row[f.name];
-                let v = form[f.name]?.value;
-                if (v === '') v = null;
-                if (f.textarea) v = form[f.name].value;
-                if (v !== null && /_id$/.test(f.name) && !isNaN(Number(v))) v = Number(v);
-                if (v !== original && !(v == null && (original === null || original === undefined))) {
-                    updateFields[f.name] = v;
-                }
+    const submitGenericEdit = async (e) => {
+        e.preventDefault();
+        const sectionKey = modal.section;
+        if (!modal.row) return;
+        const fields = SECTION_FORMS[sectionKey] || [];
+        const form = e.target;
+        const updateFields = {};
+        fields.forEach(f => {
+            const original = modal.row[f.name];
+            let v = form[f.name]?.value;
+            if (v === '') v = null;
+            if (f.textarea) v = form[f.name].value;
+            if (v !== null && /_id$/.test(f.name) && !isNaN(Number(v))) v = Number(v);
+            if (v !== original && !(v == null && (original === null || original === undefined))) {
+                updateFields[f.name] = v;
+            }
+        });
+        if (sectionKey === 'events' && Object.prototype.hasOwnProperty.call(updateFields, 'dates')) {
+            updateFields.dates = updateFields.dates ? normalizeDateStr(updateFields.dates) : updateFields.dates;
+        }
+        if (sectionKey === 'news' && Object.prototype.hasOwnProperty.call(updateFields, 'news_date')) {
+            updateFields.news_date = updateFields.news_date ? normalizeDateStr(updateFields.news_date) : updateFields.news_date;
+        }
+        const imgVal = imageData || form.image?.value || null;
+        if (imgVal !== (modal.row?.image || null)) {
+            updateFields.image = imgVal || null;
+        }
+        if (Object.keys(updateFields).length === 0) { closeModal(); return; }
+        try {
+            setModal(m => ({ ...m, loading: true, error: null }));
+            const token = localStorage.getItem('token');
+            let data;
+            if (sectionKey === 'events')
+                data = await EventApi.updateEvent(modal.row.id, { updateFields }, token);
+            else if (sectionKey === 'startups')
+                data = await StartupApi.updateStartup(modal.row.id, { updateFields }, token);
+            else if (sectionKey === 'investors')
+                data = await InvestorApi.updateInvestor(modal.row.id, { updateFields }, token);
+            else if (sectionKey === 'founders')
+                data = await FounderApi.updateFounder(modal.row.id, { updateFields }, token);
+            else if (sectionKey === 'partners')
+                data = await PartnerApi.updatePartner(modal.row.id, { updateFields }, token);
+            else if (sectionKey === 'news')
+                data = await NewsApi.updateNews(modal.row.id, { updateFields }, token);
+            const keyMap = { events: 'event', startups: 'startup', founders: 'founder', investors: 'investor', partners: 'partner', news: 'news' };
+            const updated = data[keyMap[sectionKey]] || data;
+            setDataCache(dc => {
+                const cur = dc[sectionKey]; if (!cur) return dc;
+                return { ...dc, [sectionKey]: { ...cur, items: cur.items.map(it => it.id === updated.id ? updated : it) } };
             });
-                if (sectionKey === 'events' && Object.prototype.hasOwnProperty.call(updateFields, 'dates')) {
-                updateFields.dates = updateFields.dates ? normalizeDateStr(updateFields.dates) : updateFields.dates;
-            }
-            if (sectionKey === 'news' && Object.prototype.hasOwnProperty.call(updateFields, 'news_date')) {
-                updateFields.news_date = updateFields.news_date ? normalizeDateStr(updateFields.news_date) : updateFields.news_date;
-            }
-                const imgVal = imageData || form.image?.value || null;
-                if (imgVal !== (modal.row?.image || null)) {
-                    updateFields.image = imgVal || null;
-                }
-            if (Object.keys(updateFields).length === 0) { closeModal(); return; }
-            try {
-                setModal(m=>({...m,loading:true,error:null}));
-                const token = localStorage.getItem('token');
-                let data;
-                if (sectionKey === 'events')
-                    data = await EventApi.updateEvent(modal.row.id, { updateFields }, token);
-                else if (sectionKey === 'startups')
-                    data = await StartupApi.updateStartup(modal.row.id, { updateFields }, token);
-                else if (sectionKey === 'investors')
-                    data = await InvestorApi.updateInvestor(modal.row.id, { updateFields }, token);
-                else if (sectionKey === 'founders')
-                    data = await FounderApi.updateFounder(modal.row.id, { updateFields }, token);
-                else if (sectionKey === 'partners')
-                    data = await PartnerApi.updatePartner(modal.row.id, { updateFields }, token);
-                else if (sectionKey === 'news')
-                    data = await NewsApi.updateNews(modal.row.id, { updateFields }, token);
-                const keyMap = { events:'event', startups:'startup', founders:'founder', investors:'investor', partners:'partner', news:'news' };
-                const updated = data[keyMap[sectionKey]] || data;
-                setDataCache(dc => {
-                    const cur = dc[sectionKey]; if (!cur) return dc;
-                    return { ...dc, [sectionKey]: { ...cur, items: cur.items.map(it => it.id === updated.id ? updated : it) } };
-                });
-                closeModal();
-            } catch(err) {
-                setModal(m=>({...m,loading:false,error: err.message || 'Update error'}));
-            }
-        };
+            closeModal();
+        } catch (err) {
+            setModal(m => ({ ...m, loading: false, error: err.message || 'Update error' }));
+        }
+    };
 
-        const renderModal = () => {
-                if (!modal.open)
-                    return null;
-                if (modal.section === 'users') {
-                        const isEdit = modal.mode === 'edit';
-                        const row = modal.row || {};
-                        return (
-                            <div className="modal-overlay" onMouseDown={(e)=>{ if(e.target.classList.contains('modal-overlay')) closeModal(); }}>
-                                <div className="modal" role="dialog" aria-modal="true">
-                                    <div className="modal-head">
-                                        <h3>{isEdit? 'Edit user' : 'New user'}</h3>
-                                        <button className="close-x" onClick={closeModal}>✕</button>
-                                    </div>
-                                    <form onSubmit={isEdit? submitUserEdit : submitUserCreate} className="modal-form">
-                                        <div className="form-row">
-                                            <label>Email*</label>
-                                            <input name="email" type="email" defaultValue={row.email||''} disabled={isEdit} required />
-                                        </div>
-                                        <div className="form-row">
-                                            <label>Name*</label>
-                                            <input name="name" type="text" defaultValue={row.name||''} required />
-                                        </div>
-                                        <div className="form-row">
-                                            <label>Role</label>
-                                            <select name="role" defaultValue={row.role||'default'}>
-                                                <option value="default">default</option>
-                                                <option value="admin">admin</option>
-                                                <option value="investor">investor</option>
-                                                <option value="founder">founder</option>
+    const renderModal = () => {
+        if (!modal.open)
+            return null;
+        if (modal.section === 'users') {
+            const isEdit = modal.mode === 'edit';
+            const row = modal.row || {};
+            return (
+                <div className="modal-overlay" onMouseDown={(e) => { if (e.target.classList.contains('modal-overlay')) closeModal(); }}>
+                    <div className="modal" role="dialog" aria-modal="true">
+                        <div className="modal-head">
+                            <h3>{isEdit ? 'Edit user' : 'New user'}</h3>
+                            <button className="close-x" onClick={closeModal}>✕</button>
+                        </div>
+                        <form onSubmit={isEdit ? submitUserEdit : submitUserCreate} className="modal-form">
+                            <div className="form-row">
+                                <label>Email*</label>
+                                <input name="email" type="email" defaultValue={row.email || ''} disabled={isEdit} required />
+                            </div>
+                            <div className="form-row">
+                                <label>Name*</label>
+                                <input name="name" type="text" defaultValue={row.name || ''} required />
+                            </div>
+                            <div className="form-row">
+                                <label>Role</label>
+                                <select name="role" defaultValue={row.role || 'default'}>
+                                    <option value="default">default</option>
+                                    <option value="admin">admin</option>
+                                    <option value="investor">investor</option>
+                                    <option value="founder">founder</option>
+                                </select>
+                            </div>
+                            <div className="form-row">
+                                <label>Password{isEdit ? ' (leave empty to keep)' : '*'} </label>
+                                <input name="password" type="password" placeholder={isEdit ? '••••••' : ''} {...(!isEdit ? { required: true } : {})} />
+                            </div>
+                            <div className="form-row-inline">
+                                <div>
+                                    <label>Founder</label>
+                                    <select name="founder_id" defaultValue={row.founder_id || ''}>
+                                        <option value="">-- None --</option>
+                                        {(dataCache.founders?.items || []).map(f => (
+                                            <option key={f.id} value={f.id}>{f.name || ('#' + f.id)}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Investor</label>
+                                    <select name="investor_id" defaultValue={row.investor_id || ''}>
+                                        <option value="">-- None --</option>
+                                        {(dataCache.investors?.items || []).map(inv => (
+                                            <option key={inv.id} value={inv.id}>{inv.name || ('#' + inv.id)}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <label>Avatar image</label>
+                                <input type="hidden" name="image" defaultValue={row.image || ''} />
+                                {imageData && <div style={{ marginBottom: 8 }}><img src={imageData} alt="preview" style={{ maxWidth: 160, borderRadius: 8 }} /></div>}
+                                <input type="file" accept="image/*" onChange={async (e) => {
+                                    const inputEl = e.currentTarget;
+                                    const formEl = inputEl?.form || null;
+                                    const f = inputEl.files?.[0];
+                                    if (!f)
+                                        return;
+                                    if (!f.type.startsWith('image/')) {
+                                        alert('Only image files allowed.');
+                                        inputEl.value = '';
+                                        return;
+                                    }
+                                    const b64 = await readImageAsDataUrl(f);
+                                    setImageData(b64);
+                                    const hidden = formEl?.elements?.namedItem('image');
+                                    if (hidden && 'value' in hidden)
+                                        hidden.value = b64;
+                                }} />
+                            </div>
+                            {modal.error && <div className="form-error">{modal.error}</div>}
+                            <div className="modal-actions">
+                                <button type="button" className="btn sm" onClick={closeModal}>Cancel</button>
+                                <button type="submit" className="btn primary" disabled={modal.loading}>{modal.loading ? 'Processing...' : (isEdit ? 'Update' : 'Create')}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        } else if (SECTION_FORMS[modal.section]) {
+            const isEdit = modal.mode === 'edit';
+            const fields = SECTION_FORMS[modal.section];
+            const row = modal.row || {};
+            const startupsList = (dataCache.startups?.items) || [];
+            const requireStartup = modal.section === 'founders';
+            const noStartups = requireStartup && startupsList.length === 0;
+            return (
+                <div className="modal-overlay" onMouseDown={(e) => { if (e.target.classList.contains('modal-overlay')) closeModal(); }}>
+                    <div className="modal" role="dialog" aria-modal="true">
+                        <div className="modal-head">
+                            <h3>{isEdit ? 'Edit' : 'Create'} {SECTIONS.find(s => s.key === modal.section)?.label}</h3>
+                            <button className="close-x" onClick={closeModal}>✕</button>
+                        </div>
+                        <form onSubmit={isEdit ? submitGenericEdit : submitGenericCreate} className="modal-form">
+                            {fields.map(f => {
+                                if (f.name === 'startup_id' && f.select) {
+                                    return (
+                                        <div className="form-row" key={f.name}>
+                                            <label>{f.label}</label>
+                                            <select name={f.name} defaultValue={row[f.name] || ''} required>
+                                                {startupsList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                             </select>
                                         </div>
-                                        <div className="form-row">
-                                            <label>Password{isEdit? ' (leave empty to keep)' : '*'} </label>
-                                            <input name="password" type="password" placeholder={isEdit? '••••••' : ''} {...(!isEdit? {required:true}: {})} />
-                                        </div>
-                                        <div className="form-row-inline">
-                                            <div>
-                                                <label>Founder</label>
-                                                <select name="founder_id" defaultValue={row.founder_id||''}>
-                                                    <option value="">-- None --</option>
-                                                    {(dataCache.founders?.items||[]).map(f => (
-                                                        <option key={f.id} value={f.id}>{f.name || ('#'+f.id)}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label>Investor</label>
-                                                <select name="investor_id" defaultValue={row.investor_id||''}>
-                                                    <option value="">-- None --</option>
-                                                    {(dataCache.investors?.items||[]).map(inv => (
-                                                        <option key={inv.id} value={inv.id}>{inv.name || ('#'+inv.id)}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div className="form-row">
-                                            <label>Avatar image</label>
-                                            <input type="hidden" name="image" defaultValue={row.image||''} />
-                                            {imageData && <div style={{marginBottom:8}}><img src={imageData} alt="preview" style={{maxWidth:160,borderRadius:8}}/></div>}
-                                            <input type="file" accept="image/*" onChange={async (e)=>{
+                                    );
+                                }
+                                if ((modal.section === 'events' && f.name === 'image') || (modal.section === 'news' && f.name === 'image') || (modal.section === 'founders' && f.name === 'image')) {
+                                    return (
+                                        <div className="form-row" key={f.name}>
+                                            <label>{f.label || 'Image'}</label>
+                                            <input type="hidden" name="image" defaultValue={row.image || ''} />
+                                            {imageData && <div style={{ marginBottom: 8 }}><img src={imageData} alt="preview" style={{ maxWidth: 240, borderRadius: 8 }} /></div>}
+                                            <input type="file" accept="image/*" onChange={async (e) => {
                                                 const inputEl = e.currentTarget;
                                                 const formEl = inputEl?.form || null;
                                                 const f = inputEl.files?.[0];
-                                                if (!f)
-                                                    return;
-                                                if (!f.type.startsWith('image/')) {
-                                                    alert('Only image files allowed.');
-                                                    inputEl.value='';
-                                                    return;
-                                                }
+                                                if (!f) return;
+                                                if (!f.type.startsWith('image/')) { alert('Only image files allowed.'); inputEl.value = ''; return; }
                                                 const b64 = await readImageAsDataUrl(f);
                                                 setImageData(b64);
                                                 const hidden = formEl?.elements?.namedItem('image');
-                                                if (hidden && 'value' in hidden)
-                                                    hidden.value = b64;
+                                                if (hidden && 'value' in hidden) hidden.value = b64;
                                             }} />
                                         </div>
-                                        {modal.error && <div className="form-error">{modal.error}</div>}
-                                        <div className="modal-actions">
-                                            <button type="button" className="btn sm" onClick={closeModal}>Cancel</button>
-                                            <button type="submit" className="btn primary" disabled={modal.loading}>{modal.loading? 'Processing...' : (isEdit? 'Update' : 'Create')}</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        );
-                } else if (SECTION_FORMS[modal.section]) {
-                    const isEdit = modal.mode === 'edit';
-                    const fields = SECTION_FORMS[modal.section];
-                    const row = modal.row || {};
-                    const startupsList = (dataCache.startups?.items) || [];
-                    const requireStartup = modal.section === 'founders';
-                    const noStartups = requireStartup && startupsList.length === 0;
-                    return (
-                        <div className="modal-overlay" onMouseDown={(e)=>{ if(e.target.classList.contains('modal-overlay')) closeModal(); }}>
-                            <div className="modal" role="dialog" aria-modal="true">
-                                <div className="modal-head">
-                                    <h3>{isEdit ? 'Edit' : 'Create'} {SECTIONS.find(s=>s.key===modal.section)?.label}</h3>
-                                    <button className="close-x" onClick={closeModal}>✕</button>
-                                </div>
-                                <form onSubmit={isEdit? submitGenericEdit : submitGenericCreate} className="modal-form">
-                                    {fields.map(f => {
-                                        if (f.name === 'startup_id' && f.select) {
-                                            return (
-                                                <div className="form-row" key={f.name}>
-                                                    <label>{f.label}</label>
-                                                    <select name={f.name} defaultValue={row[f.name] || ''} required>
-                                                        {startupsList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                                    </select>
-                                                </div>
-                                            );
-                                        }
-                                        if ((modal.section === 'events' && f.name === 'image') || (modal.section === 'news' && f.name === 'image') || (modal.section === 'founders' && f.name === 'image')) {
-                                            return (
-                                                <div className="form-row" key={f.name}>
-                                                    <label>{f.label || 'Image'}</label>
-                                                    <input type="hidden" name="image" defaultValue={row.image||''} />
-                                                    {imageData && <div style={{marginBottom:8}}><img src={imageData} alt="preview" style={{maxWidth:240,borderRadius:8}}/></div>}
-                                                    <input type="file" accept="image/*" onChange={async (e)=>{
-                                                        const inputEl = e.currentTarget;
-                                                        const formEl = inputEl?.form || null;
-                                                        const f = inputEl.files?.[0];
-                                                        if (!f) return;
-                                                        if (!f.type.startsWith('image/')) { alert('Only image files allowed.'); inputEl.value=''; return; }
-                                                        const b64 = await readImageAsDataUrl(f);
-                                                        setImageData(b64);
-                                                        const hidden = formEl?.elements?.namedItem('image');
-                                                        if (hidden && 'value' in hidden) hidden.value = b64;
-                                                    }} />
-                                                </div>
-                                            );
-                                        }
-                                        return (
-                                            <div className="form-row" key={f.name}>
-                                                <label>{f.label}</label>
-                                                {f.textarea ? (
-                                                    <textarea name={f.name} defaultValue={row[f.name] || ''} style={{resize:'vertical', minHeight:80}} {...(f.required && !isEdit ? {required:true}: {})} />
-                                                ) : (
-                                                    <input name={f.name} type={f.type || 'text'} defaultValue={row[f.name] || ''} {...(f.required && !isEdit ? {required:true}: {})} />
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                    {modal.error && <div className="form-error">{modal.error}</div>}
-                                    {noStartups && (
-                                        <div className="form-error">Create a Startup first to assign a founder.</div>
-                                    )}
-                                    <div className="modal-actions">
-                                        <button type="button" className="btn sm" onClick={closeModal}>Cancel</button>
-                                        <button type="submit" className="btn primary" disabled={modal.loading || noStartups}>{modal.loading ? 'Processing...' : (isEdit? 'Update' : 'Create')}</button>
+                                    );
+                                }
+                                return (
+                                    <div className="form-row" key={f.name}>
+                                        <label>{f.label}</label>
+                                        {f.textarea ? (
+                                            <textarea name={f.name} defaultValue={row[f.name] || ''} style={{ resize: 'vertical', minHeight: 80 }} {...(f.required && !isEdit ? { required: true } : {})} />
+                                        ) : (
+                                            <input name={f.name} type={f.type || 'text'} defaultValue={row[f.name] || ''} {...(f.required && !isEdit ? { required: true } : {})} />
+                                        )}
                                     </div>
-                                </form>
+                                );
+                            })}
+                            {modal.error && <div className="form-error">{modal.error}</div>}
+                            {noStartups && (
+                                <div className="form-error">Create a Startup first to assign a founder.</div>
+                            )}
+                            <div className="modal-actions">
+                                <button type="button" className="btn sm" onClick={closeModal}>Cancel</button>
+                                <button type="submit" className="btn primary" disabled={modal.loading || noStartups}>{modal.loading ? 'Processing...' : (isEdit ? 'Update' : 'Create')}</button>
                             </div>
-                        </div>
-                    );
-                }
-                return null;
-        };
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    };
 
     function renderSection() {
         if (active === 'users' && safeUser.role !== 'admin')
             return <div className="section-error">Forbidden.</div>;
         if (active === 'overview') {
-            const requiredKeys = ['events','startups','investors','partners','news'];
+            const requiredKeys = ['events', 'startups', 'investors', 'partners', 'news'];
             const loadingOverview = requiredKeys.some(k => !dataCache[k]);
             if (loadingOverview || !chartsReady) {
                 return (
-                    <div className="overview-loading" style={{display:'grid', gap:16}}>
-                        <div className="card" style={{height:140, background:'#2a2a2a', borderRadius:12}} />
-                        <div className="card" style={{height:380, background:'#2a2a2a', borderRadius:12}} />
-                        <div className="card" style={{height:160, background:'#2a2a2a', borderRadius:12}} />
-                        <div className="card" style={{height:380, background:'#2a2a2a', borderRadius:12}} />
-                        <div style={{textAlign:'center', opacity:.7}}>{overviewBatchLoading ? 'Fetching data…' : 'Preparing charts…'}</div>
+                    <div className="overview-loading" style={{ display: 'grid', gap: 16 }}>
+                        <div className="card" style={{ height: 140, background: '#2a2a2a', borderRadius: 12 }} />
+                        <div className="card" style={{ height: 380, background: '#2a2a2a', borderRadius: 12 }} />
+                        <div className="card" style={{ height: 160, background: '#2a2a2a', borderRadius: 12 }} />
+                        <div className="card" style={{ height: 380, background: '#2a2a2a', borderRadius: 12 }} />
+                        <div style={{ textAlign: 'center', opacity: .7 }}>{overviewBatchLoading ? 'Fetching data…' : 'Preparing charts…'}</div>
                     </div>
                 );
             }
@@ -819,9 +888,9 @@ export default function Dashboard() {
                 return ((cur - prev) / prev) * 100;
             };
 
-            const safePct = (a,b) => {
+            const safePct = (a, b) => {
                 try {
-                    const val = pct(a,b);
+                    const val = pct(a, b);
                     if (!isFinite(val)) return 0;
                     return Number(val.toFixed(1));
                 } catch { return 0; }
@@ -834,15 +903,15 @@ export default function Dashboard() {
                 { name: 'News', value: safePct(newsLast7.length, newsPrev7.length), cur: newsLast7.length, prev: newsPrev7.length }
             ];
 
-            const barPalette = ['#6d5dfc','#8b6dfc','#a86dfc','#c26df7','#dd6df0'];
+            const barPalette = ['#6d5dfc', '#8b6dfc', '#a86dfc', '#c26df7', '#dd6df0'];
             const growthColor = (v) => v > 0 ? '#16a34a' : (v < 0 ? '#dc2626' : '#5b6472');
             const GrowthTooltip = ({ active, payload }) => {
                 if (active && payload && payload.length) {
                     const p = payload[0].payload;
                     return (
-                        <div style={{ background:'#fff', border:'1px solid #ccc', padding:8, fontSize:12 }}>
-                            <strong>{p.name}</strong><br/>
-                            7d: {p.cur} | Prev: {p.prev}<br/>
+                        <div style={{ background: '#fff', border: '1px solid #ccc', padding: 8, fontSize: 12 }}>
+                            <strong>{p.name}</strong><br />
+                            7d: {p.cur} | Prev: {p.prev}<br />
                             Δ %: {p.value}%
                         </div>
                     );
@@ -864,15 +933,15 @@ export default function Dashboard() {
                     </div>
                     <div className="card chart-card large-chart">
                         <h3>Total Startups / Investors / Partners / Upcoming Events / News (last 7 days)</h3>
-                        <div style={{width:'100%', height:340}}>
+                        <div style={{ width: '100%', height: 340 }}>
                             <ResponsiveContainer>
                                 <BarChart data={totalsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
-                                    <XAxis dataKey="name" stroke="#000" tick={{ fill:'#000', fontSize:12 }} />
-                                    <YAxis stroke="#000" allowDecimals={false} tick={{ fill:'#000', fontSize:12 }} />
-                                    <Tooltip contentStyle={{ background:'#ffffff', border:'1px solid #ccc', color:'#000' }} />
-                                    <Bar dataKey="value" radius={[6,6,0,0]} isAnimationActive={false}>
-                                        {totalsData.map((d,i) => <Cell key={d.name} fill={barPalette[i % barPalette.length]} />)}
+                                    <XAxis dataKey="name" stroke="#000" tick={{ fill: '#000', fontSize: 12 }} />
+                                    <YAxis stroke="#000" allowDecimals={false} tick={{ fill: '#000', fontSize: 12 }} />
+                                    <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #ccc', color: '#000' }} />
+                                    <Bar dataKey="value" radius={[6, 6, 0, 0]} isAnimationActive={false}>
+                                        {totalsData.map((d, i) => <Cell key={d.name} fill={barPalette[i % barPalette.length]} />)}
                                     </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
@@ -889,14 +958,14 @@ export default function Dashboard() {
                     </div>
                     <div className="card chart-card large-chart">
                         <h3>Growth % (Δ vs previous 7-day period)</h3>
-                        <div style={{width:'100%', height:340}}>
+                        <div style={{ width: '100%', height: 340 }}>
                             <ResponsiveContainer>
                                 <BarChart data={growthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
-                                    <XAxis dataKey="name" stroke="#000" tick={{ fill:'#000', fontSize:12 }} />
-                                    <YAxis stroke="#000" tickFormatter={(v)=> v + '%'} tick={{ fill:'#000', fontSize:12 }} />
+                                    <XAxis dataKey="name" stroke="#000" tick={{ fill: '#000', fontSize: 12 }} />
+                                    <YAxis stroke="#000" tickFormatter={(v) => v + '%'} tick={{ fill: '#000', fontSize: 12 }} />
                                     <Tooltip content={<GrowthTooltip />} />
-                                    <Bar dataKey="value" radius={[6,6,0,0]} isAnimationActive={false}>
+                                    <Bar dataKey="value" radius={[6, 6, 0, 0]} isAnimationActive={false}>
                                         {growthData.map(g => <Cell key={g.name} fill={growthColor(g.value)} />)}
                                     </Bar>
                                 </BarChart>
@@ -959,92 +1028,141 @@ export default function Dashboard() {
 
     return (
         <div className={`admin-dashboard ${menuOpen ? 'has-overlay' : ''}`}>
-            {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)} aria-label="Close menu" />}
+            {menuOpen && (
+                <div
+                    className="sidebar-overlay"
+                    onClick={() => setMenuOpen(false)}
+                    aria-label="Close menu"
+                />
+            )}
+
             <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
-                <div className="brand"><span>JEB Admin Panel</span><button className="close-btn" onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button></div>
+                <div className="brand">
+                    <span>JEB Admin Panel</span>
+                    <button
+                        className="close-btn"
+                        onClick={() => setMenuOpen(false)}
+                        aria-label="Close menu"
+                    >
+                        ✕
+                    </button>
+                </div>
+
                 <div className="user-box" title={safeUser.email}>
                     <div className="u-email">{safeUser.email}</div>
                     <span className={`u-role role-${safeUser.role}`}>{safeUser.role}</span>
                 </div>
+
                 <nav className="nav-sections">
                     <ul>
-                        {accessibleSections.map(sec => (
+                        {accessibleSections.map((sec) => (
                             <li key={sec.key}>
                                 <button
                                     className={sec.key === active ? 'active' : ''}
                                     onClick={() => setActive(sec.key)}
                                 >
-                                    <span className="ico" aria-hidden>{sec.icon}</span>
+                                    <span className="ico" aria-hidden>
+                                        {sec.icon}
+                                    </span>
                                     <span className="lbl">{sec.label}</span>
                                 </button>
                             </li>
                         ))}
                     </ul>
                 </nav>
-                <button className="logout-btn-full" onClick={handleLogout}>Log out</button>
+
+                <button className="logout-btn-full" onClick={handleLogout}>
+                    Log out
+                </button>
             </aside>
+
             <main className="main-panel">
                 <header className="panel-header">
-                    <button className="menu-toggle" onClick={() => setMenuOpen(m => !m)} aria-label={menuOpen ? 'Close menu' : 'Open menu'}>{menuOpen ? '✕' : '☰'}</button>
-                    <h1>{SECTIONS.find(s => s.key === active)?.label}</h1>
+                    <button
+                        className="menu-toggle"
+                        onClick={() => setMenuOpen((m) => !m)}
+                        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                    >
+                        {menuOpen ? '✕' : '☰'}
+                    </button>
+
+                    <h1>{SECTIONS.find((s) => s.key === active)?.label}</h1>
+
+                    {/* Actions header (export) */}
+                    <div className="header-actions" style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                        {/* Affiche le bouton sur Overview quand les charts sont prêts.
+                Si tu veux l’avoir partout, retire la condition. */}
+                        {(active === 'overview' && chartsReady) && (
+                            <button className="btn sm" onClick={exportDashboard} disabled={exporting}>
+                                {exporting ? 'Exporting…' : 'Export PDF'}
+                            </button>
+                        )}
+                    </div>
                 </header>
-                <div className="panel-content">{renderSection()}</div>
+
+                {/* Zone capturée pour le PDF */}
+                <div className="panel-content" ref={pdfRef}>
+                    {renderSection()}
+                </div>
             </main>
+
             {renderModal()}
         </div>
     );
-}
 
-function computeColumns(sectionKey, list) {
-    if (!list.length) return [{ key: 'id', label: 'ID' }];
-    const sample = list[0];
-    const baseMap = {
-        events: ['id', 'name', 'location', 'event_type', 'dates'],
-        startups: ['id', 'name', 'email', 'sector', 'maturity'],
-    founders: ['id', 'name', 'startup_id'],
-        investors: ['id', 'name', 'email', 'investor_type'],
-        partners: ['id', 'name', 'email', 'partnership_type'],
-        news: ['id', 'title', 'category', 'news_date'],
-        users: ['id', 'name', 'email', 'role']
-    };
-    const wanted = baseMap[sectionKey] || Object.keys(sample).slice(0, 5);
-    return wanted.filter(k => k in sample).map(k => ({ key: k, label: k.replace(/_/g, ' ') }));
-}
 
-function formatCell(col, row) {
-    const val = row[col.key];
-    if (val == null || val === '') return '—';
-    if (typeof val === 'string' && val.length > 60) return val.slice(0, 57) + '…';
-    return String(val);
-}
+    function computeColumns(sectionKey, list) {
+        if (!list.length) return [{ key: 'id', label: 'ID' }];
+        const sample = list[0];
+        const baseMap = {
+            events: ['id', 'name', 'location', 'event_type', 'dates'],
+            startups: ['id', 'name', 'email', 'sector', 'maturity'],
+            founders: ['id', 'name', 'startup_id'],
+            investors: ['id', 'name', 'email', 'investor_type'],
+            partners: ['id', 'name', 'email', 'partnership_type'],
+            news: ['id', 'title', 'category', 'news_date'],
+            users: ['id', 'name', 'email', 'role']
+        };
+        const wanted = baseMap[sectionKey] || Object.keys(sample).slice(0, 5);
+        return wanted.filter(k => k in sample).map(k => ({ key: k, label: k.replace(/_/g, ' ') }));
+    }
 
-function normalizeDateStr(input) {
-    if (!input)
-        return input;
-    if (/^\d{4}-\d{2}-\d{2}$/.test(input))
-        return input;
+    function formatCell(col, row) {
+        const val = row[col.key];
+        if (val == null || val === '') return '—';
+        if (typeof val === 'string' && val.length > 60) return val.slice(0, 57) + '…';
+        return String(val);
+    }
 
-    let s = String(input).trim().replace(/[\/]/g, '-');
-    const parts = s.split('-');
+    function normalizeDateStr(input) {
+        if (!input)
+            return input;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(input))
+            return input;
 
-    if (parts.length === 3) {
-        if (parts[0].length === 4) {
-            const [Y,M,D] = parts;
-            return [Y, M.padStart(2,'0'), D.padStart(2,'0')].join('-');
-        } else {
+        let s = String(input).trim().replace(/[\/]/g, '-');
+        const parts = s.split('-');
 
-            const [D,M,Y] = parts;
-            if (Y.length === 4) return [Y, M.padStart(2,'0'), D.padStart(2,'0')].join('-');
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                const [Y, M, D] = parts;
+                return [Y, M.padStart(2, '0'), D.padStart(2, '0')].join('-');
+            } else {
+
+                const [D, M, Y] = parts;
+                if (Y.length === 4) return [Y, M.padStart(2, '0'), D.padStart(2, '0')].join('-');
+            }
         }
-    }
+        
 
-    const d = new Date(input);
-    if (!isNaN(d.getTime())) {
-        const Y = d.getFullYear();
-        const M = String(d.getMonth()+1).padStart(2,'0');
-        const D = String(d.getDate()).padStart(2,'0');
+        const d = new Date(input);
+        if (!isNaN(d.getTime())) {
+            const Y = d.getFullYear();
+            const M = String(d.getMonth() + 1).padStart(2, '0');
+            const D = String(d.getDate()).padStart(2, '0');
 
-        return `${Y}-${M}-${D}`;
+            return `${Y}-${M}-${D}`;
+        }
+        return input;
     }
-    return input;
 }

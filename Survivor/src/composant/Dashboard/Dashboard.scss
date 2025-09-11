@@ -781,3 +781,50 @@ table.data-table .badge { background:#e6eef9; color:#284b75; padding:2px 8px 3px
   .modal-form label { font-size: .6rem; }
   .modal-form input, .modal-form select, .modal-form textarea { font-size: .7rem; padding: 9px 11px; }
 }
+
+   .pdf-export {
+    .panel-content {
+      background: #ffffff !important;
+    }
+  
+    .panel-content *,
+    .sidebar-overlay {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      filter: none !important;
+      text-shadow: none !important;
+    }
+  
+    .overview-grid .card,
+    .card {
+      background: #ffffff !important;
+      color: #1d2a3b !important;
+      border: 1px solid #e5e7eb !important;
+      box-shadow: none !important;
+    }
+  
+    .overview-grid .card::before,
+    .overview-grid .card::after,
+    .panel-content .card::before,
+    .panel-content .card::after,
+    .overview-loading .card::after {
+      display: none !important;
+    }
+
+    .overview-grid .count-pill {
+      background: #ffffff !important;
+      border-color: #e5e7eb !important;
+      box-shadow: none !important;
+    }
+    .overview-grid .kv-list li {
+      background: #f6f8fb !important;
+    }
+
+    .table-scroll {
+      background: #ffffff !important;
+      border-color: #e5e7eb !important;
+      box-shadow: none !important;
+    }
+    .recharts-default-tooltip { display: none !important; }
+  }
+  
