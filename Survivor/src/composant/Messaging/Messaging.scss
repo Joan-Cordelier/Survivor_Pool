@@ -21,6 +21,12 @@ $brand-to:   #C174F2;
 .conv-name { font-weight:700; }
 .conv-role { font-size:12px; opacity:.65; }
 
+/* Ensure action buttons (Message) are aligned to the right and consistent */
+.conv-item > div:last-child { margin-left: auto; display: flex; align-items: center; }
+.conv-item .btn { white-space: nowrap; }
+.conv-item .btn.primary { min-width: 92px; padding: 8px 14px; border-radius: 20px; font-weight: 700; background: linear-gradient(90deg, $brand-from, $brand-to); color: #fff; box-shadow: 0 8px 20px rgba(193,116,242,0.14); border: none; }
+.conv-item .btn.ghost { padding: 6px 10px; border-radius: 12px; }
+
 .conv-filters { padding-bottom: 6px; }
 .conv-filter-btn { background: transparent; border: 1px solid rgba(0,0,0,0.06); padding:6px 8px; border-radius:8px; cursor:pointer; font-size:12px; }
 .conv-filter-btn.active { background: linear-gradient(90deg, $brand-from, $brand-to); color: #fff; border-color: transparent; }

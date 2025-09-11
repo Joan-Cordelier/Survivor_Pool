@@ -125,11 +125,7 @@ export default function Messaging() {
         }
     }
 
-    useEffect(() => {
-        if (!user)
-            return;
-        loadConversations();
-    }, [user]);
+    useEffect(() => { if (!user) return; loadConversations(); }, [user]);
 
     // polling: fetch only received messages and append truly new messages
     useEffect(() => {
@@ -244,7 +240,7 @@ export default function Messaging() {
     useEffect(() => {
         const el = messagesListRef.current;
         if (!el) return;
-        const t = setTimeout(() => { try { el.scrollTop = el.scrollHeight; } catch(e){} }, 50);
+        const t = setTimeout(() => { try { el.scrollTop = el.scrollHeight; } catch (e) { } }, 50);
         return () => clearTimeout(t);
     }, [selectedConvId, selectedConv?.messages?.length]);
 
@@ -304,8 +300,8 @@ export default function Messaging() {
 
     async function sendMessage(e) {
         e?.preventDefault?.();
-        if (!selectedConvId) { setMsg('Aucune conversation sélectionnée.'); return; }
-        if (!messageText.trim()) { setMsg('Message vide.'); return; }
+        if (!selectedConvId) { setMsg('No conversation selected.'); return; }
+        if (!messageText.trim()) { setMsg('Empty message.'); return; }
         const text = messageText.trim();
         const conv = conversations.find(c => c.id === selectedConvId);
         if (!conv) return;
@@ -369,7 +365,7 @@ export default function Messaging() {
                         {filterRole === 'contact' && (
                             <div>
                                 <div style={{ marginBottom: 8 }}>
-                                    <input className="contact-search" placeholder="Rechercher un contact..." value={contactQuery} onChange={e => setContactQuery(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)' }} />
+                                    <input className="contact-search" placeholder="Searching contact..." value={contactQuery} onChange={e => setContactQuery(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)' }} />
                                 </div>
                                 <div style={{ maxHeight: 420, overflow: 'auto' }}>
                                     {loadingContacts ? <div style={{ padding: 12 }}>Loading...</div> : (
@@ -394,7 +390,7 @@ export default function Messaging() {
 
                         {filterRole !== 'contact' && (
                             (visibleConversations.length === 0) ? (
-                                <div style={{ padding: 12 }}>Aucune conversation</div>
+                                <div style={{ padding: 12 }}>No conversation</div>
                             ) : (
                                 visibleConversations.map(c => (
                                     <div key={c.id} className={"conv-item" + (c.id === selectedConvId ? ' active' : '')} onClick={() => selectConversation(c.id)}>
@@ -414,7 +410,7 @@ export default function Messaging() {
 
                 <div className="messages-panel card">
                     {!selectedConv ? (
-                        <div style={{ padding: 18 }}>Sélectionnez une conversation</div>
+                        <div style={{ padding: 18 }}>Select a conversation</div>
                     ) : (
                         <>
                             <div style={{ padding: 12, borderBottom: '1px solid rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -436,7 +432,7 @@ export default function Messaging() {
                                 ))}
                             </div>
                             <form className="msg-input" onSubmit={sendMessage}>
-                                <textarea value={messageText} onChange={e => setMessageText(e.target.value)} placeholder="Écrire un message..." />
+                                <textarea value={messageText} onChange={e => setMessageText(e.target.value)} placeholder="Write a message..." />
                                 <button type="submit" className="btn primary">Send</button>
                             </form>
                         </>
