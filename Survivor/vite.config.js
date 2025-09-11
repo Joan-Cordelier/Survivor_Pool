@@ -49,6 +49,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/message': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })

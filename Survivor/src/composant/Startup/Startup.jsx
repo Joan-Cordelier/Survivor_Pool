@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Startup.scss';
 import * as StartupApi from '../../apis/BackendApi/Startup.api';
 import * as UserApi from '../../apis/BackendApi/User.api';
+import * as MessageApi from '../../apis/BackendApi/Message.api';
 
 export default function StartupPage() {
     const navigate = useNavigate();
@@ -116,36 +117,92 @@ export default function StartupPage() {
         load();
     }, [user]);
 
-    // Initialize mock conversations when startup loads
+    // helper to load conversations from messages in the DB and group by counterpart
+    async function loadConversations() {
+        if (!user) return;
+        try {
+            const token = localStorage.getItem('token');
+            const sentRes = await MessageApi.getSentMessages?.(user.id, token);
+            const recRes = await MessageApi.getReceivedMessages?.(user.id, token);
+            const sentArr = Array.isArray(sentRes) ? sentRes : (sentRes?.data || sentRes?.messages || sentRes || []);
+            const recArr = Array.isArray(recRes) ? recRes : (recRes?.data || recRes?.messages || recRes || []);
+            const allMsgs = [...(sentArr || []), ...(recArr || [])];
+
+            // group messages by the other participant id
+            const groups = {}; // otherId -> [messages]
+            for (const m of allMsgs) {
+                const sender = m.sender_id ?? m.senderId ?? m.authorId ?? m.sender ?? null;
+                const receiver = m.receiver_id ?? m.receiverId ?? m.to ?? m.receiver ?? null;
+                const authorId = sender;
+                const otherId = Number(authorId) === Number(user.id) ? Number(receiver) : Number(authorId);
+                if (!otherId || otherId === 'null') continue;
+                groups[otherId] = groups[otherId] || [];
+                groups[otherId].push(m);
+            }
+
+            const convs = [];
+            for (const otherId of Object.keys(groups)) {
+                const raw = groups[otherId];
+                const msgs = raw.map(mm => ({
+                    id: mm.id ?? mm._id ?? Math.floor(Math.random() * 1e9),
+                    authorId: mm.sender_id ?? mm.senderId ?? mm.authorId ?? mm.sender ?? 0,
+                    text: mm.content ?? mm.text ?? mm.message ?? '',
+                    time: mm.sent_at ?? mm.sentAt ?? mm.time ?? mm.created_at ?? mm.createdAt ?? Date.now(),
+                    raw: mm,
+                })).sort((a, b) => (a.time || 0) - (b.time || 0));
+
+                const last = msgs[msgs.length - 1];
+
+                // try to fetch interlocutor info
+                let info = null;
+                try {
+                    const ures = await UserApi.getUserById?.(otherId);
+                    info = ures?.user || ures || null;
+                } catch (e) { /* ignore */ }
+
+                convs.push({
+                    id: `user-${otherId}`,
+                    interlocutor: { id: otherId, name: info?.name || `${info?.firstname || ''} ${info?.lastname || ''}`.trim() || `User ${otherId}`, role: info?.role || (info?.is_admin ? 'Admin' : 'User') },
+                    lastMessage: last?.text || '',
+                    unread: msgs.filter(x => String(x.authorId) !== String(user.id)).length,
+                    messages: msgs,
+                });
+            }
+
+            // sort conversations by last message desc
+            convs.sort((a, b) => (b.messages[b.messages.length - 1]?.time || 0) - (a.messages[a.messages.length - 1]?.time || 0));
+            setConversations(convs);
+            if (convs.length && !conversations.length) setSelectedConvId(convs[0].id);
+        } catch (err) {
+            console.error('Failed to load messages', err);
+            setConversations([]);
+        }
+    }
+
+    // initial load of conversations
     useEffect(() => {
-        if (!startup) return;
-        const convs = [];
-        // create a conversation for each founder
-        (startup.founders || []).forEach(f => {
-            convs.push({
-                id: `founder-${f.id}`,
-                interlocutor: { id: f.id, name: f.name || `Founder ${f.id}`, role: f.role || 'Founder' },
-                lastMessage: 'Bonjour',
-                unread: 0,
-                messages: [
-                    { id: 1, authorId: f.id, text: `Salut, je suis ${f.name || 'le fondateur'}.`, time: Date.now() - 1000 * 60 * 60 },
-                    { id: 2, authorId: user?.id || 0, text: 'Bonjour !', time: Date.now() - 1000 * 60 * 30 }
-                ]
-            });
-        });
-        // add a sample investor conversation
-        convs.push({
-            id: 'investor-1',
-            interlocutor: { id: 999, name: 'InvestCorp', role: 'Investor' },
-            lastMessage: 'Intéressant',
-            unread: 1,
-            messages: [
-                { id: 1, authorId: 999, text: 'Bonjour, intéressé par votre projet.', time: Date.now() - 1000 * 60 * 60 * 24 },
-            ]
-        });
-        setConversations(convs);
-        if (convs.length) setSelectedConvId(convs[0].id);
-    }, [startup, user]);
+        if (!user) return;
+        loadConversations();
+    }, [user]);
+
+    // lightweight polling to refresh conversations periodically so new messages appear
+    useEffect(() => {
+        if (!user) return;
+        const POLL_INTERVAL_MS = 8000; // 8 seconds
+        let mounted = true;
+        const tick = async () => {
+            try {
+                if (!mounted) return;
+                await loadConversations();
+            } catch (e) {
+                /* ignore polling errors */
+            }
+        };
+        const id = setInterval(tick, POLL_INTERVAL_MS);
+        // also run one immediate refresh a little later to catch fast updates
+        const t = setTimeout(() => { if (mounted) tick(); }, 1000);
+        return () => { mounted = false; clearInterval(id); clearTimeout(t); };
+    }, [user]);
 
     async function onSave(e) {
         e?.preventDefault?.();
@@ -235,6 +292,53 @@ export default function StartupPage() {
         return () => { mounted = false; };
     }, [filterRole]);
 
+    // ref for messages list to auto-scroll
+    const messagesListRef = useRef(null);
+
+    // when selecting a conversation or messages change, scroll to bottom
+    useEffect(() => {
+        const el = messagesListRef.current;
+        if (!el) return;
+        // give React a tick to render messages
+        const t = setTimeout(() => { try { el.scrollTop = el.scrollHeight; } catch(e){} }, 50);
+        return () => clearTimeout(t);
+    }, [selectedConvId, selectedConv?.messages?.length]);
+
+    // load messages for the selected conversation from backend when empty
+    useEffect(() => {
+        if (!selectedConv || !user) return;
+        if (selectedConv.messages && selectedConv.messages.length) return; // already have messages
+        (async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const sentRes = await MessageApi.getSentMessages?.(user.id, token);
+                const recRes = await MessageApi.getReceivedMessages?.(user.id, token);
+                const sentArr = Array.isArray(sentRes) ? sentRes : (sentRes?.data || sentRes?.messages || sentRes || []);
+                const recArr = Array.isArray(recRes) ? recRes : (recRes?.data || recRes?.messages || recRes || []);
+                const all = [...(sentArr || []), ...(recArr || [])];
+
+                const otherId = String(selectedConv.interlocutor?.id);
+                const raw = all.filter(m => {
+                    const s = m.sender_id ?? m.senderId ?? m.authorId ?? m.sender ?? null;
+                    const r = m.receiver_id ?? m.receiverId ?? m.to ?? m.receiver ?? null;
+                    return String(s) === otherId || String(r) === otherId;
+                });
+
+                const msgs = raw.map(mm => ({
+                    id: mm.id ?? mm._id ?? Math.floor(Math.random() * 1e9),
+                    authorId: mm.sender_id ?? mm.senderId ?? mm.authorId ?? mm.sender ?? 0,
+                    text: mm.content ?? mm.text ?? mm.message ?? '',
+                    time: mm.sent_at ?? mm.sentAt ?? mm.time ?? mm.created_at ?? mm.createdAt ?? Date.now(),
+                    raw: mm,
+                })).sort((a, b) => (a.time || 0) - (b.time || 0));
+
+                setConversations(prev => prev.map(c => c.id === selectedConv.id ? { ...c, messages: msgs, lastMessage: msgs[msgs.length - 1]?.text || c.lastMessage } : c));
+            } catch (err) {
+                console.error('Failed to load conversation messages', err);
+            }
+        })();
+    }, [selectedConvId, user]);
+
     // start or open a conversation with a given user (from contacts)
     function startConversationWith(u) {
         try {
@@ -256,7 +360,7 @@ export default function StartupPage() {
             }
             const newConv = {
                 id: candidateId,
-                interlocutor: { id: u.id, name: u.name || `User ${u.id}`, role: u.role || 'User' },
+                interlocutor: { id: Number(u.id), name: u.name || `User ${u.id}`, role: u.role || 'User' },
                 lastMessage: '',
                 unread: 0,
                 messages: []
@@ -276,26 +380,79 @@ export default function StartupPage() {
         setConversations(prev => prev.map(c => c.id === id ? { ...c, unread: 0 } : c));
     }
 
-    function sendMessage(e) {
+    async function sendMessage(e) {
         e?.preventDefault?.();
-        if (!selectedConvId || !messageText.trim()) return;
+        console.debug('sendMessage called', { selectedConvId, messageText });
+        if (!selectedConvId) {
+            console.debug('sendMessage aborted: no selectedConvId');
+            setMsg('Aucune conversation sélectionnée.');
+            return;
+        }
+        if (!messageText.trim()) {
+            console.debug('sendMessage aborted: empty messageText');
+            setMsg('Message vide.');
+            return;
+        }
         const text = messageText.trim();
-        setConversations(prev => prev.map(c => {
-            if (c.id !== selectedConvId) return c;
-            const nextId = (c.messages.length ? c.messages[c.messages.length - 1].id + 1 : 1);
-            const msg = { id: nextId, authorId: user?.id || 0, text, time: Date.now() };
-            return { ...c, messages: [...c.messages, msg], lastMessage: text };
-        }));
+        const conv = conversations.find(c => c.id === selectedConvId);
+        if (!conv) return;
+
+        // determine receiver id from interlocutor
+        const receiverId = conv.interlocutor?.id;
+        if (!receiverId) return;
+
+        // optimistic local message with temporary negative id
+        const tempId = `tmp-${Date.now()}`;
+        const tempMsg = { id: tempId, authorId: user?.id || 0, text, time: Date.now(), sending: true };
+
+        setConversations(prev => prev.map(c => c.id === selectedConvId ? { ...c, messages: [...c.messages, tempMsg], lastMessage: text } : c));
         setMessageText('');
-        // simple auto-reply for demo
-        setTimeout(() => {
+
+        try {
+                const token = localStorage.getItem('token');
+                const sid = Number(user?.id);
+                const rid = Number(receiverId);
+                if (isNaN(rid) || rid <= 0) {
+                    setMsg('Identifiant du destinataire invalide.');
+                    console.error('Invalid receiver id', receiverId);
+                    return;
+                }
+                const payload = { sender_id: sid, receiver_id: rid, content: text };
+            console.debug('Sending message payload', payload);
+            const res = await MessageApi.createMessage?.(payload, token);
+            const created = res || (res?.data || res?.message || null) || null;
+            console.debug('Create message response', created);
+
+            if (!created) {
+                throw new Error('No response from server when creating message');
+            }
+
+            // map server message fields to our message shape (robust)
+            const serverMsg = {
+                id: created.id ?? created._id ?? created.message_id ?? Math.floor(Math.random() * 1e9),
+                authorId: Number(created.sender_id ?? created.senderId ?? created.authorId ?? user?.id ?? 0),
+                text: String(created.content ?? created.content_text ?? created.text ?? created.message ?? text),
+                time: created.sent_at ?? created.sentAt ?? created.time ?? created.created_at ?? created.createdAt ?? Date.now(),
+                raw: created,
+            };
+
             setConversations(prev => prev.map(c => {
                 if (c.id !== selectedConvId) return c;
-                const nextId = (c.messages.length ? c.messages[c.messages.length - 1].id + 1 : 1) + 1;
-                const reply = { id: nextId, authorId: c.interlocutor.id, text: 'Merci, reçu.', time: Date.now() };
-                return { ...c, messages: [...c.messages, reply], lastMessage: reply.text };
+                // replace temp message if server returned one, otherwise keep temp but remove sending flag
+                const msgs = c.messages.map(m => (m.id === tempId ? serverMsg : m));
+                return { ...c, messages: msgs, lastMessage: serverMsg.text || text };
             }));
-        }, 800);
+        } catch (err) {
+            console.error('Failed to send message', err);
+            // remove temp message and surface error
+            setConversations(prev => prev.map(c => {
+                if (c.id !== selectedConvId) return c;
+                const msgs = c.messages.filter(m => m.id !== tempId);
+                return { ...c, messages: msgs };
+            }));
+            const em = (err && (err.data?.message || err.message || (typeof err === 'string' ? err : JSON.stringify(err)))) || 'Échec de l’envoi du message';
+            setMsg(em);
+        }
     }
 
     if (!user) return <div className="startup-page" />;
@@ -473,12 +630,13 @@ export default function StartupPage() {
                                         <>
                                             <div style={{ padding: 12, borderBottom: '1px solid rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: 12 }}>
                                                 <div className="conv-avatar" aria-hidden style={{ width: 48, height: 48 }}>{(selectedConv.interlocutor.name || 'U')[0].toUpperCase()}</div>
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: 700 }}>{selectedConv.interlocutor.name}</div>
-                                                    <div style={{ fontSize: 12, opacity: .7 }}>{selectedConv.interlocutor.role}</div>
-                                                </div>
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={{ fontWeight: 700 }}>{selectedConv.interlocutor.name}</div>
+                                                            <div style={{ fontSize: 12, opacity: .7 }}>{selectedConv.interlocutor.role}</div>
+                                                            {msg && <div style={{ color: '#b91c1c', fontSize: 13, marginTop: 6 }}>{msg}</div>}
+                                                        </div>
                                             </div>
-                                            <div className="messages-list" id="messages-list">
+                                            <div className="messages-list" id="messages-list" ref={messagesListRef}>
                                                 {(selectedConv.messages || []).map(m => (
                                                     <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: m.authorId === (user?.id || 0) ? 'flex-end' : 'flex-start' }}>
                                                         <div className={"msg " + (m.authorId === (user?.id || 0) ? 'me' : 'them')}>
@@ -490,7 +648,7 @@ export default function StartupPage() {
                                             </div>
                                             <form className="msg-input" onSubmit={sendMessage}>
                                                 <textarea value={messageText} onChange={e => setMessageText(e.target.value)} placeholder="Écrire un message..." />
-                                                <button type="submit" className="btn primary">Envoyer</button>
+                                                <button type="submit" className="btn primary">Send</button>
                                             </form>
                                         </>
                                     )}
