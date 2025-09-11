@@ -1,11 +1,9 @@
-/* ===== Projects Page (catalog + expand-in-place) ===== */
-
-/* Palette / variables (modifie si besoin) */
+/* Palette / variables */
 $brand-from: #F18585 !default;
 $brand-to:   #C174F2 !default;
 
 $ink:  #0b1020 !default;
-$bg:   #0f1426 !default;
+$bg:   #ffffff !default;
 
 $card:  #10192e !default;
 $card2: #0e1729 !default;
@@ -21,10 +19,10 @@ $radius-lg: 20px;
 $radius-md: 12px;
 $radius-sm: 10px;
 
-/* Espace sous le header sticky (adapte si ton header évolue) */
+/* Espace sous le header */
 $filters-sticky-top: 84px;
 
-/* ========= Container ========= */
+/*  Container */
 .projects-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -32,7 +30,7 @@ $filters-sticky-top: 84px;
   color: #fff; /* page plutôt sombre */
 }
 
-/* ========= Filters ========= */
+/* Filters */
 .projects-page .filters {
   position: sticky;
   top: $filters-sticky-top;
@@ -95,14 +93,14 @@ $filters-sticky-top: 84px;
   }
 }
 
-/* ========= Grid ========= */
+/* Grid  */
 .projects-page .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
 }
 
-/* ========= Cards ========= */
+/* Cards */
 .projects-page .card {
   background: linear-gradient(180deg, $card, $card2);
   border: 1px solid rgba(255,255,255,.06);
@@ -111,7 +109,7 @@ $filters-sticky-top: 84px;
   box-shadow: $shadow-1;
   color: #fff;
 
-  &.expanded { grid-column: 1 / -1; } /* la carte ouverte prend toute la largeur */
+  &.expanded { grid-column: 1 / -1; }
 }
 
 .projects-page .card-header {
@@ -166,7 +164,7 @@ $filters-sticky-top: 84px;
   &:focus  { outline: none; box-shadow: $focus-ring; }
 }
 
-/* ========= Details (expand area) ========= */
+/* Details */
 .projects-page .card-details { overflow: hidden; }
 
 .projects-page .details-grid {
@@ -239,7 +237,7 @@ $filters-sticky-top: 84px;
   border-radius: 50%;
 }
 
-/* ========= Motion-friendly / A11y ========= */
+/* Motion-friendly / A11y */
 @media (prefers-reduced-motion: reduce) {
   .projects-page * {
     transition: none !important;
@@ -247,7 +245,7 @@ $filters-sticky-top: 84px;
   }
 }
 
-/* ===== Aperçu enrichi (état réduit) ===== */
+/* Aperçu enrichi */
 .projects-page .card-preview {
   padding: 10px 4px 4px;
 }
@@ -296,5 +294,95 @@ $filters-sticky-top: 84px;
   }
 }
 
-/* détail : style d’un texte atténué */
-.projects-page .muted { color: rgba(255,255,255,.7); }
+/* Polished dark cards */
+$card-top:    #131C2F;
+$card-bottom: #0F1728;
+
+.projects-page .card{
+  background:
+    linear-gradient(180deg, $card-top, $card-bottom),
+    radial-gradient(140% 110% at -10% -10%, rgba($brand-from,.10), transparent 60%),
+    radial-gradient(120% 100% at 110% -10%, rgba($brand-to,.12),   transparent 55%);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow:
+    0 10px 28px rgba(6,12,25,.45),
+    inset 0 1px 0 rgba(255,255,255,.05);
+  color: #fff;
+  transition: transform .15s ease, box-shadow .2s ease, background .25s ease, border-color .2s ease;
+}
+
+.projects-page .card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.14);
+  box-shadow:
+    0 14px 34px rgba(6,12,25,.55),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.projects-page .card-header{ align-items:center; gap:14px; }
+.projects-page .title{
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 0;
+  position: relative;
+}
+.projects-page .title::after{
+  content:"";
+  display:block;
+  width: 40px; height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, $brand-from, $brand-to);
+  opacity:.85;
+}
+
+.projects-page .kicker{ color: rgba(255,255,255,.72); }
+.projects-page .logo{
+  width:48px; height:48px; border-radius:12px; object-fit:cover;
+  background:
+    linear-gradient(180deg, $card-bottom, $card-bottom) padding-box,
+    linear-gradient(135deg, $brand-from, $brand-to) border-box;
+  border: 2px solid transparent;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+
+.projects-page .preview-row.badges .badge,
+.projects-page .chip{
+  background: rgba(255,255,255,.10);
+  color: #EAF1FF;
+  border: 1px solid rgba(255,255,255,.18);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.70), 0 1px 0 rgba(0,0,0,.03);
+}
+.projects-page .preview-row.badges .badge.alt{ background: rgba(255,255,255,.14); }
+.projects-page .dot{ width:5px; height:5px; border-radius:50%; background: rgba(255,255,255,.6); }
+.projects-page .preview-list .label{ color: rgba(255,255,255,.78); }
+.projects-page .preview-list .value,
+.projects-page .preview-list .link{ color: #fff; }
+.projects-page .card-details{
+  margin-top: 12px;
+  padding: 18px 18px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 8px 24px rgba(6,12,25,.35);
+}
+
+.projects-page .more{
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+.projects-page .more:hover{ filter: brightness(1.06); transform: translateY(-1px); }
+
+.projects-page .col h4{
+  color: rgba(255,255,255,.88);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
