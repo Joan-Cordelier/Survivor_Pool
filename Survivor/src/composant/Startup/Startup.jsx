@@ -16,6 +16,16 @@ export default function StartupPage() {
     const [editing, setEditing] = useState(false);
     const [active, setActive] = useState('overview');
 
+    // Messaging state
+    const [conversations, setConversations] = useState([]);
+    const [selectedConvId, setSelectedConvId] = useState(null);
+    const [messageText, setMessageText] = useState('');
+    const [filterRole, setFilterRole] = useState('all');
+    const [contacts, setContacts] = useState([]);
+    const [contactQuery, setContactQuery] = useState('');
+    const [loadingContacts, setLoadingContacts] = useState(false);
+    const [creatingConvId, setCreatingConvId] = useState(null);
+
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [sector, setSector] = useState('');
@@ -98,13 +108,44 @@ export default function StartupPage() {
                     setDescription(s.description || '');
                 }
             } catch (e) {
-                setError(e?.message || 'Erreur de chargement');
+                setError(e?.message || 'Erreur de Loading');
             } finally {
                 setLoading(false);
             }
         };
         load();
     }, [user]);
+
+    // Initialize mock conversations when startup loads
+    useEffect(() => {
+        if (!startup) return;
+        const convs = [];
+        // create a conversation for each founder
+        (startup.founders || []).forEach(f => {
+            convs.push({
+                id: `founder-${f.id}`,
+                interlocutor: { id: f.id, name: f.name || `Founder ${f.id}`, role: f.role || 'Founder' },
+                lastMessage: 'Bonjour',
+                unread: 0,
+                messages: [
+                    { id: 1, authorId: f.id, text: `Salut, je suis ${f.name || 'le fondateur'}.`, time: Date.now() - 1000 * 60 * 60 },
+                    { id: 2, authorId: user?.id || 0, text: 'Bonjour !', time: Date.now() - 1000 * 60 * 30 }
+                ]
+            });
+        });
+        // add a sample investor conversation
+        convs.push({
+            id: 'investor-1',
+            interlocutor: { id: 999, name: 'InvestCorp', role: 'Investor' },
+            lastMessage: 'Intéressant',
+            unread: 1,
+            messages: [
+                { id: 1, authorId: 999, text: 'Bonjour, intéressé par votre projet.', time: Date.now() - 1000 * 60 * 60 * 24 },
+            ]
+        });
+        setConversations(convs);
+        if (convs.length) setSelectedConvId(convs[0].id);
+    }, [startup, user]);
 
     async function onSave(e) {
         e?.preventDefault?.();
@@ -165,8 +206,100 @@ export default function StartupPage() {
         return s ? s[0].toUpperCase() : 'S';
     }, [startup]);
 
+    const selectedConv = useMemo(() => conversations.find(c => c.id === selectedConvId) || null, [conversations, selectedConvId]);
+    const filteredConversations = useMemo(() => {
+        if (!filterRole || filterRole === 'all') return conversations;
+        return conversations.filter(c => (c.interlocutor?.role || '').toLowerCase() === filterRole.toLowerCase());
+    }, [conversations, filterRole]);
+
+    // load all users when contact filter is selected (only once)
+    useEffect(() => {
+        let mounted = true;
+        const load = async () => {
+            if (filterRole !== 'contact') return;
+            if (contacts && contacts.length) return; // already loaded
+            setLoadingContacts(true);
+            try {
+                const res = await UserApi.getAllUsers?.();
+                const arr = Array.isArray(res) ? res : (res?.data || res?.users || []);
+                if (!mounted) return;
+                setContacts(arr.map(u => ({ id: u.id, name: u.name || `${u.firstname || ''} ${u.lastname || ''}`.trim() || `User ${u.id}`, role: u.role || 'User', raw: u })));
+            } catch (e) {
+                if (!mounted) return;
+                setContacts([]);
+            } finally {
+                if (mounted) setLoadingContacts(false);
+            }
+        };
+        load();
+        return () => { mounted = false; };
+    }, [filterRole]);
+
+    // start or open a conversation with a given user (from contacts)
+    function startConversationWith(u) {
+        try {
+            if (!u || (u.id === undefined || u.id === null)) return;
+            const targetId = String(u.id);
+            // check by interlocutor id or by conv id
+            const existing = conversations.find(c => String(c.interlocutor?.id) === targetId || String(c.id) === `user-${targetId}`);
+            if (existing) {
+                setSelectedConvId(existing.id);
+                setFilterRole('all');
+                return;
+            }
+            // avoid race: if conv id already being created, select it
+            const candidateId = `user-${targetId}`;
+            if (conversations.some(c => String(c.id) === candidateId)) {
+                setSelectedConvId(candidateId);
+                setFilterRole('all');
+                return;
+            }
+            const newConv = {
+                id: candidateId,
+                interlocutor: { id: u.id, name: u.name || `User ${u.id}`, role: u.role || 'User' },
+                lastMessage: '',
+                unread: 0,
+                messages: []
+            };
+            setConversations(prev => [newConv, ...prev]);
+            setSelectedConvId(newConv.id);
+            setFilterRole('all');
+        } catch (err) {
+            console.error('startConversationWith error', err, u);
+        }
+    }
+
+    function selectConversation(id) {
+        setSelectedConvId(id);
+        setMessageText('');
+        // mark as read
+        setConversations(prev => prev.map(c => c.id === id ? { ...c, unread: 0 } : c));
+    }
+
+    function sendMessage(e) {
+        e?.preventDefault?.();
+        if (!selectedConvId || !messageText.trim()) return;
+        const text = messageText.trim();
+        setConversations(prev => prev.map(c => {
+            if (c.id !== selectedConvId) return c;
+            const nextId = (c.messages.length ? c.messages[c.messages.length - 1].id + 1 : 1);
+            const msg = { id: nextId, authorId: user?.id || 0, text, time: Date.now() };
+            return { ...c, messages: [...c.messages, msg], lastMessage: text };
+        }));
+        setMessageText('');
+        // simple auto-reply for demo
+        setTimeout(() => {
+            setConversations(prev => prev.map(c => {
+                if (c.id !== selectedConvId) return c;
+                const nextId = (c.messages.length ? c.messages[c.messages.length - 1].id + 1 : 1) + 1;
+                const reply = { id: nextId, authorId: c.interlocutor.id, text: 'Merci, reçu.', time: Date.now() };
+                return { ...c, messages: [...c.messages, reply], lastMessage: reply.text };
+            }));
+        }, 800);
+    }
+
     if (!user) return <div className="startup-page" />;
-    if (loading) return <div className="startup-page"><div className="card">Chargement…</div></div>;
+    if (loading) return <div className="startup-page"><div className="card">Loading…</div></div>;
 
     return (
         <div className="startup-layout">
@@ -269,9 +402,99 @@ export default function StartupPage() {
                     )}
                     {active === 'messagerie' && (
                         <div className="startup-page">
-                            <div className="card" style={{ padding: 18 }}>
-                                <h3 style={{ marginTop: 0 }}>Messagerie</h3>
-                                <div style={{ opacity: .8 }}>À venir…</div>
+                            <div className="messaging-layout">
+                                <div className="conv-list card">
+                                    <div className="conv-filters" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            {['all', 'Founder', 'Investor', 'Admin'].map(r => (
+                                                <button key={r} type="button" className={"conv-filter-btn" + (filterRole.toLowerCase() === r.toString().toLowerCase() ? ' active' : '')} onClick={() => setFilterRole(r)}>{r === 'all' ? 'Tous' : r}</button>
+                                            ))}
+                                        </div>
+                                        <div>
+                                            <button type="button" className={"conv-filter-btn" + (filterRole.toLowerCase() === 'contact' ? ' active' : '')} onClick={() => setFilterRole('contact')}>Make Contacts</button>
+                                        </div>
+                                    </div>
+
+                                    <div className="conv-scroll">
+                                    {/* Contact search UI */}
+                                    {filterRole === 'contact' && (
+                                        <div>
+                                            <div style={{ marginBottom: 8 }}>
+                                                <input className="contact-search" placeholder="Rechercher un contact..." value={contactQuery} onChange={e => setContactQuery(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)' }} />
+                                            </div>
+                                            <div style={{ maxHeight: 420, overflow: 'auto' }}>
+                                                {loadingContacts ? <div style={{ padding: 12 }}>Loading...</div> : (
+                                                    contacts
+                                                        .filter(u => !contactQuery || `${u.name}`.toLowerCase().includes(contactQuery.toLowerCase()))
+                                                        .map(u => (
+                                                            <div key={u.id} className={"conv-item contact-item" + (selectedConvId === `user-${u.id}` ? ' active' : '')}>
+                                                                <div className="conv-avatar" aria-hidden>{(u.name || 'U')[0].toUpperCase()}</div>
+                                                                <div className="conv-meta">
+                                                                    <div className="conv-name">{u.name}</div>
+                                                                    <div className="conv-role">{u.role}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <button type="button" className="btn primary" onClick={async () => {
+                                                                        setCreatingConvId(u.id);
+                                                                        try { startConversationWith(u); } finally { setCreatingConvId(null); }
+                                                                    }} disabled={creatingConvId === u.id}>{creatingConvId === u.id ? '…' : 'Message'}</button>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Conversation list (non-contact) */}
+                                    {filterRole !== 'contact' && (
+                                        (filteredConversations.length === 0) ? (
+                                            <div style={{ padding: 12 }}>Aucune conversation</div>
+                                        ) : (
+                                            filteredConversations.map(c => (
+                                                <div key={c.id} className={"conv-item" + (c.id === selectedConvId ? ' active' : '')} onClick={() => selectConversation(c.id)}>
+                                                    <div className="conv-avatar" aria-hidden>{(c.interlocutor.name || 'U')[0].toUpperCase()}</div>
+                                                    <div className="conv-meta">
+                                                        <div className="conv-name">{c.interlocutor.name}</div>
+                                                        <div className="conv-role">{c.interlocutor.role}</div>
+                                                        <div className="conv-last" style={{ fontSize: 12, opacity: .65 }}>{c.lastMessage}</div>
+                                                    </div>
+                                                    {c.unread ? <div style={{ marginLeft: 'auto', background: '#ef4444', color: '#fff', padding: '4px 8px', borderRadius: 12, fontSize: 12 }}>{c.unread}</div> : null}
+                                                </div>
+                                            ))
+                                        )
+                                    )}
+                                    </div>
+                                </div>
+                                <div className="messages-panel card">
+                                    {!selectedConv ? (
+                                        <div style={{ padding: 18 }}>Sélectionnez une conversation</div>
+                                    ) : (
+                                        <>
+                                            <div style={{ padding: 12, borderBottom: '1px solid rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                <div className="conv-avatar" aria-hidden style={{ width: 48, height: 48 }}>{(selectedConv.interlocutor.name || 'U')[0].toUpperCase()}</div>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontWeight: 700 }}>{selectedConv.interlocutor.name}</div>
+                                                    <div style={{ fontSize: 12, opacity: .7 }}>{selectedConv.interlocutor.role}</div>
+                                                </div>
+                                            </div>
+                                            <div className="messages-list" id="messages-list">
+                                                {(selectedConv.messages || []).map(m => (
+                                                    <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: m.authorId === (user?.id || 0) ? 'flex-end' : 'flex-start' }}>
+                                                        <div className={"msg " + (m.authorId === (user?.id || 0) ? 'me' : 'them')}>
+                                                            {m.text}
+                                                        </div>
+                                                        <div className="msg-time">{new Date(m.time).toLocaleString()}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <form className="msg-input" onSubmit={sendMessage}>
+                                                <textarea value={messageText} onChange={e => setMessageText(e.target.value)} placeholder="Écrire un message..." />
+                                                <button type="submit" className="btn primary">Envoyer</button>
+                                            </form>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
