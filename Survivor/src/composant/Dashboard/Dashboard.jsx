@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Cell } from 'recharts';
+import { ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Cell, PieChart, Pie, Legend, LineChart, Line } from 'recharts';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.scss';
 
@@ -268,7 +268,7 @@ const exportDashboard = useCallback(async () => {
                 items = await UserApi.getAllUsers();
             setDataCache(dc => ({ ...dc, [key]: { items: Array.isArray(items) ? items : (items.data || []), error: null } }));
         } catch (e) {
-            setDataCache(dc => ({ ...dc, [key]: { items: [], error: e.message || 'Erreur de chargement' } }));
+            setDataCache(dc => ({ ...dc, [key]: { items: [], error: e.message || 'Load error' } }));
         } finally {
             setLoadingSection(false);
         }
@@ -794,10 +794,7 @@ const exportDashboard = useCallback(async () => {
             if (loadingOverview || !chartsReady) {
                 return (
                     <div className="overview-loading" style={{ display: 'grid', gap: 16 }}>
-                        <div className="card" style={{ height: 140, background: '#2a2a2a', borderRadius: 12 }} />
-                        <div className="card" style={{ height: 380, background: '#2a2a2a', borderRadius: 12 }} />
-                        <div className="card" style={{ height: 160, background: '#2a2a2a', borderRadius: 12 }} />
-                        <div className="card" style={{ height: 380, background: '#2a2a2a', borderRadius: 12 }} />
+                        <div className="card" style={{ height: 700, background: '#2a2a2a', borderRadius: 12 }} />
                         <div style={{ textAlign: 'center', opacity: .7 }}>{overviewBatchLoading ? 'Fetching data…' : 'Preparing charts…'}</div>
                     </div>
                 );
@@ -918,58 +915,192 @@ const exportDashboard = useCallback(async () => {
                 }
                 return null;
             };
+            // 6-month trend across entities
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            const last6 = [];
+            for (let i=5;i>=0;i--) {
+                const d = new Date(startToday.getFullYear(), startToday.getMonth()-i, 1);
+                last6.push({ key: monthKey(d), label: months[d.getMonth()], y: d.getFullYear() });
+            }
+            const countByMonth = (arr, dateField) => {
+                const map = new Map(last6.map(m => [m.key, 0]));
+                arr.forEach(it => {
+                    const d = parseDate(it[dateField]);
+                    if (!d) return;
+                    const key = monthKey(new Date(d.getFullYear(), d.getMonth(), 1));
+                    if (map.has(key)) map.set(key, (map.get(key) || 0) + 1);
+                });
+                return last6.map(m => map.get(m.key) || 0);
+            };
+            const mStartups = countByMonth(startups, 'created_at');
+            const mInvestors = countByMonth(investors, 'created_at');
+            const mPartners = countByMonth(partners, 'created_at');
+            const mEvents = countByMonth(events, 'dates');
+            const mNews = countByMonth(news, 'news_date');
+            const trend6Data = last6.map((m, idx) => ({ month: `${m.label} ${String(m.y).slice(2)}`, Startups: mStartups[idx], Investors: mInvestors[idx], Partners: mPartners[idx], Events: mEvents[idx], News: mNews[idx] }));
+
+            // Distributions
+            const dist = (arr, key) => {
+                const map = new Map();
+                arr.forEach(it => {
+                    const k = (it?.[key] || 'N/A').toString();
+                    map.set(k, (map.get(k) || 0) + 1);
+                });
+                const list = Array.from(map.entries()).map(([name, value]) => ({ name, value }));
+                list.sort((a,b) => b.value - a.value);
+                if (list.length > 8) {
+                    const top = list.slice(0,8);
+                    const rest = list.slice(8).reduce((s,x)=>s+x.value,0);
+                    if (rest>0) top.push({ name: 'Others', value: rest });
+                    return top;
+                }
+                return list;
+            };
+            const eventsByType = dist(events, 'event_type');
+            const startupsByMaturity = dist(startups, 'maturity');
+            const investorsByType = dist(investors, 'investor_type');
+            const partnersByType = dist(partners, 'partnership_type');
+            const piePalette = ['#6366f1','#22c55e','#f59e0b','#ef4444','#06b6d4','#8b5cf6','#84cc16','#f97316','#14b8a6'];
+            const updatedAt = new Date().toLocaleString();
             return (
                 <div className="overview-grid">
-                    <div className="card counts-card pair-fill">
-                        <h2>Counts</h2>
-                        <div className="counts-list">
-                            {totalsData.map(d => (
-                                <div key={d.name} className="count-pill">
-                                    <span className="lbl">{d.name}</span>
-                                    <span className="val">{d.value}</span>
+                    <div className="card kpi-unified">
+                        <div className="kpi-head">
+                            <div className="ttl">KPI Overview</div>
+                            <div className="sub">Updated: {updatedAt}</div>
+                        </div>
+
+                        <div className="kpi-charts-grid">
+                            <div className="kpi-chart">
+                                <h3>Totals by type</h3>
+                                <div style={{ width: '100%', height: 360 }}>
+                                    <ResponsiveContainer>
+                                        <BarChart data={totalsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
+                                            <XAxis dataKey="name" stroke="#000" tick={{ fill: '#000', fontSize: 12 }} />
+                                            <YAxis stroke="#000" allowDecimals={false} tick={{ fill: '#000', fontSize: 12 }} />
+                                            <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #ccc', color: '#000' }} />
+                                            <Bar dataKey="value" radius={[6, 6, 0, 0]} isAnimationActive={false}>
+                                                {totalsData.map((d, i) => <Cell key={d.name} fill={barPalette[i % barPalette.length]} />)}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="card chart-card large-chart">
-                        <h3>Total Startups / Investors / Partners / Upcoming Events / News (last 7 days)</h3>
-                        <div style={{ width: '100%', height: 340 }}>
-                            <ResponsiveContainer>
-                                <BarChart data={totalsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
-                                    <XAxis dataKey="name" stroke="#000" tick={{ fill: '#000', fontSize: 12 }} />
-                                    <YAxis stroke="#000" allowDecimals={false} tick={{ fill: '#000', fontSize: 12 }} />
-                                    <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #ccc', color: '#000' }} />
-                                    <Bar dataKey="value" radius={[6, 6, 0, 0]} isAnimationActive={false}>
-                                        {totalsData.map((d, i) => <Cell key={d.name} fill={barPalette[i % barPalette.length]} />)}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                    <div className="card profile-card pair-fill">
-                        <h2>Profile</h2>
-                        <ul className="mini-info kv-list">
-                            <li><span className="k">ID</span><span className="v" title={safeUser.id}>{safeUser.id}</span></li>
-                            <li><span className="k">Name</span><span className="v" title={safeUser.name}>{safeUser.name}</span></li>
-                            <li><span className="k">Email</span><span className="v" title={safeUser.email}>{safeUser.email}</span></li>
-                            <li><span className="k">Role</span><span className="v">{safeUser.role}</span></li>
-                        </ul>
-                    </div>
-                    <div className="card chart-card large-chart">
-                        <h3>Growth % (Δ vs previous 7-day period)</h3>
-                        <div style={{ width: '100%', height: 340 }}>
-                            <ResponsiveContainer>
-                                <BarChart data={growthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
-                                    <XAxis dataKey="name" stroke="#000" tick={{ fill: '#000', fontSize: 12 }} />
-                                    <YAxis stroke="#000" tickFormatter={(v) => v + '%'} tick={{ fill: '#000', fontSize: 12 }} />
-                                    <Tooltip content={<GrowthTooltip />} />
-                                    <Bar dataKey="value" radius={[6, 6, 0, 0]} isAnimationActive={false}>
-                                        {growthData.map(g => <Cell key={g.name} fill={growthColor(g.value)} />)}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
+                            </div>
+
+                            <div className="kpi-chart">
+                                <h3>7-day growth vs previous period</h3>
+                                <div style={{ width: '100%', height: 360 }}>
+                                    <ResponsiveContainer>
+                                        <BarChart data={growthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#d0d0d0" />
+                                            <XAxis dataKey="name" stroke="#000" tick={{ fill: '#000', fontSize: 12 }} />
+                                            <YAxis stroke="#000" tickFormatter={(v) => v + '%'} tick={{ fill: '#000', fontSize: 12 }} />
+                                            <Tooltip content={<GrowthTooltip />} />
+                                            <Bar dataKey="value" radius={[6, 6, 0, 0]} isAnimationActive={false}>
+                                                {growthData.map(g => <Cell key={g.name} fill={growthColor(g.value)} />)}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            <div className="kpi-chart" style={{ gridColumn: '1 / -1' }}>
+                                <h3>Trend over the last 6 months</h3>
+                                <div style={{ width: '100%', height: 380 }}>
+                                    <ResponsiveContainer>
+                                        <LineChart data={trend6Data} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="month" />
+                                            <YAxis allowDecimals={false} />
+                                            <Tooltip />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="Startups" stroke="#6d5dfc" strokeWidth={2} dot={false} />
+                                            <Line type="monotone" dataKey="Investors" stroke="#22c55e" strokeWidth={2} dot={false} />
+                                            <Line type="monotone" dataKey="Partners" stroke="#06b6d4" strokeWidth={2} dot={false} />
+                                            <Line type="monotone" dataKey="Events" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                                            <Line type="monotone" dataKey="News" stroke="#ef4444" strokeWidth={2} dot={false} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {!!eventsByType.length && (
+                                <div className="kpi-chart">
+                                    <h3>Events by type</h3>
+                                    <div style={{ width: '100%', height: 260 }}>
+                                        <ResponsiveContainer>
+                                            <PieChart>
+                                                <Pie data={eventsByType} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={2}>
+                                                    {eventsByType.map((e,i) => (
+                                                        <Cell key={e.name} fill={piePalette[i % piePalette.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                                <Legend />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!!startupsByMaturity.length && (
+                                <div className="kpi-chart">
+                                    <h3>Startups by maturity</h3>
+                                    <div style={{ width: '100%', height: 260 }}>
+                                        <ResponsiveContainer>
+                                            <PieChart>
+                                                <Pie data={startupsByMaturity} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={2}>
+                                                    {startupsByMaturity.map((e,i) => (
+                                                        <Cell key={e.name} fill={piePalette[i % piePalette.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                                <Legend />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!!investorsByType.length && (
+                                <div className="kpi-chart">
+                                    <h3>Investors by type</h3>
+                                    <div style={{ width: '100%', height: 260 }}>
+                                        <ResponsiveContainer>
+                                            <PieChart>
+                                                <Pie data={investorsByType} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={2}>
+                                                    {investorsByType.map((e,i) => (
+                                                        <Cell key={e.name} fill={piePalette[i % piePalette.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                                <Legend />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!!partnersByType.length && (
+                                <div className="kpi-chart">
+                                    <h3>Partners by type</h3>
+                                    <div style={{ width: '100%', height: 260 }}>
+                                        <ResponsiveContainer>
+                                            <PieChart>
+                                                <Pie data={partnersByType} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={2}>
+                                                    {partnersByType.map((e,i) => (
+                                                        <Cell key={e.name} fill={piePalette[i % piePalette.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                                <Legend />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

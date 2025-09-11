@@ -85,7 +85,7 @@ export default function StartupPage() {
                     } catch { }
                 }
                 if (!founderId) {
-                    setError('Aucun founder_id présent sur cet utilisateur.');
+                    setError('No founder_id present on this user.');
                     setStartup(null);
                     return;
                 }
@@ -101,7 +101,7 @@ export default function StartupPage() {
                     } catch { }
                 }
                 if (!s || !s.id) {
-                    setError('Aucune startup liée à ce fondateur.');
+                    setError('No startup linked to this founder.');
                     setStartup(null);
                 } else {
                     setStartup(s);
@@ -125,7 +125,7 @@ export default function StartupPage() {
                     } catch {}
                 }
             } catch (e) {
-                setError(e?.message || 'Erreur de Loading');
+                setError(e?.message || 'Loading error');
             } finally {
                 setLoading(false);
             }
@@ -146,7 +146,7 @@ export default function StartupPage() {
         if (websiteUrl !== (startup.website_url || '')) updateFields.website_url = websiteUrl.trim();
         if (description !== (startup.description || '')) updateFields.description = description;
         if (!Object.keys(updateFields).length) {
-            setMsg('Aucun changement.');
+            setMsg('No changes.');
             return;
         }
         try {
@@ -163,9 +163,9 @@ export default function StartupPage() {
             setProjectStatus(merged.project_status || '');
             setWebsiteUrl(merged.website_url || '');
             setDescription(merged.description || '');
-            setMsg('Enregistré.');
+            setMsg('Saved.');
         } catch (e) {
-            setMsg(e?.message || 'Échec de l’enregistrement');
+            setMsg(e?.message || 'Save failed');
         } finally {
             setSaving(false);
         }
@@ -242,7 +242,7 @@ export default function StartupPage() {
     return (
         <div className="startup-layout">
             <aside className="startup-sidebar">
-                <div className="brand">Espace Startup</div>
+                <div className="brand">Startup Space</div>
                 <nav className="startup-nav">
                     <ul>
                         <li>
@@ -254,7 +254,7 @@ export default function StartupPage() {
                         <li>
                             <button className={active === 'informations' ? 'active' : ''} onClick={() => setActive('informations')}>
                                 <span className="ico" aria-hidden>ℹ️</span>
-                                <span className="lbl">Informations</span>
+                                <span className="lbl">Information</span>
                             </button>
                         </li>
                     </ul>
@@ -262,7 +262,7 @@ export default function StartupPage() {
             </aside>
             <main className="startup-main">
                 <header className="startup-panel-header">
-                    <h1>{active === 'overview' ? 'Overview' : 'Informations'}</h1>
+                    <h1>{active === 'overview' ? 'Overview' : 'Information'}</h1>
                 </header>
                 <div className="startup-panel-content">
                     {active === 'overview' && (
@@ -276,18 +276,18 @@ export default function StartupPage() {
                                 </div>
                                 <div className="kpi-summary">
                                     <div className="kpi-total">
-                                        <div className="lbl">Opportunités totales</div>
+                                        <div className="lbl">Total opportunities</div>
                                         <div className="val">{oppKpi?.total ?? '—'}</div>
                                     </div>
                                     <div className="kpi-rate">
-                                        <div className="lbl">Taux de closing</div>
+                                        <div className="lbl">Win rate</div>
                                         <div className="val">{Number.isFinite(oppKpi?.winRate) ? `${oppKpi.winRate}%` : '—'}</div>
                                     </div>
                                 </div>
 
                                 <div className="charts-grid">
                                     <div className="chart-card">
-                                        <div className="chart-title">Répartition des statuts</div>
+                                        <div className="chart-title">Status distribution</div>
                                         <div className="chart-body">
                                             {statusData.length === 0 ? (
                                                 <div className="empty">—</div>
@@ -306,7 +306,7 @@ export default function StartupPage() {
                                                                 <Cell key={`cell-${index}`} fill={entry.fill} />
                                                             ))}
                                                         </Pie>
-                                                        <Tooltip formatter={(val) => [val, 'Nombre']} />
+                                                        <Tooltip formatter={(val) => [val, 'Count']} />
                                                         <Legend />
                                                     </PieChart>
                                                 </ResponsiveContainer>
@@ -315,7 +315,7 @@ export default function StartupPage() {
                                     </div>
 
                                     <div className="chart-card">
-                                        <div className="chart-title">Volumes par statut</div>
+                                        <div className="chart-title">Volumes by status</div>
                                         <div className="chart-body">
                                             {statusData.length === 0 ? (
                                                 <div className="empty">—</div>
@@ -338,7 +338,7 @@ export default function StartupPage() {
                                     </div>
 
                                     <div className="chart-card wide">
-                                        <div className="chart-title">Tendance (6 derniers mois)</div>
+                                        <div className="chart-title">Trend (last 6 months)</div>
                                         <div className="chart-body">
                                             {trendData.length === 0 ? (
                                                 <div className="empty">—</div>
@@ -350,10 +350,10 @@ export default function StartupPage() {
                                                         <YAxis allowDecimals={false} />
                                                         <Tooltip />
                                                         <Legend />
-                                                        <Line type="monotone" dataKey="open" name="Ouvertes" stroke={statusColors.open} strokeWidth={2} dot={false} />
-                                                        <Line type="monotone" dataKey="inProgress" name="En cours" stroke={statusColors.inProgress} strokeWidth={2} dot={false} />
-                                                        <Line type="monotone" dataKey="won" name="Gagnées" stroke={statusColors.won} strokeWidth={2} dot={false} />
-                                                        <Line type="monotone" dataKey="lost" name="Perdues" stroke={statusColors.lost} strokeWidth={2} dot={false} />
+                                                        <Line type="monotone" dataKey="open" name="Open" stroke={statusColors.open} strokeWidth={2} dot={false} />
+                                                        <Line type="monotone" dataKey="inProgress" name="In progress" stroke={statusColors.inProgress} strokeWidth={2} dot={false} />
+                                                        <Line type="monotone" dataKey="won" name="Won" stroke={statusColors.won} strokeWidth={2} dot={false} />
+                                                        <Line type="monotone" dataKey="lost" name="Lost" stroke={statusColors.lost} strokeWidth={2} dot={false} />
                                                     </LineChart>
                                                 </ResponsiveContainer>
                                             )}
@@ -369,60 +369,60 @@ export default function StartupPage() {
                         <div className="startup-page">
                             {!startup ? (
                                 <div className="card" style={{ padding: 16 }}>
-                                    {error || 'Aucune donnée'}
+                                    {error || 'No data'}
                                 </div>
                             ) : (
                                 <div className="startup-card card">
                                     <div className="startup-header">
                                         <div className="startup-avatar" aria-hidden>{initials}</div>
                                         <div>
-                                            <div className="startup-name">{(name && name.trim()) || startup.name || 'Sans nom'}</div>
+                                            <div className="startup-name">{(name && name.trim()) || startup.name || 'Untitled'}</div>
                                             <div className="startup-email">{email || startup.email || ''}</div>
                                         </div>
                                     </div>
                                     <div className="top-actions">
                                         {!editing ? (
-                                            <button type="button" className="btn primary" onClick={() => setEditing(true)}>Modifier</button>
+                                            <button type="button" className="btn primary" onClick={() => setEditing(true)}>Edit</button>
                                         ) : (
-                                            <button type="button" className="btn ghost danger" onClick={exitEdit}>Fermer</button>
+                                            <button type="button" className="btn ghost danger" onClick={exitEdit}>Close</button>
                                         )}
                                     </div>
                                     <form className="startup-body" onSubmit={onSave}>
                                         <div className="grid-2 field-grid">
                                             <div className="field">
-                                                <label>Nom</label>
-                                                <input value={name} onChange={e => setName(e.target.value)} placeholder="Nom de la startup" disabled={!editing} />
+                                                <label>Name</label>
+                                                <input value={name} onChange={e => setName(e.target.value)} placeholder="Startup name" disabled={!editing} />
                                             </div>
                                             <div className="field">
-                                                <label>Email <span style={{ opacity: .7, fontWeight: 400 }}>(non modifiable)</span></label>
+                                                <label>Email <span style={{ opacity: .7, fontWeight: 400 }}>(not editable)</span></label>
                                                 <input value={email} onChange={() => {}} placeholder="email@startup.com" disabled />
                                             </div>
                                             <div className="field">
-                                                <label>Secteur</label>
-                                                <input value={sector} onChange={e => setSector(e.target.value)} placeholder="Secteur" disabled={!editing} />
+                                                <label>Sector</label>
+                                                <input value={sector} onChange={e => setSector(e.target.value)} placeholder="Sector" disabled={!editing} />
                                             </div>
                                             <div className="field">
-                                                <label>Maturité</label>
-                                                <input value={maturity} onChange={e => setMaturity(e.target.value)} placeholder="Idée / MVP / Croissance…" disabled={!editing} />
+                                                <label>Maturity</label>
+                                                <input value={maturity} onChange={e => setMaturity(e.target.value)} placeholder="Idea / MVP / Growth…" disabled={!editing} />
                                             </div>
                                             <div className="field">
                                                 <label>Status</label>
-                                                <input value={projectStatus} onChange={e => setProjectStatus(e.target.value)} placeholder="Statut du projet" disabled={!editing} />
+                                                <input value={projectStatus} onChange={e => setProjectStatus(e.target.value)} placeholder="Project status" disabled={!editing} />
                                             </div>
                                             <div className="field">
-                                                <label>Site Web</label>
+                                                <label>Website</label>
                                                 <input value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} placeholder="https://…" disabled={!editing} />
                                             </div>
                                         </div>
                                         <div className="field" style={{ marginTop: 16 }}>
                                             <label>Description</label>
-                                            <textarea rows={5} value={description} onChange={e => setDescription(e.target.value)} placeholder="Décrivez votre projet" disabled={!editing} />
+                                            <textarea rows={5} value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your project" disabled={!editing} />
                                         </div>
                                         <div className="founders-section" style={{ marginTop: 16 }}>
                                             <div className="lbl">Founders</div>
                                             <div className="founders-list">
                                                 {(Array.isArray(startup.founders) ? startup.founders : []).length === 0 && (
-                                                    <div className="empty" style={{ padding: 12 }}>Aucun fondateur</div>
+                                                    <div className="empty" style={{ padding: 12 }}>No founders</div>
                                                 )}
                                                 {(Array.isArray(startup.founders) ? startup.founders : []).map(f => {
                                                     const letter = (f?.name || 'F').trim().charAt(0).toUpperCase();
@@ -439,7 +439,7 @@ export default function StartupPage() {
                                                                 <button
                                                                     type="button"
                                                                     className="btn msg"
-                                                                    title={`Contacter ${f.name}`}
+                                                                    title={`Contact ${f.name}`}
                                                                     onClick={() => navigate('/Messaging', { state: { founderId: f.id, founderName: f.name, startupId: startup.id } })}
                                                                 >
                                                                 <span className="ico" aria-hidden>
@@ -455,8 +455,8 @@ export default function StartupPage() {
                                         {msg && <div style={{ opacity: .9, marginTop: 8 }}>{msg}</div>}
                                         {editing && (
                                             <div className="actions" style={{ marginTop: 12 }}>
-                                                <button type="button" className="btn ghost dark" onClick={onReset}>Réinitialiser</button>
-                                                <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Enregistrement…' : 'Enregistrer les modifications'}</button>
+                                                <button type="button" className="btn ghost dark" onClick={onReset}>Reset</button>
+                                                <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>
                                             </div>
                                         )}
                                     </form>
