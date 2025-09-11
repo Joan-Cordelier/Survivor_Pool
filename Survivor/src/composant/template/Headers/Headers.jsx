@@ -171,6 +171,9 @@ const Header = () => {
                         Dashboard
                       </NavLink>
                     )}
+                    <NavLink className="profile-item" role="menuitem" to="/Messaging" onClick={() => { setMenuOpen(false); closeMenu(); }}>
+                      Messaging
+                    </NavLink>
                     <button className="profile-item danger" role="menuitem" onClick={() => { setMenuOpen(false); handleLogoutUser(); }}>
                       Logout
                     </button>

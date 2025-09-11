@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import '../../composant/Startup/Startup.scss';
+import './Messaging.scss';
 import * as UserApi from '../../apis/BackendApi/User.api';
 import * as MessageApi from '../../apis/BackendApi/Message.api';
 

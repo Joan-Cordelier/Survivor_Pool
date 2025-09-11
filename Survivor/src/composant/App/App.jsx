@@ -10,6 +10,7 @@ import News from '../News/news.jsx';
 import Login from '../Login/Login.jsx'
 import Dashboard from '../Dashboard/Dashboard.jsx';
 import StartupPage from '../Startup/Startup.jsx';
+import Messaging from '../Messaging/Messaging.jsx';
 
 // Si tu veux ajouter un Footer plus tard
 import Footer from '../template/Footer/Footer.jsx'; 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/News" element={<News />} />
         <Route path="/Login" element={<Login />} />
         <Route path="/Dashboard" element={<Dashboard />} />
+        <Route path="/Messaging" element={<Messaging />} />
   <Route path="/Startup" element={<StartupPage />} />
       </Routes>
       <Footer />  {/* Le Footer sera aussi affiché sur toutes les pages */}

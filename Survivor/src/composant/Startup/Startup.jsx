@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './Startup.scss';
 import * as StartupApi from '../../apis/BackendApi/Startup.api';
 import * as UserApi from '../../apis/BackendApi/User.api';
-import Messaging from '../Messaging/Messaging';
 
 export default function StartupPage() {
     const navigate = useNavigate();
@@ -272,11 +271,6 @@ export default function StartupPage() {
                                     </form>
                                 </div>
                             )}
-                        </div>
-                    )}
-                    {active === 'messagerie' && (
-                        <div className="startup-page">
-                            <Messaging />
                         </div>
                     )}
                 </div>
