@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client"
 export const createMessageController = async (req: Request, res: Response): Promise<void> => {
     const { sender_id, receiver_id, content } = req.body;
     
+    console.log("Creating message:", { sender_id, receiver_id, content });
     if (!sender_id || !receiver_id || !content) {
         res.status(400).json({ message: "Missing required fields", code: 400 });
         return;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Login.scss';
 import * as AuthApi from '../../apis/BackendApi/Auth.api';
 
@@ -8,6 +8,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,7 +22,14 @@ const Login = () => {
                     localStorage.setItem('user', JSON.stringify(data.user));
                 localStorage.removeItem('jwtToken');
                 setMessage('Authentification réussie !');
-                navigate('/Profile');
+
+                const search = new URLSearchParams(location?.search || '');
+                const fromQuery = search.get('from');
+                let to = location?.state?.from || fromQuery || '/';
+
+                if (to === '/Login')
+                    to = '/';
+                navigate(to, { replace: true });
                 setTimeout(() => {
                     window.location.reload();
                 }, 50);

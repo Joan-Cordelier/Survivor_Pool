@@ -1,8 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Startup.scss';
+import MsgIcon from '../../assets/envelope.svg';
 import * as StartupApi from '../../apis/BackendApi/Startup.api';
 import * as UserApi from '../../apis/BackendApi/User.api';
+import {
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip,
+    Legend,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    LineChart,
+    Line,
+} from 'recharts';
 
 export default function StartupPage() {
     const navigate = useNavigate();
@@ -14,10 +30,7 @@ export default function StartupPage() {
     const [saving, setSaving] = useState(false);
     const [msg, setMsg] = useState(null);
     const [editing, setEditing] = useState(false);
-    const [active, setActive] = useState('overview');
-
-
-
+    const [active, setActive] = useState('informations');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [sector, setSector] = useState('');
@@ -25,6 +38,7 @@ export default function StartupPage() {
     const [projectStatus, setProjectStatus] = useState('');
     const [websiteUrl, setWebsiteUrl] = useState('');
     const [description, setDescription] = useState('');
+    const [oppKpi, setOppKpi] = useState(null);
 
     useEffect(() => {
         try {
@@ -98,6 +112,17 @@ export default function StartupPage() {
                     setProjectStatus(s.project_status || '');
                     setWebsiteUrl(s.website_url || '');
                     setDescription(s.description || '');
+                    // Build placeholder KPIs (to be wired to real data later)
+                    try {
+                        const foundersCount = Array.isArray(s.founders) ? s.founders.length : 1;
+                        const total = Math.max(4, foundersCount * 4);
+                        const won = Math.max(1, Math.floor(total * 0.25));
+                        const lost = Math.max(0, Math.floor(total * 0.12));
+                        const inProgress = Math.max(1, Math.floor(total * 0.4));
+                        const open = Math.max(0, total - won - lost - inProgress);
+                        const winRate = total > 0 ? Math.round((won / (won + lost || 1)) * 100) : 0;
+                        setOppKpi({ total, open, inProgress, won, lost, winRate, lastUpdated: new Date().toISOString() });
+                    } catch {}
                 }
             } catch (e) {
                 setError(e?.message || 'Erreur de Loading');
@@ -115,7 +140,6 @@ export default function StartupPage() {
         if (!startup?.id) return;
         const updateFields = {};
         if (name !== (startup.name || '')) updateFields.name = name.trim();
-        if (email !== (startup.email || '')) updateFields.email = email.trim();
         if (sector !== (startup.sector || '')) updateFields.sector = sector;
         if (maturity !== (startup.maturity || '')) updateFields.maturity = maturity;
         if (projectStatus !== (startup.project_status || '')) updateFields.project_status = projectStatus;
@@ -169,10 +193,51 @@ export default function StartupPage() {
         return s ? s[0].toUpperCase() : 'S';
     }, [startup]);
 
-    // messaging is handled by the shared Messaging component
+    const statusColors = useMemo(() => ({
+        open: '#10b981',
+        inProgress: '#f59e0b',
+        won: '#8b5cf6',
+        lost: '#ef4444',
+    }), []);
 
-    if (!user) return <div className="startup-page" />;
-    if (loading) return <div className="startup-page"><div className="card">Loading…</div></div>;
+    const statusData = useMemo(() => {
+        if (!oppKpi) return [];
+        return [
+            { name: 'Open', key: 'open', value: oppKpi.open || 0, fill: statusColors.open },
+            { name: 'In Progress', key: 'inProgress', value: oppKpi.inProgress || 0, fill: statusColors.inProgress },
+            { name: 'Won', key: 'won', value: oppKpi.won || 0, fill: statusColors.won },
+            { name: 'Lost', key: 'lost', value: oppKpi.lost || 0, fill: statusColors.lost },
+        ];
+    }, [oppKpi, statusColors]);
+
+    const trendData = useMemo(() => {
+        const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+        const now = new Date();
+        const seed = (startup?.id || 7) + (oppKpi?.total || 13);
+        const rng = (i) => {
+            let x = (seed * 9301 + 49297 + i * 233280) % 233280;
+            return x / 233280;
+        };
+        const list = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const m = months[d.getMonth()];
+            const base = Math.max(1, Math.floor((oppKpi?.total || 6) / 3));
+            const open = Math.max(0, Math.round(base * (0.8 + rng(i) * 0.4)));
+            const inProgress = Math.max(0, Math.round(base * (0.9 + rng(i + 1) * 0.6)));
+            const won = Math.max(0, Math.round(base * (0.4 + rng(i + 2) * 0.6)));
+            const lost = Math.max(0, Math.round(base * (0.2 + rng(i + 3) * 0.4)));
+
+            list.push({ month: m, open, inProgress, won, lost });
+        }
+        return list;
+    }, [oppKpi, startup]);
+
+
+    if (!user)
+        return <div className="startup-page" />;
+    if (loading)
+        return <div className="startup-page"><div className="card">Loading…</div></div>;
 
     return (
         <div className="startup-layout">
@@ -187,9 +252,9 @@ export default function StartupPage() {
                             </button>
                         </li>
                         <li>
-                            <button className={active === 'messagerie' ? 'active' : ''} onClick={() => setActive('messagerie')}>
-                                <span className="ico" aria-hidden>💬</span>
-                                <span className="lbl">Messagerie</span>
+                            <button className={active === 'informations' ? 'active' : ''} onClick={() => setActive('informations')}>
+                                <span className="ico" aria-hidden>ℹ️</span>
+                                <span className="lbl">Informations</span>
                             </button>
                         </li>
                     </ul>
@@ -197,10 +262,110 @@ export default function StartupPage() {
             </aside>
             <main className="startup-main">
                 <header className="startup-panel-header">
-                    <h1>{active === 'overview' ? 'Overview' : 'Messagerie'}</h1>
+                    <h1>{active === 'overview' ? 'Overview' : 'Informations'}</h1>
                 </header>
                 <div className="startup-panel-content">
                     {active === 'overview' && (
+                        <div className="startup-page">
+                            <div className="kpi card">
+                                <div className="kpi-header">
+                                    <div className="kpi-title">Opportunity tracking</div>
+                                    {oppKpi?.lastUpdated && (
+                                        <div className="kpi-sub">Last update: {new Date(oppKpi.lastUpdated).toLocaleString()}</div>
+                                    )}
+                                </div>
+                                <div className="kpi-summary">
+                                    <div className="kpi-total">
+                                        <div className="lbl">Opportunités totales</div>
+                                        <div className="val">{oppKpi?.total ?? '—'}</div>
+                                    </div>
+                                    <div className="kpi-rate">
+                                        <div className="lbl">Taux de closing</div>
+                                        <div className="val">{Number.isFinite(oppKpi?.winRate) ? `${oppKpi.winRate}%` : '—'}</div>
+                                    </div>
+                                </div>
+
+                                <div className="charts-grid">
+                                    <div className="chart-card">
+                                        <div className="chart-title">Répartition des statuts</div>
+                                        <div className="chart-body">
+                                            {statusData.length === 0 ? (
+                                                <div className="empty">—</div>
+                                            ) : (
+                                                <ResponsiveContainer width="100%" height={220}>
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={statusData}
+                                                            dataKey="value"
+                                                            nameKey="name"
+                                                            innerRadius={60}
+                                                            outerRadius={85}
+                                                            paddingAngle={2}
+                                                        >
+                                                            {statusData.map((entry, index) => (
+                                                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                            ))}
+                                                        </Pie>
+                                                        <Tooltip formatter={(val) => [val, 'Nombre']} />
+                                                        <Legend />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="chart-card">
+                                        <div className="chart-title">Volumes par statut</div>
+                                        <div className="chart-body">
+                                            {statusData.length === 0 ? (
+                                                <div className="empty">—</div>
+                                            ) : (
+                                                <ResponsiveContainer width="100%" height={220}>
+                                                    <BarChart data={statusData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                                                        <CartesianGrid strokeDasharray="3 3" />
+                                                        <XAxis dataKey="name" />
+                                                        <YAxis allowDecimals={false} />
+                                                        <Tooltip />
+                                                        <Bar dataKey="value" radius={[6,6,0,0]}>
+                                                            {statusData.map((entry, index) => (
+                                                                <Cell key={`cell-b-${index}`} fill={entry.fill} />
+                                                            ))}
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="chart-card wide">
+                                        <div className="chart-title">Tendance (6 derniers mois)</div>
+                                        <div className="chart-body">
+                                            {trendData.length === 0 ? (
+                                                <div className="empty">—</div>
+                                            ) : (
+                                                <ResponsiveContainer width="100%" height={240}>
+                                                    <LineChart data={trendData} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
+                                                        <CartesianGrid strokeDasharray="3 3" />
+                                                        <XAxis dataKey="month" />
+                                                        <YAxis allowDecimals={false} />
+                                                        <Tooltip />
+                                                        <Legend />
+                                                        <Line type="monotone" dataKey="open" name="Ouvertes" stroke={statusColors.open} strokeWidth={2} dot={false} />
+                                                        <Line type="monotone" dataKey="inProgress" name="En cours" stroke={statusColors.inProgress} strokeWidth={2} dot={false} />
+                                                        <Line type="monotone" dataKey="won" name="Gagnées" stroke={statusColors.won} strokeWidth={2} dot={false} />
+                                                        <Line type="monotone" dataKey="lost" name="Perdues" stroke={statusColors.lost} strokeWidth={2} dot={false} />
+                                                    </LineChart>
+                                                </ResponsiveContainer>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="kpi-note">It's a placeholder not real connected data.</div>
+                            </div>
+                        </div>
+                    )}
+                    {active === 'informations' && (
                         <div className="startup-page">
                             {!startup ? (
                                 <div className="card" style={{ padding: 16 }}>
@@ -229,8 +394,8 @@ export default function StartupPage() {
                                                 <input value={name} onChange={e => setName(e.target.value)} placeholder="Nom de la startup" disabled={!editing} />
                                             </div>
                                             <div className="field">
-                                                <label>Email</label>
-                                                <input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@startup.com" disabled={!editing} />
+                                                <label>Email <span style={{ opacity: .7, fontWeight: 400 }}>(non modifiable)</span></label>
+                                                <input value={email} onChange={() => {}} placeholder="email@startup.com" disabled />
                                             </div>
                                             <div className="field">
                                                 <label>Secteur</label>
@@ -253,13 +418,39 @@ export default function StartupPage() {
                                             <label>Description</label>
                                             <textarea rows={5} value={description} onChange={e => setDescription(e.target.value)} placeholder="Décrivez votre projet" disabled={!editing} />
                                         </div>
-                                        <div style={{ marginTop: 16 }}>
+                                        <div className="founders-section" style={{ marginTop: 16 }}>
                                             <div className="lbl">Founders</div>
-                                            <ul className="val">
-                                                {(startup.founders || []).map(f => (
-                                                    <li key={f.id}>#{f.id} {f.name}</li>
-                                                ))}
-                                            </ul>
+                                            <div className="founders-list">
+                                                {(Array.isArray(startup.founders) ? startup.founders : []).length === 0 && (
+                                                    <div className="empty" style={{ padding: 12 }}>Aucun fondateur</div>
+                                                )}
+                                                {(Array.isArray(startup.founders) ? startup.founders : []).map(f => {
+                                                    const letter = (f?.name || 'F').trim().charAt(0).toUpperCase();
+                                                    return (
+                                                        <div className="founder-item" key={f.id}>
+                                                            <div className="left">
+                                                                <div className="founder-avatar" aria-hidden>
+                                                                    {f?.image ? <img src={f.image} alt={f.name} /> : letter}
+                                                                </div>
+                                                                <div className="founder-name" title={f.name}>{f.name}</div>
+                                                            </div>
+                                                            <div className="founder-id">ID#{f.id}</div>
+                                                            <div className="founder-actions">
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn msg"
+                                                                    title={`Contacter ${f.name}`}
+                                                                    onClick={() => navigate('/Messaging', { state: { founderId: f.id, founderName: f.name, startupId: startup.id } })}
+                                                                >
+                                                                <span className="ico" aria-hidden>
+                                                                    <img src={MsgIcon} alt="" />
+                                                                </span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                         {msg && <div style={{ opacity: .9, marginTop: 8 }}>{msg}</div>}
                                         {editing && (

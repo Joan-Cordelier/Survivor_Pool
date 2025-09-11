@@ -21,6 +21,26 @@ class BaseBackApi {
 
             if (!res.ok) {
                 console.error('API error', res.status, data);
+                if (res.status === 401) {
+                    try {
+                        const hadToken = !!localStorage.getItem('token');
+
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        if (typeof window !== 'undefined' && hadToken) {
+                            const from = `${window.location?.pathname || ''}${window.location?.search || ''}${window.location?.hash || ''}`;
+                            const loginUrl = `/Login${from ? `?from=${encodeURIComponent(from)}` : ''}`;
+
+                            setTimeout(() => {
+                                try {
+                                    window.location.replace(loginUrl);
+                                } catch {
+                                    window.location.href = loginUrl;
+                                }
+                            }, 0);
+                        }
+                    } catch {}
+                }
                 throw { status: res.status, data };
             }
 
