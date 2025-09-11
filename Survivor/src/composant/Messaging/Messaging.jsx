@@ -22,6 +22,7 @@ export default function Messaging() {
     // refs to keep latest values for polling handlers
     const conversationsRef = useRef([]);
     const lastSeenRef = useRef({}); // otherId -> last message time (ms)
+    const initialLoadedRef = useRef(false);
 
     // normalize various server time formats into epoch ms number
     function resolveTime(v) {
@@ -116,6 +117,7 @@ export default function Messaging() {
                 map[oid] = c.messages[c.messages.length - 1]?.time || 0;
             }
             lastSeenRef.current = map;
+            initialLoadedRef.current = true;
             if (convs.length && !conversations.length) setSelectedConvId(convs[0].id);
         } catch (err) {
             console.error('Failed to load messages', err);
@@ -132,6 +134,7 @@ export default function Messaging() {
         let mounted = true;
 
         const processReceived = async () => {
+            if (!initialLoadedRef.current) return;
             try {
                 const token = localStorage.getItem('token');
                 const recRes = await MessageApi.getReceivedMessages?.(user.id, token);
@@ -199,6 +202,18 @@ export default function Messaging() {
     }, [user, selectedConvId]);
 
     const selectedConv = useMemo(() => conversations.find(c => c.id === selectedConvId) || null, [conversations, selectedConvId]);
+
+    // conversations filtered by selected role (all/contact handled separately)
+    const visibleConversations = useMemo(() => {
+        const fr = String(filterRole || 'all').toLowerCase();
+        if (!Array.isArray(conversations) || conversations.length === 0) return [];
+        if (fr === 'all') return conversations;
+        if (fr === 'contact') return [];
+        return conversations.filter(c => {
+            const role = String(c.interlocutor?.role || '').toLowerCase();
+            return role === fr || role.includes(fr);
+        });
+    }, [conversations, filterRole]);
 
     // load contacts once when contact filter selected
     useEffect(() => {
@@ -374,10 +389,10 @@ export default function Messaging() {
                         )}
 
                         {filterRole !== 'contact' && (
-                            (conversations.length === 0) ? (
+                            (visibleConversations.length === 0) ? (
                                 <div style={{ padding: 12 }}>Aucune conversation</div>
                             ) : (
-                                conversations.map(c => (
+                                visibleConversations.map(c => (
                                     <div key={c.id} className={"conv-item" + (c.id === selectedConvId ? ' active' : '')} onClick={() => selectConversation(c.id)}>
                                         <div className="conv-avatar" aria-hidden>{(c.interlocutor.name || 'U')[0].toUpperCase()}</div>
                                         <div className="conv-meta">
