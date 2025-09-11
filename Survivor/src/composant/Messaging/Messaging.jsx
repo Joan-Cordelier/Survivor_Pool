@@ -350,14 +350,14 @@ export default function Messaging() {
         <div className="startup-page">
             <div className="messaging-layout">
                 <div className="conv-list card">
+                    <div style={{ marginBottom: 12 }}>
+                        <button type="button" className={"make-contacts-btn" + (filterRole.toLowerCase() === 'contact' ? ' active' : '')} onClick={() => setFilterRole('contact')}>Make Contact</button>
+                    </div>
                     <div className="conv-filters" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
                         <div style={{ display: 'flex', gap: 8 }}>
                             {['all', 'Founder', 'Investor', 'Admin'].map(r => (
                                 <button key={r} type="button" className={"conv-filter-btn" + (filterRole.toLowerCase() === r.toString().toLowerCase() ? ' active' : '')} onClick={() => setFilterRole(r)}>{r === 'all' ? 'Tous' : r}</button>
                             ))}
-                        </div>
-                        <div>
-                            <button type="button" className={"conv-filter-btn" + (filterRole.toLowerCase() === 'contact' ? ' active' : '')} onClick={() => setFilterRole('contact')}>Make Contacts</button>
                         </div>
                     </div>
 
